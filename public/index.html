@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+    
+    <title>FINANZAS PRO AI</title>
+    
+    <!-- FUENTES Y LIBRERIAS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root { 
+            --neon-blue: #00f2ff;
+            --neon-purple: #bd00ff;
+            --neon-gold: #ffd700;
+            --glass-bg: rgba(20, 20, 25, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        body { 
+            background-color: #050505; 
+            color: #ffffff; 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            overflow: hidden; 
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* FONDO ESPACIAL */
+        .nebula-bg {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at 10% 20%, rgba(29, 0, 65, 0.4) 0%, transparent 40%),
+                        radial-gradient(circle at 90% 80%, rgba(0, 40, 65, 0.3) 0%, transparent 40%);
+            z-index: -1; animation: pulseNebula 10s infinite alternate;
+        }
+        @keyframes pulseNebula { 0% { opacity: 0.8; transform: scale(1); } 100% { opacity: 1; transform: scale(1.1); } }
+
+        /* ESTILOS GLASS Y UI */
+        .glass { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37); }
+        .glass-card { border-radius: 24px; padding: 20px; transition: transform 0.2s; }
+        .glass-card:active { transform: scale(0.98); }
+
+        .input-spatial { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 16px; padding: 16px; width: 100%; outline: none; transition: 0.3s; font-size: 16px; }
+        .input-spatial:focus { border-color: var(--neon-blue); background: rgba(0,242,255,0.05); box-shadow: 0 0 15px rgba(0,242,255,0.1); }
+
+        .btn-neon { background: linear-gradient(135deg, var(--neon-blue), #00aaff); color: #000; font-weight: 800; border-radius: 18px; padding: 16px; width: 100%; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 0 20px rgba(0,242,255,0.3); border: none; position: relative; overflow: hidden; }
+        .btn-neon:active { transform: scale(0.98); }
+        
+        /* BOTONES ADMIN */
+        .btn-admin-approve { background: linear-gradient(135deg, #2ecc71, #27ae60); box-shadow: 0 0 15px rgba(46, 204, 113, 0.4); color: white; }
+        .btn-admin-reject { background: rgba(255, 59, 48, 0.1); border: 1px solid rgba(255, 59, 48, 0.3); color: #ff3b30; }
+
+        /* VISTAS */
+        .view { display: none; flex-direction: column; position: fixed; inset: 0; overflow-y: auto; padding-bottom: 100px; opacity: 0; transition: opacity 0.3s ease; }
+        .view.active { display: flex; opacity: 1; z-index: 10; }
+
+        /* BARRA ADMIN */
+        .admin-tab-active { background: var(--neon-gold); color: black; box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
+
+        /* NAVBAR USER */
+        .nav-dock { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 70px; border-radius: 35px; display: flex; justify-content: space-around; align-items: center; z-index: 50; padding: 0 10px; }
+        .nav-item { color: rgba(255,255,255,0.5); display: flex; flex-direction: column; align-items: center; font-size: 10px; gap: 4px; transition: 0.3s; }
+        .nav-item.active { color: var(--neon-blue); transform: translateY(-5px); }
+
+        /* UTILS */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="nebula-bg"></div>
+
+    <!-- PANTALLA CARGA -->
+    <div id="loading-screen" class="fixed inset-0 z-[60] bg-black flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <p class="mt-4 text-xs font-bold tracking-[0.3em] text-blue-500 animate-pulse">SISTEMA INICIANDO...</p>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="view-login" class="view active items-center justify-center px-6" style="padding-bottom: 0;">
+        <div class="glass p-8 rounded-[32px] w-full max-w-sm text-center relative overflow-hidden border border-white/10">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50"></div>
+            <div class="mb-8">
+                <i data-lucide="wallet" class="w-16 h-16 text-blue-400 mx-auto mb-4"></i>
+                <h1 class="text-3xl font-black tracking-tighter text-white">FINANZAS<span class="text-blue-500">PRO</span></h1>
+                <button onclick="window.location.reload(true)" class="text-[10px] text-gray-400 tracking-[0.2em] mt-1 uppercase border border-white/10 rounded-full px-3 py-1 hover:bg-white/10 transition-colors">Sistema v4.2 (Recargar)</button>
+            </div>
+            <div class="space-y-4 relative z-10">
+                <div class="relative"><i data-lucide="user" class="absolute left-4 top-4 w-5 h-5 text-gray-500"></i><input type="text" id="auth-user" placeholder="USUARIO / CÉDULA" class="input-spatial pl-12 lowercase"></div>
+                <div class="relative"><i data-lucide="lock" class="absolute left-4 top-4 w-5 h-5 text-gray-500"></i><input type="password" id="auth-pin" placeholder="PIN DE ACCESO" class="input-spatial pl-12 tracking-widest" maxlength="4" inputmode="numeric"></div>
+                <button onclick="handleLogin()" class="btn-neon mt-4"><span class="flex items-center justify-center gap-2">Ingresar <i data-lucide="arrow-right" class="w-4 h-4"></i></span></button>
+            </div>
+            <div class="mt-8 pt-4 border-t border-white/5">
+                <button onclick="goToView('view-register')" class="text-xs text-gray-400 hover:text-white transition-colors uppercase tracking-wider">Crear Cuenta Nueva</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- REGISTRO -->
+    <div id="view-register" class="view items-center justify-center px-6">
+        <div class="glass p-8 rounded-[32px] w-full max-w-sm border border-white/10">
+            <h2 class="text-xl font-bold mb-6 text-center text-white">NUEVO USUARIO</h2>
+            <div class="space-y-4">
+                <input type="text" id="reg-name" placeholder="Nombre Completo" class="input-spatial uppercase">
+                <input type="number" id="reg-id" placeholder="Cédula" class="input-spatial">
+                <input type="number" id="reg-phone" placeholder="Celular" class="input-spatial">
+                <button onclick="submitNewRegistration()" class="btn-neon mt-2">Solicitar Acceso</button>
+                <button onclick="goToView('view-login')" class="w-full py-3 text-xs text-gray-400 uppercase font-bold">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div id="view-admin" class="view">
+        <header class="pt-12 pb-4 px-6 glass sticky top-0 z-40 rounded-b-3xl border-b border-white/5 backdrop-blur-xl bg-black/50">
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-yellow-500 to-orange-600 flex items-center justify-center shadow-lg shadow-yellow-500/20">
+                        <i data-lucide="shield" class="text-white w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xs font-bold text-yellow-500 uppercase tracking-wider">Modo Admin</h2>
+                        <h1 class="text-sm font-black text-white uppercase">Torre de Control</h1>
+                    </div>
+                </div>
+                <button onclick="logout()" class="text-xs font-bold text-red-500 uppercase bg-red-500/10 px-3 py-2 rounded-lg border border-red-500/20">Salir</button>
+            </div>
+            <!-- TABS ADMIN -->
+            <div class="grid grid-cols-2 gap-2 p-1 bg-white/5 rounded-xl">
+                <button onclick="switchAdminTab('requests')" id="tab-req" class="py-2 rounded-lg text-[10px] font-black uppercase transition-all admin-tab-active">Solicitudes <span id="badge-req" class="ml-1 bg-red-500 text-white px-1.5 rounded-full hidden">0</span></button>
+                <button onclick="switchAdminTab('users')" id="tab-users" class="py-2 rounded-lg text-[10px] font-black uppercase text-gray-400 transition-all">Usuarios Activos</button>
+            </div>
+        </header>
+
+        <div id="admin-content" class="p-6 space-y-4 pb-24">
+            <!-- Se llena dinámicamente -->
+        </div>
+    </div>
+
+    <!-- APP DASHBOARD (USUARIO) -->
+    <div id="view-app" class="view">
+        <header class="pt-12 pb-4 px-6 flex justify-between items-center glass sticky top-0 z-40 rounded-b-3xl border-b border-white/5 backdrop-blur-xl">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                    <i data-lucide="user" class="text-white w-5 h-5"></i>
+                </div>
+                <div>
+                    <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Bienvenido</h2>
+                    <h1 class="text-sm font-black text-white uppercase" id="user-title">Mi Cuenta</h1>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button id="admin-return-btn" onclick="returnToAdmin()" class="hidden bg-yellow-500 text-black px-3 py-1 rounded-full text-[10px] font-black uppercase shadow-lg shadow-yellow-500/20 animate-pulse">
+                    Admin Mode
+                </button>
+                <button onclick="logout()" class="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20">
+                    <i data-lucide="power" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="p-6 space-y-6">
+            <!-- TARJETA SALDO -->
+            <div class="glass glass-card relative overflow-hidden bg-gradient-to-br from-gray-900 to-black">
+                <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl"></div>
+                <div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500"></div>
+                <div class="relative z-10 text-center py-4">
+                    <span class="text-xs font-bold uppercase text-gray-400 tracking-[0.2em] mb-2 block">Saldo Disponible</span>
+                    <div id="balance" class="text-5xl font-black text-white tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">$0</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-white/5">
+                    <div class="text-center">
+                        <div class="text-[10px] uppercase text-gray-500 font-bold mb-1">Ingresos</div>
+                        <div id="ui-salary" class="text-sm font-bold text-green-400">$0</div>
+                    </div>
+                    <div class="text-center border-l border-white/5">
+                        <div class="text-[10px] uppercase text-gray-500 font-bold mb-1">Gastos</div>
+                        <div id="ui-expenses" class="text-sm font-bold text-red-400">$0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACCIONES -->
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="goToView('view-expense-normal')" class="glass glass-card flex flex-col items-center justify-center py-6 gap-2 bg-blue-600/10 border-blue-500/30 hover:bg-blue-600/20">
+                    <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/40"><i data-lucide="minus" class="text-white w-6 h-6"></i></div>
+                    <span class="text-xs font-bold uppercase mt-1 text-blue-200">Gasto Diario</span>
+                </button>
+                <button onclick="goToView('view-salary')" class="glass glass-card flex flex-col items-center justify-center py-6 gap-2 bg-green-600/10 border-green-500/30 hover:bg-green-600/20">
+                    <div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/40"><i data-lucide="plus" class="text-white w-6 h-6"></i></div>
+                    <span class="text-xs font-bold uppercase mt-1 text-green-200">Ingreso</span>
+                </button>
+            </div>
+
+            <button onclick="goToView('view-ai')" class="w-full glass glass-card flex items-center justify-between bg-gradient-to-r from-indigo-900/40 to-purple-900/40 border-purple-500/30 group">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400"><i data-lucide="sparkles" class="w-5 h-5 animate-pulse"></i></div>
+                    <div class="text-left"><div class="text-xs font-bold text-purple-300 uppercase">FinanzasPro AI</div><div class="text-[10px] text-gray-400">Analizar mis gastos</div></div>
+                </div>
+                <i data-lucide="chevron-right" class="text-purple-400 w-5 h-5 group-active:translate-x-1 transition-transform"></i>
+            </button>
+
+            <div>
+                <div class="flex justify-between items-end mb-4 px-2">
+                    <h3 class="text-xs font-bold uppercase text-gray-500 tracking-widest">Recientes</h3>
+                    <button onclick="exportReport()" class="text-[10px] text-blue-400 uppercase font-bold flex items-center gap-1"><i data-lucide="download" class="w-3 h-3"></i> CSV</button>
+                </div>
+                <div id="expense-list" class="space-y-3 pb-24"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VISTAS SECUNDARIAS (AI, GASTOS, SALARIO) -->
+    <div id="view-ai" class="view">
+        <header class="pt-12 pb-4 px-6 flex items-center gap-4 sticky top-0 z-40 bg-black/50 backdrop-blur-xl">
+            <button onclick="goToView('view-app')" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
+            <h2 class="text-sm font-black uppercase text-purple-400 tracking-widest flex items-center gap-2"><i data-lucide="bot" class="w-4 h-4"></i> Asistente IA</h2>
+        </header>
+        <div class="p-6 space-y-6">
+            <div class="glass p-2 rounded-xl flex items-center justify-center"><input type="month" id="analysis-month" class="bg-transparent text-white text-sm font-bold uppercase text-center outline-none" onchange="updateAnalysisUI()"></div>
+            <div class="glass glass-card bg-gradient-to-br from-purple-900/40 to-black border-purple-500/30">
+                <div class="flex items-center gap-2 mb-3"><i data-lucide="brain-circuit" class="text-purple-400 w-5 h-5"></i><span class="text-xs font-bold text-purple-400 uppercase">Diagnóstico Inteligente</span></div>
+                <p id="ai-insight-text" class="text-sm text-gray-200 leading-relaxed font-light">Cargando...</p>
+            </div>
+            <div class="glass glass-card">
+                <h3 class="text-[10px] font-bold uppercase text-gray-500 mb-4 tracking-widest text-center">Distribución</h3>
+                <div class="relative h-64"><canvas id="expenseChart"></canvas><div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"><span class="text-[10px] text-gray-500 uppercase">Total</span><span id="chart-total-center" class="text-lg font-bold text-white">$0</span></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-expense-normal" class="view items-end justify-end bg-black/80 backdrop-blur-sm">
+        <div class="w-full h-[85vh] glass rounded-t-[40px] p-6 flex flex-col border-t border-white/20 animate-slide-up bg-[#0a0a0a]">
+            <div class="w-12 h-1 bg-gray-700 rounded-full mx-auto mb-8"></div>
+            <div class="flex justify-between items-center mb-6"><h2 class="text-xl font-black uppercase text-blue-400">Nuevo Gasto</h2><button onclick="goToView('view-app')" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button></div>
+            <div class="flex-1 space-y-5">
+                <div><label class="text-[10px] uppercase font-bold text-gray-500 ml-2">Monto</label><div class="relative"><span class="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-light text-gray-400">$</span><input type="number" id="exp-amt" class="input-spatial text-3xl font-bold pl-10 h-20 bg-black/40 border-blue-500/30 focus:border-blue-500 text-white" placeholder="0"></div></div>
+                <div><label class="text-[10px] uppercase font-bold text-gray-500 ml-2">Descripción</label><input type="text" id="exp-desc" placeholder="¿En qué gastaste?" class="input-spatial uppercase"></div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-[10px] uppercase font-bold text-gray-500 ml-2">Categoría</label><select id="exp-cat" class="input-spatial uppercase text-xs h-12 bg-[#1a1a1a] appearance-none"></select></div>
+                    <div><label class="text-[10px] uppercase font-bold text-gray-500 ml-2">Fuente</label><select id="exp-source" class="input-spatial uppercase text-xs h-12 bg-[#1a1a1a] appearance-none"><option value="BANCOLOMBIA">Bancolombia</option><option value="NEQUI">Nequi</option><option value="EFECTIVO">Efectivo</option></select></div>
+                </div>
+            </div>
+            <button onclick="addExpense('normal')" class="btn-neon mt-4 mb-8">Registrar Movimiento</button>
+        </div>
+    </div>
+
+    <div id="view-salary" class="view items-end justify-end bg-black/80 backdrop-blur-sm">
+        <div class="w-full h-[60vh] glass rounded-t-[40px] p-6 flex flex-col border-t border-white/20 animate-slide-up bg-[#0a0a0a]">
+            <div class="w-12 h-1 bg-gray-700 rounded-full mx-auto mb-8"></div>
+            <div class="flex justify-between items-center mb-6"><h2 class="text-xl font-black uppercase text-green-400">Registrar Ingreso</h2><button onclick="goToView('view-app')" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button></div>
+            <div class="flex-1 space-y-6"><input type="number" id="sal-amt" class="bg-transparent text-center text-5xl font-black text-white w-full outline-none border-b border-white/10 pb-4 focus:border-green-500 transition-colors" placeholder="$0"><select id="sal-source" onchange="updateSalaryInputFromSource()" class="input-spatial uppercase text-center bg-[#1a1a1a]"><option value="BANCOLOMBIA">Bancolombia</option><option value="NEQUI">Nequi</option><option value="EFECTIVO">Efectivo</option></select></div>
+            <button onclick="updateSalary()" class="btn-neon mt-4 mb-8" style="background: linear-gradient(135deg, #2ecc71, #27ae60); box-shadow: 0 0 20px rgba(46, 204, 113, 0.3);">Actualizar Saldo</button>
+        </div>
+    </div>
+
+    <nav id="nav-dock" class="glass nav-dock hidden">
+        <button onclick="goToView('view-app')" class="nav-item active" id="nav-home"><i data-lucide="layout-grid" class="w-6 h-6"></i><span>Home</span></button>
+        <button onclick="goToView('view-ai')" class="nav-item" id="nav-chart"><i data-lucide="pie-chart" class="w-6 h-6"></i><span>Analisis</span></button>
+        <div class="w-px h-8 bg-white/10"></div>
+        <button onclick="goToView('view-expense-normal')" class="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center -mt-6 shadow-lg shadow-blue-500/50 border-4 border-[#050505]"><i data-lucide="plus" class="w-6 h-6"></i></button>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, setDoc, onSnapshot, updateDoc, deleteDoc, arrayUnion, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // CONFIG (NO CAMBIAR)
+        const firebaseConfig = { apiKey: "AIzaSyAzUFILQGyuXzNUcbeBSg2Pmp4fSMQSBu0", authDomain: "gastos-dd902.firebaseapp.com", projectId: "gastos-dd902", storageBucket: "gastos-dd902.firebasestorage.app", messagingSenderId: "784136192592", appId: "1:784136192592:web:6b978ec8ef7266ce720755", measurementId: "G-VTWBTXJ1BS" };
+        const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app);
+
+        let walletKey = "", userUnsubscribe = null, adminUnsubscribe = null, myChart = null, currentAdminTab = 'requests';
+        let currentExpenses = [], currentIncomes = [], currentCategories = [{name:'GENERAL'},{name:'ALIMENTACION'},{name:'TRANSPORTE'},{name:'OCIO'},{name:'SALUD'}];
+        
+        const ADMIN_USER = "admin";
+        const ADMIN_PIN = "1234"; // CAMBIA ESTO SI DESEAS
+        const MY_DEVICE_ID = localStorage.getItem('fp_device_id_v3') || Math.random().toString(36).substring(2,6).toUpperCase();
+        localStorage.setItem('fp_device_id_v3', MY_DEVICE_ID);
+
+        lucide.createIcons();
+        if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(r => r.forEach(reg => reg.unregister()));
+
+        // --- NAVEGACIÓN ---
+        window.goToView = (id) => {
+            document.querySelectorAll('.view').forEach(v => { v.classList.remove('active'); v.style.opacity = '0'; });
+            const target = document.getElementById(id);
+            if(target) {
+                target.classList.add('active'); setTimeout(() => target.style.opacity = '1', 10);
+                const dock = document.getElementById('nav-dock');
+                if(['view-app','view-ai'].includes(id)) { dock.classList.remove('hidden'); dock.classList.add('flex'); }
+                else { dock.classList.add('hidden'); dock.classList.remove('flex'); }
+            }
+        };
+
+        // --- AUTH ---
+        window.handleLogin = async () => {
+            const u = document.getElementById('auth-user').value.toLowerCase().trim();
+            const p = document.getElementById('auth-pin').value.trim();
+            if(!u || !p) return alert("⚠️ Faltan Datos");
+
+            // MODO ADMIN
+            if(u === ADMIN_USER && p === ADMIN_PIN) {
+                goToView('view-admin');
+                switchAdminTab('requests');
+                return;
+            }
+
+            showLoading(true);
+            const docID = `${u}_${p}`;
+            try {
+                const docRef = doc(db, "wallets_v4", docID);
+                const snap = await getDoc(docRef);
+                if (!snap.exists()) { showLoading(false); return alert("❌ Usuario no encontrado"); }
+                
+                // VERIFICAR DISPOSITIVO
+                const devSnap = await getDoc(doc(db, "authorized_devices", MY_DEVICE_ID));
+                if(!devSnap.exists() || !devSnap.data().active) {
+                    await setDoc(doc(db, "authorized_devices", MY_DEVICE_ID), { active: false, requested_by: snap.data().name, cedula: u, wallet_id: docID, date: new Date().toISOString() }, { merge: true });
+                    showLoading(false); alert("🔒 Dispositivo Pendiente de Aprobación por Admin");
+                } else {
+                    walletKey = docID; startUserSync(walletKey); goToView('view-app');
+                }
+            } catch (e) { showLoading(false); alert("Error de Conexión"); }
+        };
+
+        window.submitNewRegistration = async () => {
+            const name = document.getElementById('reg-name').value.toUpperCase().trim();
+            const cedula = document.getElementById('reg-id').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+            if(!name || !cedula || !phone) return alert("⚠️ Llena todo");
+            
+            showLoading(true);
+            const walletId = `${cedula}_${phone.slice(-4)}`; // ID sugerido para el admin
+
+            try {
+                await setDoc(doc(db, "authorized_devices", MY_DEVICE_ID), { active: false, requested_by: name, cedula, celular: phone, wallet_id: walletId, date: new Date().toISOString() }, { merge: true });
+                showLoading(false); alert("✅ Solicitud enviada. Espera aprobación."); goToView('view-login');
+            } catch(e) { showLoading(false); alert("Error"); }
+        };
+
+        window.logout = async () => {
+            if(userUnsubscribe) userUnsubscribe();
+            if(adminUnsubscribe) adminUnsubscribe();
+            walletKey = "";
+            window.location.reload();
+        };
+
+        // --- LÓGICA ADMIN ---
+        window.switchAdminTab = (tab) => {
+            currentAdminTab = tab;
+            document.getElementById('tab-req').className = tab === 'requests' ? 'flex-1 py-3 rounded-xl bg-yellow-500 text-black font-black uppercase text-xs shadow-lg shadow-yellow-500/20' : 'flex-1 py-3 rounded-xl bg-white/5 text-gray-500 font-bold uppercase text-xs';
+            document.getElementById('tab-users').className = tab === 'users' ? 'flex-1 py-3 rounded-xl bg-yellow-500 text-black font-black uppercase text-xs shadow-lg shadow-yellow-500/20' : 'flex-1 py-3 rounded-xl bg-white/5 text-gray-500 font-bold uppercase text-xs';
+            startAdminSync();
+        };
+
+        function startAdminSync() {
+            if(adminUnsubscribe) adminUnsubscribe();
+            const container = document.getElementById('admin-content');
+            container.innerHTML = '<div class="text-center py-10"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500 mx-auto"></div></div>';
+
+            if (currentAdminTab === 'requests') {
+                adminUnsubscribe = onSnapshot(query(collection(db, "authorized_devices")), (snap) => {
+                    let html = "", count = 0;
+                    snap.forEach(d => {
+                        const data = d.data();
+                        if(!data.active) {
+                            count++;
+                            html += `
+                            <div class="glass glass-card border-l-4 border-yellow-500 animate-slide-up">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div><div class="text-xs text-yellow-500 font-bold uppercase mb-1">Solicitud Nueva</div><div class="font-black text-white text-lg uppercase">${data.requested_by || 'Sin Nombre'}</div></div>
+                                    <div class="bg-yellow-500/20 text-yellow-500 p-2 rounded-lg"><i data-lucide="smartphone" class="w-5 h-5"></i></div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 mb-4 text-[10px] text-gray-400 font-mono"><div>CC: ${data.cedula}</div><div>CEL: ${data.celular || 'N/A'}</div></div>
+                                <div class="flex gap-2">
+                                    <button onclick="approveRequest('${d.id}', '${data.wallet_id}', '${data.requested_by}')" class="flex-1 btn-admin-approve py-3 rounded-xl font-black uppercase text-[10px] flex items-center justify-center gap-1"><i data-lucide="check" class="w-3 h-3"></i> Aprobar</button>
+                                    <button onclick="rejectRequest('${d.id}')" class="flex-1 btn-admin-reject py-3 rounded-xl font-black uppercase text-[10px] flex items-center justify-center gap-1"><i data-lucide="x" class="w-3 h-3"></i> Rechazar</button>
+                                </div>
+                            </div>`;
+                        }
+                    });
+                    container.innerHTML = html || '<div class="text-center py-20 text-gray-600 font-bold uppercase text-[10px]">Sin solicitudes pendientes</div>';
+                    const badge = document.getElementById('badge-req');
+                    badge.innerText = count;
+                    badge.classList.toggle('hidden', count === 0);
+                    lucide.createIcons();
+                });
+            } else {
+                adminUnsubscribe = onSnapshot(collection(db, "wallets_v4"), (snap) => {
+                    let html = "";
+                    snap.forEach(d => {
+                        const data = d.data();
+                        html += `
+                        <div class="glass glass-card flex items-center justify-between border-l-4 border-blue-500">
+                            <div><div class="font-black text-xs uppercase text-white">${data.name || 'Usuario'}</div><div class="text-[9px] text-gray-500 font-mono mt-1">ID: ${d.id}</div></div>
+                            <button onclick="adminSpyUser('${d.id}')" class="bg-blue-600/20 text-blue-400 px-3 py-2 rounded-lg text-[9px] font-black uppercase border border-blue-500/30 flex items-center gap-1"><i data-lucide="eye" class="w-3 h-3"></i> Ver</button>
+                        </div>`;
+                    });
+                    container.innerHTML = html;
+                    lucide.createIcons();
+                });
+            }
+        }
+
+        window.approveRequest = async (deviceId, walletId, name) => {
+            if(!confirm(`¿Crear cuenta para ${name}?`)) return;
+            const snap = await getDoc(doc(db, "wallets_v4", walletId));
+            if(!snap.exists()) await setDoc(doc(db, "wallets_v4", walletId), { name: name, salary: 0, expenses: [], createdAt: new Date().toISOString() });
+            await updateDoc(doc(db, "authorized_devices", deviceId), { active: true });
+        };
+        
+        window.rejectRequest = async (id) => { if(confirm("¿Eliminar solicitud?")) await deleteDoc(doc(db, "authorized_devices", id)); };
+        
+        // MODO ESPÍA ADMIN
+        window.adminSpyUser = (id) => {
+            walletKey = id;
+            if(adminUnsubscribe) adminUnsubscribe(); // Pausar sync admin
+            document.getElementById('admin-return-btn').classList.remove('hidden'); // Mostrar botón volver
+            startUserSync(id);
+            goToView('view-app');
+        };
+
+        window.returnToAdmin = () => {
+            if(userUnsubscribe) userUnsubscribe(); // Pausar sync usuario
+            goToView('view-admin');
+            document.getElementById('admin-return-btn').classList.add('hidden');
+            switchAdminTab('users'); // Recargar lista
+        };
+
+        // --- SYNC USUARIO ---
+        function startUserSync(key) {
+            userUnsubscribe = onSnapshot(doc(db, "wallets_v4", key), (snap) => {
+                if (snap.exists()) renderDashboard(snap.data());
+                showLoading(false);
+            });
+        }
+
+        function renderDashboard(data) {
+            document.getElementById('user-title').innerText = data.name || "Usuario";
+            currentExpenses = data.expenses || []; currentIncomes = data.incomes || [];
+            if(data.categories) currentCategories = data.categories;
+            
+            const exp = currentExpenses.reduce((a,c) => a+(Number(c.amt)||0),0);
+            const sal = data.salary || 0;
+            animateValue("balance", sal - exp);
+            document.getElementById('ui-salary').innerText = `+ $${sal.toLocaleString()}`;
+            document.getElementById('ui-expenses').innerText = `- $${exp.toLocaleString()}`;
+            
+            const list = document.getElementById('expense-list');
+            list.innerHTML = [...currentExpenses.map(e=>({...e,t:'exp'})),...currentIncomes.map(i=>({...i,t:'inc'}))].sort((a,b)=>b.id-a.id).slice(0,10).map(t => `
+            <div class="glass p-3 rounded-2xl flex items-center justify-between border border-white/5"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full ${t.t==='inc'?'bg-green-500/10 text-green-400':'bg-blue-500/10 text-white'} flex items-center justify-center"><i data-lucide="${t.t==='inc'?'arrow-down-left':'shopping-bag'}" class="w-5 h-5"></i></div><div><div class="text-xs font-bold text-white uppercase">${t.desc}</div><div class="text-[9px] text-gray-500">${t.date} • ${t.source||'General'}</div></div></div><div class="font-bold text-sm ${t.t==='inc'?'text-green-400':'text-white'}">${t.t==='inc'?'+':'-'}$${Number(t.amt).toLocaleString()}</div></div>`).join('');
+            
+            const catSelect = document.getElementById('exp-cat');
+            catSelect.innerHTML = currentCategories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+            lucide.createIcons();
+            if(document.getElementById('view-ai').classList.contains('active')) updateAnalysisUI();
+        }
+
+        // --- UTILIDADES ---
+        function showLoading(bool) { const l = document.getElementById('loading-screen'); if(bool) {l.classList.remove('hidden');l.style.opacity='1';} else {l.style.opacity='0';setTimeout(()=>l.classList.add('hidden'),500);} }
+        function animateValue(id, end) { const obj = document.getElementById(id); let start = null; const step = (ts) => { if(!start) start=ts; const p = Math.min((ts-start)/1000, 1); obj.innerHTML = "$"+Math.floor(p*end).toLocaleString(); if(p<1) requestAnimationFrame(step); }; requestAnimationFrame(step); }
+
+        window.updateAnalysisUI = () => {
+            const dateVal = document.getElementById('analysis-month').value;
+            if(!dateVal) return;
+            const [y, m] = dateVal.split('-').map(Number);
+            
+            const filtered = currentExpenses.filter(e => {
+                const d = new Date(e.date);
+                return d.getFullYear() === y && d.getMonth() + 1 === m;
+            });
+            
+            const cats = {};
+            filtered.forEach(e => {
+                const catName = e.category || 'General';
+                cats[catName] = (cats[catName] || 0) + Number(e.amt);
+            });
+            
+            const ctx = document.getElementById('expenseChart').getContext('2d');
+            if(myChart) myChart.destroy();
+            
+            myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(cats),
+                    datasets: [{
+                        data: Object.values(cats),
+                        backgroundColor: ['#00F2FF', '#BD00FF', '#FF0055', '#FFCC00', '#00FF88'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    cutout: '80%',
+                    plugins: { legend: { display: false } }
+                }
+            });
+            
+            const total = Object.values(cats).reduce((a, b) => a + b, 0);
+            document.getElementById('chart-total-center').innerText = `$${total.toLocaleString()}`;
+            
+            // AI Logic
+            const incomeTotal = currentIncomes.reduce((a, c) => a + c.amt, 0) || 1;
+            const aiText = document.getElementById('ai-insight-text');
+            
+            if (total > incomeTotal * 0.9) {
+                aiText.innerText = "⚠️ Alerta: Estás gastando más del 90% de tus ingresos.";
+                aiText.className = "text-sm text-red-400 font-bold leading-relaxed";
+            } else if (total < incomeTotal * 0.5) {
+                aiText.innerText = "✅ Excelente salud financiera. Ahorro superior al 50%.";
+                aiText.className = "text-sm text-green-400 font-bold leading-relaxed";
+            } else {
+                aiText.innerText = "📊 Tus finanzas están estables. Sigue monitoreando.";
+                aiText.className = "text-sm text-gray-200 font-light leading-relaxed";
+            }
+        };
+
+        window.addExpense = async (type) => {
+            const desc = document.getElementById('exp-desc').value.trim();
+            const amt = Number(document.getElementById('exp-amt').value);
+            const cat = document.getElementById('exp-cat').value;
+            const src = document.getElementById('exp-source').value;
+            if(!desc || !amt) return alert("⚠️ Datos");
+            
+            await updateDoc(doc(db, "wallets_v4", walletKey), {
+                expenses: arrayUnion({ id: Date.now(), desc: desc.toUpperCase(), amt, category: cat, source: src, date: new Date().toLocaleDateString() })
+            });
+            goToView('view-app');
+        };
+
+        window.updateSalary = async () => {
+            const val = Number(document.getElementById('sal-amt').value);
+            const src = document.getElementById('sal-source').value;
+            if(!val) return;
+            
+            await updateDoc(doc(db, "wallets_v4", walletKey), {
+                incomes: arrayUnion({ id: Date.now(), desc: "INGRESO", amt: val, source: src, date: new Date().toLocaleDateString() }),
+                salary: val
+            });
+            goToView('view-app');
+        };
+
+        window.updateSalaryInputFromSource = () => {
+             // Placeholder si quieres cargar salario previo por fuente
+        };
+
+        document.addEventListener('DOMContentLoaded', () => { setTimeout(()=>showLoading(false),1500); const d = new Date(); document.getElementById('analysis-month').value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; });
+    </script>
+</body>
+</html>
