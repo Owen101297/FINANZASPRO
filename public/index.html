@@ -59,19 +59,18 @@
         .btn-admin-reject { background: rgba(255, 59, 48, 0.1); border: 1px solid rgba(255, 59, 48, 0.3); color: #ff3b30; }
 
         /* VISTAS */
-        .view { display: none; flex-direction: column; position: fixed; inset: 0; overflow-y: auto; padding-bottom: 100px; opacity: 0; transition: opacity 0.3s ease; }
+        .view { display: none; flex-direction: column; position: fixed; inset: 0; overflow-y: auto; padding-bottom: 120px; opacity: 0; transition: opacity 0.3s ease; }
         .view.active { display: flex; opacity: 1; z-index: 10; }
 
-        /* BARRA ADMIN */
-        .admin-tab-active { background: var(--neon-gold); color: black; box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
-
-        /* NAVBAR USER */
-        .nav-dock { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 70px; border-radius: 35px; display: flex; justify-content: space-around; align-items: center; z-index: 50; padding: 0 10px; }
-        .nav-item { color: rgba(255,255,255,0.5); display: flex; flex-direction: column; align-items: center; font-size: 10px; gap: 4px; transition: 0.3s; }
-        .nav-item.active { color: var(--neon-blue); transform: translateY(-5px); }
+        /* NAVBAR USER PRO */
+        .nav-dock { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 75px; border-radius: 35px; display: flex; align-items: center; z-index: 50; padding: 0 15px; }
+        .nav-item { color: rgba(255,255,255,0.5); display: flex; flex-direction: column; align-items: center; font-size: 10px; gap: 4px; transition: 0.3s; width: 60px; }
+        .nav-item.active { color: var(--neon-blue); transform: translateY(-5px); font-weight: bold; }
 
         /* UTILS */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -91,7 +90,7 @@
             <div class="mb-8">
                 <i data-lucide="wallet" class="w-16 h-16 text-blue-400 mx-auto mb-4"></i>
                 <h1 class="text-3xl font-black tracking-tighter text-white">FINANZAS<span class="text-blue-500">PRO</span></h1>
-                <button onclick="window.location.reload(true)" class="text-[10px] text-gray-400 tracking-[0.2em] mt-1 uppercase border border-white/10 rounded-full px-3 py-1 hover:bg-white/10 transition-colors">Sistema v4.2 (Recargar)</button>
+                <button onclick="window.location.reload(true)" class="text-[10px] text-gray-400 tracking-[0.2em] mt-1 uppercase border border-white/10 rounded-full px-3 py-1 hover:bg-white/10 transition-colors">Sistema v4.3 PRO</button>
             </div>
             <div class="space-y-4 relative z-10">
                 <div class="relative"><i data-lucide="user" class="absolute left-4 top-4 w-5 h-5 text-gray-500"></i><input type="text" id="auth-user" placeholder="USUARIO / CÉDULA" class="input-spatial pl-12 lowercase"></div>
@@ -140,9 +139,7 @@
             </div>
         </header>
 
-        <div id="admin-content" class="p-6 space-y-4 pb-24">
-            <!-- Se llena dinámicamente -->
-        </div>
+        <div id="admin-content" class="p-6 space-y-4 pb-24"></div>
     </div>
 
     <!-- APP DASHBOARD (USUARIO) -->
@@ -188,18 +185,24 @@
                 </div>
             </div>
 
-            <!-- ACCIONES -->
-            <div class="grid grid-cols-2 gap-3">
-                <button onclick="goToView('view-expense-normal')" class="glass glass-card flex flex-col items-center justify-center py-6 gap-2 bg-blue-600/10 border-blue-500/30 hover:bg-blue-600/20">
-                    <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/40"><i data-lucide="minus" class="text-white w-6 h-6"></i></div>
-                    <span class="text-xs font-bold uppercase mt-1 text-blue-200">Gasto Diario</span>
+            <!-- ACCIONES RAPIDAS -->
+            <div class="grid grid-cols-3 gap-3">
+                <button onclick="goToView('view-expense-normal')" class="glass glass-card flex flex-col items-center justify-center py-4 gap-2 bg-blue-600/10 border-blue-500/30 hover:bg-blue-600/20 px-2">
+                    <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/40"><i data-lucide="minus" class="text-white w-4 h-4"></i></div>
+                    <span class="text-[10px] font-bold uppercase mt-1 text-blue-200">Gasto</span>
                 </button>
-                <button onclick="goToView('view-salary')" class="glass glass-card flex flex-col items-center justify-center py-6 gap-2 bg-green-600/10 border-green-500/30 hover:bg-green-600/20">
-                    <div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/40"><i data-lucide="plus" class="text-white w-6 h-6"></i></div>
-                    <span class="text-xs font-bold uppercase mt-1 text-green-200">Ingreso</span>
+                <button onclick="goToView('view-salary')" class="glass glass-card flex flex-col items-center justify-center py-4 gap-2 bg-green-600/10 border-green-500/30 hover:bg-green-600/20 px-2">
+                    <div class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/40"><i data-lucide="plus" class="text-white w-4 h-4"></i></div>
+                    <span class="text-[10px] font-bold uppercase mt-1 text-green-200">Ingreso</span>
+                </button>
+                <button onclick="goToView('view-debts')" class="glass glass-card flex flex-col items-center justify-center py-4 gap-2 bg-yellow-600/10 border-yellow-500/30 hover:bg-yellow-600/20 px-2 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-full h-full bg-gradient-to-tr from-transparent to-yellow-500/10"></div>
+                    <div class="w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center shadow-lg shadow-yellow-500/40"><i data-lucide="book-open" class="text-black w-4 h-4"></i></div>
+                    <span class="text-[10px] font-bold uppercase mt-1 text-yellow-200">Deudas</span>
                 </button>
             </div>
 
+            <!-- BOTON IA -->
             <button onclick="goToView('view-ai')" class="w-full glass glass-card flex items-center justify-between bg-gradient-to-r from-indigo-900/40 to-purple-900/40 border-purple-500/30 group">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400"><i data-lucide="sparkles" class="w-5 h-5 animate-pulse"></i></div>
@@ -208,17 +211,18 @@
                 <i data-lucide="chevron-right" class="text-purple-400 w-5 h-5 group-active:translate-x-1 transition-transform"></i>
             </button>
 
+            <!-- RECIENTES -->
             <div>
                 <div class="flex justify-between items-end mb-4 px-2">
                     <h3 class="text-xs font-bold uppercase text-gray-500 tracking-widest">Recientes</h3>
-                    <button onclick="exportReport()" class="text-[10px] text-blue-400 uppercase font-bold flex items-center gap-1"><i data-lucide="download" class="w-3 h-3"></i> CSV</button>
+                    <button onclick="exportReport()" class="text-[10px] text-blue-400 uppercase font-bold flex items-center gap-1 hover:text-blue-300 transition-colors cursor-pointer"><i data-lucide="download" class="w-3 h-3"></i> CSV</button>
                 </div>
-                <div id="expense-list" class="space-y-3 pb-24"></div>
+                <div id="expense-list" class="space-y-3 pb-4"></div>
             </div>
         </div>
     </div>
 
-    <!-- VISTAS SECUNDARIAS (AI, GASTOS, SALARIO) -->
+    <!-- VISTA: ASISTENTE IA -->
     <div id="view-ai" class="view">
         <header class="pt-12 pb-4 px-6 flex items-center gap-4 sticky top-0 z-40 bg-black/50 backdrop-blur-xl">
             <button onclick="goToView('view-app')" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
@@ -228,16 +232,90 @@
             <div class="glass p-2 rounded-xl flex items-center justify-center"><input type="month" id="analysis-month" class="bg-transparent text-white text-sm font-bold uppercase text-center outline-none" onchange="updateAnalysisUI()"></div>
             <div class="glass glass-card bg-gradient-to-br from-purple-900/40 to-black border-purple-500/30">
                 <div class="flex items-center gap-2 mb-3"><i data-lucide="brain-circuit" class="text-purple-400 w-5 h-5"></i><span class="text-xs font-bold text-purple-400 uppercase">Diagnóstico Inteligente</span></div>
-                <p id="ai-insight-text" class="text-sm text-gray-200 leading-relaxed font-light">Cargando...</p>
+                <p id="ai-insight-text" class="text-sm text-gray-200 leading-relaxed font-light">Cargando análisis...</p>
             </div>
             <div class="glass glass-card">
-                <h3 class="text-[10px] font-bold uppercase text-gray-500 mb-4 tracking-widest text-center">Distribución</h3>
+                <h3 class="text-[10px] font-bold uppercase text-gray-500 mb-4 tracking-widest text-center">Distribución de Gastos</h3>
                 <div class="relative h-64"><canvas id="expenseChart"></canvas><div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"><span class="text-[10px] text-gray-500 uppercase">Total</span><span id="chart-total-center" class="text-lg font-bold text-white">$0</span></div></div>
             </div>
         </div>
     </div>
 
-    <div id="view-expense-normal" class="view items-end justify-end bg-black/80 backdrop-blur-sm">
+    <!-- VISTA: DEUDAS Y PRÉSTAMOS (NUEVO) -->
+    <div id="view-debts" class="view">
+        <header class="pt-12 pb-4 px-6 flex justify-between items-center glass sticky top-0 z-40 rounded-b-3xl border-b border-white/5 backdrop-blur-xl bg-black/50">
+            <div class="flex items-center gap-3">
+                <button onclick="goToView('view-app')" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
+                <div>
+                    <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Gestión de</h2>
+                    <h1 class="text-sm font-black text-white uppercase">Préstamos</h1>
+                </div>
+            </div>
+            <button onclick="goToView('view-add-debt')" class="text-xs text-blue-400 font-bold uppercase flex items-center gap-1 bg-blue-500/10 px-3 py-1.5 rounded-full border border-blue-500/20"><i data-lucide="plus" class="w-3 h-3"></i> Nuevo</button>
+        </header>
+        
+        <div class="p-6 space-y-4">
+            <!-- Tabs Deudas -->
+            <div class="grid grid-cols-2 gap-2 p-1 bg-white/5 rounded-xl mb-2">
+                <button onclick="filterDebts('they_owe')" id="tab-they-owe" class="py-2.5 rounded-lg text-[10px] font-black uppercase transition-all bg-green-500 text-black shadow-lg shadow-green-500/20">Me Deben</button>
+                <button onclick="filterDebts('i_owe')" id="tab-i-owe" class="py-2.5 rounded-lg text-[10px] font-black uppercase text-gray-400 transition-all bg-transparent">Yo Debo</button>
+            </div>
+
+            <!-- Resumen Total -->
+            <div class="glass glass-card flex justify-between items-center border-l-2 border-green-500" id="debt-summary-card">
+                <div>
+                    <span class="text-[10px] text-gray-400 uppercase font-bold tracking-widest" id="debt-summary-label">TOTAL A COBRAR</span>
+                    <div id="debt-total-amount" class="text-2xl font-black text-white">$0</div>
+                </div>
+                <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center">
+                    <i data-lucide="trending-up" class="text-green-500 w-6 h-6" id="debt-summary-icon"></i>
+                </div>
+            </div>
+
+            <!-- Lista de Deudas -->
+            <div id="debts-list" class="space-y-3 mt-4">
+                <!-- Se inyecta dinamicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: AGREGAR DEUDA (NUEVO) -->
+    <div id="view-add-debt" class="view items-end justify-end bg-black/80 backdrop-blur-sm">
+        <div class="w-full h-[85vh] glass rounded-t-[40px] p-6 flex flex-col border-t border-white/20 animate-slide-up bg-[#0a0a0a]">
+            <div class="w-12 h-1 bg-gray-700 rounded-full mx-auto mb-8"></div>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-black uppercase text-yellow-400 flex items-center gap-2"><i data-lucide="book-open" class="w-6 h-6"></i> Registrar Deuda</h2>
+                <button onclick="goToView('view-debts')" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            
+            <div class="flex-1 space-y-5">
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-gray-500 ml-2">¿Tipo de registro?</label>
+                    <select id="new-debt-type" class="input-spatial uppercase text-sm h-14 bg-[#1a1a1a] font-bold text-white appearance-none border-yellow-500/30">
+                        <option value="they_owe">ME DEBEN DINERO (Préstamo otorgado)</option>
+                        <option value="i_owe">YO DEBO DINERO (Préstamo recibido)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-gray-500 ml-2">Monto</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-light text-gray-400">$</span>
+                        <input type="number" id="new-debt-amt" class="input-spatial text-3xl font-bold pl-10 h-20 bg-black/40 border-white/10 focus:border-yellow-500 text-white" placeholder="0">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-gray-500 ml-2">Nombre de la persona o Entidad</label>
+                    <input type="text" id="new-debt-person" placeholder="Ej: Juan Pérez / Banco..." class="input-spatial uppercase">
+                </div>
+            </div>
+            <button onclick="saveNewDebt()" class="btn-neon mt-4 mb-8" style="background: linear-gradient(135deg, #f1c40f, #f39c12); color: black; box-shadow: 0 0 20px rgba(241, 196, 15, 0.3);">
+                Guardar Registro
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL: GASTO -->
+    <div id="view-expense-normal" class="view items-end justify-end bg-black/80 backdrop-blur-sm z-[60]">
         <div class="w-full h-[85vh] glass rounded-t-[40px] p-6 flex flex-col border-t border-white/20 animate-slide-up bg-[#0a0a0a]">
             <div class="w-12 h-1 bg-gray-700 rounded-full mx-auto mb-8"></div>
             <div class="flex justify-between items-center mb-6"><h2 class="text-xl font-black uppercase text-blue-400">Nuevo Gasto</h2><button onclick="goToView('view-app')" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button></div>
@@ -253,20 +331,131 @@
         </div>
     </div>
 
-    <div id="view-salary" class="view items-end justify-end bg-black/80 backdrop-blur-sm">
+    <!-- MODAL: INGRESO -->
+    <div id="view-salary" class="view items-end justify-end bg-black/80 backdrop-blur-sm z-[60]">
         <div class="w-full h-[60vh] glass rounded-t-[40px] p-6 flex flex-col border-t border-white/20 animate-slide-up bg-[#0a0a0a]">
             <div class="w-12 h-1 bg-gray-700 rounded-full mx-auto mb-8"></div>
             <div class="flex justify-between items-center mb-6"><h2 class="text-xl font-black uppercase text-green-400">Registrar Ingreso</h2><button onclick="goToView('view-app')" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button></div>
             <div class="flex-1 space-y-6"><input type="number" id="sal-amt" class="bg-transparent text-center text-5xl font-black text-white w-full outline-none border-b border-white/10 pb-4 focus:border-green-500 transition-colors" placeholder="$0"><select id="sal-source" onchange="updateSalaryInputFromSource()" class="input-spatial uppercase text-center bg-[#1a1a1a]"><option value="BANCOLOMBIA">Bancolombia</option><option value="NEQUI">Nequi</option><option value="EFECTIVO">Efectivo</option></select></div>
-            <button onclick="updateSalary()" class="btn-neon mt-4 mb-8" style="background: linear-gradient(135deg, #2ecc71, #27ae60); box-shadow: 0 0 20px rgba(46, 204, 113, 0.3);">Actualizar Saldo</button>
+            <button onclick="updateSalary()" class="btn-neon mt-4 mb-8" style="background: linear-gradient(135deg, #2ecc71, #27ae60); box-shadow: 0 0 20px rgba(46, 204, 113, 0.3);">Sumar al Balance</button>
         </div>
     </div>
 
+    <!-- MODAL: AÑADIR TARJETA/CUENTA (NUEVO) -->
+    <div id="view-add-card" class="view items-end justify-end bg-black/80 backdrop-blur-sm z-[60]">
+        <div class="w-full h-[85vh] glass rounded-t-[40px] p-6 flex flex-col border-t border-white/20 animate-slide-up bg-[#0a0a0a]">
+            <div class="w-12 h-1 bg-gray-700 rounded-full mx-auto mb-8"></div>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-black uppercase text-purple-400 flex items-center gap-2"><i data-lucide="credit-card" class="w-6 h-6"></i> Vincular Cuenta</h2>
+                <button onclick="goToView('view-wallet')" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            
+            <div class="flex-1 space-y-4 overflow-y-auto hide-scrollbar pb-10">
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-gray-500 ml-2">Entidad / Banco</label>
+                    <select id="new-card-bank" class="input-spatial uppercase text-sm h-12 bg-[#1a1a1a] appearance-none">
+                        <option value="NEQUI">Nequi</option>
+                        <option value="BANCOLOMBIA">Bancolombia</option>
+                        <option value="DAVIPLATA">Daviplata</option>
+                        <option value="TARJETA_CREDITO">Tarjeta de Crédito</option>
+                        <option value="OTRO">Otra Cuenta</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-gray-500 ml-2">Número (Cuenta o Tarjeta)</label>
+                    <input type="text" id="new-card-number" placeholder="Ej: 3001234567 o 4123..." class="input-spatial tracking-widest font-mono text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[10px] uppercase font-bold text-gray-500 ml-2">Expira (MM/AA)</label>
+                        <input type="text" id="new-card-exp" placeholder="12/28" class="input-spatial text-center font-mono">
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase font-bold text-gray-500 ml-2">CVV</label>
+                        <input type="password" id="new-card-cvv" placeholder="***" class="input-spatial text-center tracking-widest" maxlength="4">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-gray-500 ml-2">Clave / PIN (Opcional)</label>
+                    <input type="password" id="new-card-pin" placeholder="****" class="input-spatial tracking-widest">
+                </div>
+                <p class="text-[9px] text-gray-500 text-center mt-2 px-4"><i data-lucide="shield-check" class="w-3 h-3 inline pb-0.5"></i> Tus datos son almacenados en tu bóveda personal.</p>
+            </div>
+            <button onclick="saveNewCard()" class="btn-neon mt-2 mb-8" style="background: linear-gradient(135deg, #bd00ff, #7a00ff); box-shadow: 0 0 20px rgba(189, 0, 255, 0.3); color: white;">Guardar en Cartera</button>
+        </div>
+    </div>
+
+    <!-- VISTA: CARTERA / PERFIL -->
+    <div id="view-wallet" class="view">
+        <header class="pt-12 pb-4 px-6 flex justify-between items-center glass sticky top-0 z-40 rounded-b-3xl border-b border-white/5 backdrop-blur-xl bg-black/50">
+            <div class="flex items-center gap-3">
+                <button onclick="goToView('view-app')" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
+                <div>
+                    <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Ajustes de</h2>
+                    <h1 class="text-sm font-black text-white uppercase">Mi Cartera</h1>
+                </div>
+            </div>
+        </header>
+        <div class="p-6 space-y-4">
+            <div class="glass glass-card flex items-center gap-4 border-l-4 border-purple-500">
+                <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                    <i data-lucide="user" class="text-white w-8 h-8"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-black text-white uppercase" id="profile-name">Usuario</h2>
+                    <p class="text-[10px] text-gray-400 font-mono mt-1" id="profile-id">ID: ...</p>
+                </div>
+            </div>
+            
+            <!-- SECCION DE TARJETAS Y CUENTAS -->
+            <div class="mt-8">
+                <div class="flex justify-between items-end mb-4 px-1">
+                    <h3 class="text-xs font-bold uppercase text-gray-500 tracking-widest">Mis Cuentas y Tarjetas</h3>
+                    <button onclick="goToView('view-add-card')" class="text-[10px] text-purple-400 uppercase font-bold flex items-center gap-1 bg-purple-500/10 px-3 py-1.5 rounded-full border border-purple-500/20"><i data-lucide="plus" class="w-3 h-3"></i> Añadir</button>
+                </div>
+                <div id="cards-list" class="space-y-3">
+                    <!-- Tarjetas inyectadas dinamicamente -->
+                </div>
+            </div>
+
+            <div class="space-y-3 mt-8">
+                <h3 class="text-xs font-bold uppercase text-gray-500 tracking-widest ml-2 mb-2">Opciones de Cuenta</h3>
+                <button onclick="exportReport()" class="w-full glass glass-card flex items-center justify-between hover:bg-white/5 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400"><i data-lucide="download" class="w-4 h-4"></i></div>
+                        <span class="text-xs font-bold text-white uppercase">Exportar Datos (CSV)</span>
+                    </div>
+                    <i data-lucide="chevron-right" class="text-gray-500 w-4 h-4"></i>
+                </button>
+                <button onclick="logout()" class="w-full glass glass-card flex items-center justify-between hover:bg-red-500/10 transition-colors border border-transparent hover:border-red-500/20">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center text-red-400"><i data-lucide="power" class="w-4 h-4"></i></div>
+                        <span class="text-xs font-bold text-red-400 uppercase">Cerrar Sesión</span>
+                    </div>
+                    <i data-lucide="chevron-right" class="text-gray-500 w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVIGATION DOCK PRO -->
     <nav id="nav-dock" class="glass nav-dock hidden">
-        <button onclick="goToView('view-app')" class="nav-item active" id="nav-home"><i data-lucide="layout-grid" class="w-6 h-6"></i><span>Home</span></button>
-        <button onclick="goToView('view-ai')" class="nav-item" id="nav-chart"><i data-lucide="pie-chart" class="w-6 h-6"></i><span>Analisis</span></button>
-        <div class="w-px h-8 bg-white/10"></div>
-        <button onclick="goToView('view-expense-normal')" class="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center -mt-6 shadow-lg shadow-blue-500/50 border-4 border-[#050505]"><i data-lucide="plus" class="w-6 h-6"></i></button>
+        <div class="flex-1 flex justify-around items-center">
+            <button onclick="goToView('view-app')" class="nav-item active" id="nav-home"><i data-lucide="layout-grid" class="w-5 h-5"></i><span>Home</span></button>
+            <button onclick="goToView('view-debts')" class="nav-item" id="nav-debts"><i data-lucide="users" class="w-5 h-5"></i><span>Deudas</span></button>
+        </div>
+        
+        <!-- Botón Flotante Central -->
+        <div class="w-20 flex justify-center relative">
+            <button onclick="goToView('view-expense-normal')" class="absolute -top-10 w-16 h-16 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-400 text-white flex items-center justify-center shadow-[0_5px_25px_rgba(0,242,255,0.5)] border-4 border-[#050505] transition-transform active:scale-95 z-50">
+                <i data-lucide="plus" class="w-7 h-7"></i>
+            </button>
+        </div>
+        
+        <div class="flex-1 flex justify-around items-center">
+            <button onclick="goToView('view-ai')" class="nav-item" id="nav-chart"><i data-lucide="pie-chart" class="w-5 h-5"></i><span>Análisis</span></button>
+            <button onclick="window.scrollTo(0,0); goToView('view-wallet');" class="nav-item" id="nav-profile"><i data-lucide="wallet" class="w-5 h-5"></i><span>Cartera</span></button>
+        </div>
     </nav>
 
     <script type="module">
@@ -274,30 +463,46 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, collection, setDoc, onSnapshot, updateDoc, deleteDoc, arrayUnion, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // CONFIG (NO CAMBIAR)
+        // CONFIG (Tu configuración personal de Firebase)
         const firebaseConfig = { apiKey: "AIzaSyAzUFILQGyuXzNUcbeBSg2Pmp4fSMQSBu0", authDomain: "gastos-dd902.firebaseapp.com", projectId: "gastos-dd902", storageBucket: "gastos-dd902.firebasestorage.app", messagingSenderId: "784136192592", appId: "1:784136192592:web:6b978ec8ef7266ce720755", measurementId: "G-VTWBTXJ1BS" };
         const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app);
 
-        let walletKey = "", userUnsubscribe = null, adminUnsubscribe = null, myChart = null, currentAdminTab = 'requests';
-        let currentExpenses = [], currentIncomes = [], currentCategories = [{name:'GENERAL'},{name:'ALIMENTACION'},{name:'TRANSPORTE'},{name:'OCIO'},{name:'SALUD'}];
+        let walletKey = "", userUnsubscribe = null, adminUnsubscribe = null, myChart = null;
+        let currentAdminTab = 'requests', currentDebtFilter = 'they_owe';
+        let currentExpenses = [], currentIncomes = [], currentDebts = [], currentCards = [], currentCategories = [{name:'GENERAL'},{name:'ALIMENTACION'},{name:'TRANSPORTE'},{name:'OCIO'},{name:'SALUD'}];
         
         const ADMIN_USER = "admin";
-        const ADMIN_PIN = "1234"; // CAMBIA ESTO SI DESEAS
+        const ADMIN_PIN = "1234"; 
         const MY_DEVICE_ID = localStorage.getItem('fp_device_id_v3') || Math.random().toString(36).substring(2,6).toUpperCase();
         localStorage.setItem('fp_device_id_v3', MY_DEVICE_ID);
 
         lucide.createIcons();
-        if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(r => r.forEach(reg => reg.unregister()));
 
-        // --- NAVEGACIÓN ---
+        // --- NAVEGACIÓN PRO ---
         window.goToView = (id) => {
             document.querySelectorAll('.view').forEach(v => { v.classList.remove('active'); v.style.opacity = '0'; });
             const target = document.getElementById(id);
             if(target) {
                 target.classList.add('active'); setTimeout(() => target.style.opacity = '1', 10);
                 const dock = document.getElementById('nav-dock');
-                if(['view-app','view-ai'].includes(id)) { dock.classList.remove('hidden'); dock.classList.add('flex'); }
-                else { dock.classList.add('hidden'); dock.classList.remove('flex'); }
+                
+                // Mostrar Dock solo en vistas principales
+                if(['view-app','view-ai', 'view-debts', 'view-wallet'].includes(id)) { 
+                    dock.classList.remove('hidden'); dock.classList.add('flex'); 
+                } else { 
+                    dock.classList.add('hidden'); dock.classList.remove('flex'); 
+                }
+
+                // Actualizar íconos del dock activos
+                document.querySelectorAll('.nav-item').forEach(n => { n.classList.remove('active'); n.style.color = 'rgba(255,255,255,0.5)'; });
+                if(id === 'view-app') { document.getElementById('nav-home')?.classList.add('active'); document.getElementById('nav-home').style.color = 'var(--neon-blue)'; }
+                if(id === 'view-debts') { document.getElementById('nav-debts')?.classList.add('active'); document.getElementById('nav-debts').style.color = 'var(--neon-blue)'; }
+                if(id === 'view-ai') { document.getElementById('nav-chart')?.classList.add('active'); document.getElementById('nav-chart').style.color = 'var(--neon-blue)'; }
+                if(id === 'view-wallet') { document.getElementById('nav-profile')?.classList.add('active'); document.getElementById('nav-profile').style.color = 'var(--neon-blue)'; }
+
+                // Disparar renderizados para evitar bugs visuales (Fix Análisis)
+                if(id === 'view-ai') setTimeout(() => window.updateAnalysisUI(), 50);
+                if(id === 'view-debts') setTimeout(() => window.renderDebts(), 50);
             }
         };
 
@@ -307,11 +512,8 @@
             const p = document.getElementById('auth-pin').value.trim();
             if(!u || !p) return alert("⚠️ Faltan Datos");
 
-            // MODO ADMIN
             if(u === ADMIN_USER && p === ADMIN_PIN) {
-                goToView('view-admin');
-                switchAdminTab('requests');
-                return;
+                goToView('view-admin'); window.switchAdminTab('requests'); return;
             }
 
             showLoading(true);
@@ -321,13 +523,15 @@
                 const snap = await getDoc(docRef);
                 if (!snap.exists()) { showLoading(false); return alert("❌ Usuario no encontrado"); }
                 
-                // VERIFICAR DISPOSITIVO
                 const devSnap = await getDoc(doc(db, "authorized_devices", MY_DEVICE_ID));
                 if(!devSnap.exists() || !devSnap.data().active) {
                     await setDoc(doc(db, "authorized_devices", MY_DEVICE_ID), { active: false, requested_by: snap.data().name, cedula: u, wallet_id: docID, date: new Date().toISOString() }, { merge: true });
                     showLoading(false); alert("🔒 Dispositivo Pendiente de Aprobación por Admin");
                 } else {
-                    walletKey = docID; startUserSync(walletKey); goToView('view-app');
+                    walletKey = docID; 
+                    localStorage.setItem('fp_wallet_key', walletKey); // <-- GUARDAR SESION
+                    startUserSync(walletKey); 
+                    window.goToView('view-app');
                 }
             } catch (e) { showLoading(false); alert("Error de Conexión"); }
         };
@@ -339,11 +543,11 @@
             if(!name || !cedula || !phone) return alert("⚠️ Llena todo");
             
             showLoading(true);
-            const walletId = `${cedula}_${phone.slice(-4)}`; // ID sugerido para el admin
+            const walletId = `${cedula}_${phone.slice(-4)}`; 
 
             try {
                 await setDoc(doc(db, "authorized_devices", MY_DEVICE_ID), { active: false, requested_by: name, cedula, celular: phone, wallet_id: walletId, date: new Date().toISOString() }, { merge: true });
-                showLoading(false); alert("✅ Solicitud enviada. Espera aprobación."); goToView('view-login');
+                showLoading(false); alert("✅ Solicitud enviada. Espera aprobación."); window.goToView('view-login');
             } catch(e) { showLoading(false); alert("Error"); }
         };
 
@@ -351,6 +555,7 @@
             if(userUnsubscribe) userUnsubscribe();
             if(adminUnsubscribe) adminUnsubscribe();
             walletKey = "";
+            localStorage.removeItem('fp_wallet_key'); // <-- BORRAR SESION
             window.location.reload();
         };
 
@@ -400,7 +605,7 @@
                     snap.forEach(d => {
                         const data = d.data();
                         html += `
-                        <div class="glass glass-card flex items-center justify-between border-l-4 border-blue-500">
+                        <div class="glass glass-card flex items-center justify-between border-l-4 border-blue-500 mb-3">
                             <div><div class="font-black text-xs uppercase text-white">${data.name || 'Usuario'}</div><div class="text-[9px] text-gray-500 font-mono mt-1">ID: ${d.id}</div></div>
                             <button onclick="adminSpyUser('${d.id}')" class="bg-blue-600/20 text-blue-400 px-3 py-2 rounded-lg text-[9px] font-black uppercase border border-blue-500/30 flex items-center gap-1"><i data-lucide="eye" class="w-3 h-3"></i> Ver</button>
                         </div>`;
@@ -414,68 +619,108 @@
         window.approveRequest = async (deviceId, walletId, name) => {
             if(!confirm(`¿Crear cuenta para ${name}?`)) return;
             const snap = await getDoc(doc(db, "wallets_v4", walletId));
-            if(!snap.exists()) await setDoc(doc(db, "wallets_v4", walletId), { name: name, salary: 0, expenses: [], createdAt: new Date().toISOString() });
+            if(!snap.exists()) await setDoc(doc(db, "wallets_v4", walletId), { name: name, salary: 0, expenses: [], incomes: [], debts: [], createdAt: new Date().toISOString() });
             await updateDoc(doc(db, "authorized_devices", deviceId), { active: true });
         };
         
         window.rejectRequest = async (id) => { if(confirm("¿Eliminar solicitud?")) await deleteDoc(doc(db, "authorized_devices", id)); };
         
-        // MODO ESPÍA ADMIN
         window.adminSpyUser = (id) => {
             walletKey = id;
-            if(adminUnsubscribe) adminUnsubscribe(); // Pausar sync admin
-            document.getElementById('admin-return-btn').classList.remove('hidden'); // Mostrar botón volver
+            if(adminUnsubscribe) adminUnsubscribe();
+            document.getElementById('admin-return-btn').classList.remove('hidden');
             startUserSync(id);
-            goToView('view-app');
+            window.goToView('view-app');
         };
 
         window.returnToAdmin = () => {
-            if(userUnsubscribe) userUnsubscribe(); // Pausar sync usuario
-            goToView('view-admin');
+            if(userUnsubscribe) userUnsubscribe();
+            window.goToView('view-admin');
             document.getElementById('admin-return-btn').classList.add('hidden');
-            switchAdminTab('users'); // Recargar lista
+            window.switchAdminTab('users');
+        };
+
+        // --- EXPORTAR A CSV ---
+        window.exportReport = () => {
+            if (currentExpenses.length === 0 && currentIncomes.length === 0) return alert("No hay movimientos para exportar en este momento.");
+            let csvContent = "data:text/csv;charset=utf-8,Tipo,Fecha,Descripción,Monto,Categoría,Fuente\n";
+            const allTransactions = [
+                ...currentExpenses.map(e => `Gasto,${e.date},"${e.desc}",${e.amt},${e.category},${e.source}`),
+                ...currentIncomes.map(i => `Ingreso,${i.date},"${i.desc}",${i.amt},General,${i.source}`)
+            ];
+            csvContent += allTransactions.join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "Reporte_FinanzasPro.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         };
 
         // --- SYNC USUARIO ---
         function startUserSync(key) {
             userUnsubscribe = onSnapshot(doc(db, "wallets_v4", key), (snap) => {
-                if (snap.exists()) renderDashboard(snap.data());
-                showLoading(false);
+                if (snap.exists()) {
+                    renderDashboard(snap.data());
+                    showLoading(false);
+                } else {
+                    // Si la cuenta fue borrada, cerramos sesión
+                    window.logout();
+                }
             });
         }
 
         function renderDashboard(data) {
             document.getElementById('user-title').innerText = data.name || "Usuario";
-            currentExpenses = data.expenses || []; currentIncomes = data.incomes || [];
+            
+            // Actualizar datos de Cartera/Perfil si existen
+            const profileNameEl = document.getElementById('profile-name');
+            const profileIdEl = document.getElementById('profile-id');
+            if(profileNameEl) profileNameEl.innerText = data.name || "Usuario";
+            if(profileIdEl) profileIdEl.innerText = `ID: ${walletKey}`;
+
+            currentExpenses = data.expenses || []; 
+            currentIncomes = data.incomes || [];
+            currentDebts = data.debts || [];
+            currentCards = data.cards || []; // <-- NUEVO ARRAY DE TARJETAS
             if(data.categories) currentCategories = data.categories;
             
+            // Fix Balance: Calculate purely historically
             const exp = currentExpenses.reduce((a,c) => a+(Number(c.amt)||0),0);
-            const sal = data.salary || 0;
+            const sal = currentIncomes.reduce((a,c) => a+(Number(c.amt)||0),0); 
+            
             animateValue("balance", sal - exp);
             document.getElementById('ui-salary').innerText = `+ $${sal.toLocaleString()}`;
             document.getElementById('ui-expenses').innerText = `- $${exp.toLocaleString()}`;
             
             const list = document.getElementById('expense-list');
             list.innerHTML = [...currentExpenses.map(e=>({...e,t:'exp'})),...currentIncomes.map(i=>({...i,t:'inc'}))].sort((a,b)=>b.id-a.id).slice(0,10).map(t => `
-            <div class="glass p-3 rounded-2xl flex items-center justify-between border border-white/5"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full ${t.t==='inc'?'bg-green-500/10 text-green-400':'bg-blue-500/10 text-white'} flex items-center justify-center"><i data-lucide="${t.t==='inc'?'arrow-down-left':'shopping-bag'}" class="w-5 h-5"></i></div><div><div class="text-xs font-bold text-white uppercase">${t.desc}</div><div class="text-[9px] text-gray-500">${t.date} • ${t.source||'General'}</div></div></div><div class="font-bold text-sm ${t.t==='inc'?'text-green-400':'text-white'}">${t.t==='inc'?'+':'-'}$${Number(t.amt).toLocaleString()}</div></div>`).join('');
+            <div class="glass p-3 rounded-2xl flex items-center justify-between border border-white/5 mb-2"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full ${t.t==='inc'?'bg-green-500/10 text-green-400':'bg-blue-500/10 text-white'} flex items-center justify-center"><i data-lucide="${t.t==='inc'?'arrow-down-left':'shopping-bag'}" class="w-5 h-5"></i></div><div><div class="text-xs font-bold text-white uppercase">${t.desc}</div><div class="text-[9px] text-gray-500">${t.date} • ${t.source||'General'}</div></div></div><div class="font-bold text-sm ${t.t==='inc'?'text-green-400':'text-white'}">${t.t==='inc'?'+':'-'}$${Number(t.amt).toLocaleString()}</div></div>`).join('');
             
             const catSelect = document.getElementById('exp-cat');
             catSelect.innerHTML = currentCategories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
             lucide.createIcons();
-            if(document.getElementById('view-ai').classList.contains('active')) updateAnalysisUI();
+
+            // Si las vistas están activas, actualizar sub-componentes automáticamente
+            if(document.getElementById('view-ai').classList.contains('active')) window.updateAnalysisUI();
+            if(document.getElementById('view-debts').classList.contains('active')) window.renderDebts();
+            if(document.getElementById('view-wallet').classList.contains('active')) window.renderCards(); // <-- RENDERIZAR TARJETAS
         }
 
         // --- UTILIDADES ---
         function showLoading(bool) { const l = document.getElementById('loading-screen'); if(bool) {l.classList.remove('hidden');l.style.opacity='1';} else {l.style.opacity='0';setTimeout(()=>l.classList.add('hidden'),500);} }
         function animateValue(id, end) { const obj = document.getElementById(id); let start = null; const step = (ts) => { if(!start) start=ts; const p = Math.min((ts-start)/1000, 1); obj.innerHTML = "$"+Math.floor(p*end).toLocaleString(); if(p<1) requestAnimationFrame(step); }; requestAnimationFrame(step); }
 
+        // --- MÓDULO IA / GRÁFICOS ---
         window.updateAnalysisUI = () => {
             const dateVal = document.getElementById('analysis-month').value;
             if(!dateVal) return;
             const [y, m] = dateVal.split('-').map(Number);
             
             const filtered = currentExpenses.filter(e => {
-                const d = new Date(e.date);
+                let dateStr = e.date.includes('/') ? e.date.split('/').reverse().join('-') : e.date;
+                const d = new Date(dateStr); 
                 return d.getFullYear() === y && d.getMonth() + 1 === m;
             });
             
@@ -487,6 +732,17 @@
             
             const ctx = document.getElementById('expenseChart').getContext('2d');
             if(myChart) myChart.destroy();
+            
+            const total = Object.values(cats).reduce((a, b) => a + b, 0);
+            document.getElementById('chart-total-center').innerText = `$${total.toLocaleString()}`;
+
+            const aiText = document.getElementById('ai-insight-text');
+
+            if(total === 0) {
+                aiText.innerText = "🔍 No tienes gastos registrados en este mes. Agrega movimientos para generar un análisis.";
+                aiText.className = "text-sm text-gray-400 font-light leading-relaxed";
+                return; // No draw chart if empty
+            }
             
             myChart = new Chart(ctx, {
                 type: 'doughnut',
@@ -504,36 +760,35 @@
                 }
             });
             
-            const total = Object.values(cats).reduce((a, b) => a + b, 0);
-            document.getElementById('chart-total-center').innerText = `$${total.toLocaleString()}`;
-            
-            // AI Logic
-            const incomeTotal = currentIncomes.reduce((a, c) => a + c.amt, 0) || 1;
-            const aiText = document.getElementById('ai-insight-text');
-            
-            if (total > incomeTotal * 0.9) {
-                aiText.innerText = "⚠️ Alerta: Estás gastando más del 90% de tus ingresos.";
+            const incomeTotal = currentIncomes.reduce((a, c) => a + c.amt, 0) || 1; 
+            // Evaluacion de IA simplificada
+            if (total > incomeTotal * 0.9 && incomeTotal > 1) {
+                aiText.innerText = "⚠️ Alerta Crítica: Estás gastando más del 90% de tus ingresos globales. Reduce gastos hormiga urgentemente.";
                 aiText.className = "text-sm text-red-400 font-bold leading-relaxed";
             } else if (total < incomeTotal * 0.5) {
-                aiText.innerText = "✅ Excelente salud financiera. Ahorro superior al 50%.";
+                aiText.innerText = "✅ Excelente salud financiera este mes. Estás ahorrando más del 50%. Ideal para invertir o cubrir deudas.";
                 aiText.className = "text-sm text-green-400 font-bold leading-relaxed";
             } else {
-                aiText.innerText = "📊 Tus finanzas están estables. Sigue monitoreando.";
-                aiText.className = "text-sm text-gray-200 font-light leading-relaxed";
+                aiText.innerText = "📊 Tus finanzas están en un rango estable, pero puedes optimizar tus categorías principales mostradas en el gráfico.";
+                aiText.className = "text-sm text-purple-300 font-light leading-relaxed";
             }
         };
 
+        // --- MÓDULO GASTOS E INGRESOS ---
         window.addExpense = async (type) => {
             const desc = document.getElementById('exp-desc').value.trim();
             const amt = Number(document.getElementById('exp-amt').value);
             const cat = document.getElementById('exp-cat').value;
             const src = document.getElementById('exp-source').value;
-            if(!desc || !amt) return alert("⚠️ Datos");
+            if(!desc || !amt) return alert("⚠️ Datos Incompletos");
             
+            showLoading(true);
             await updateDoc(doc(db, "wallets_v4", walletKey), {
                 expenses: arrayUnion({ id: Date.now(), desc: desc.toUpperCase(), amt, category: cat, source: src, date: new Date().toLocaleDateString() })
             });
-            goToView('view-app');
+            document.getElementById('exp-desc').value = '';
+            document.getElementById('exp-amt').value = '';
+            window.goToView('view-app');
         };
 
         window.updateSalary = async () => {
@@ -541,18 +796,215 @@
             const src = document.getElementById('sal-source').value;
             if(!val) return;
             
+            showLoading(true);
+            // Ya no sobreescribimos 'salary', usamos historiales (incomes) para mantener consistencia contable
             await updateDoc(doc(db, "wallets_v4", walletKey), {
-                incomes: arrayUnion({ id: Date.now(), desc: "INGRESO", amt: val, source: src, date: new Date().toLocaleDateString() }),
-                salary: val
+                incomes: arrayUnion({ id: Date.now(), desc: "INGRESO / SALARIO", amt: val, source: src, date: new Date().toLocaleDateString() })
             });
-            goToView('view-app');
+            document.getElementById('sal-amt').value = '';
+            window.goToView('view-app');
         };
 
-        window.updateSalaryInputFromSource = () => {
-             // Placeholder si quieres cargar salario previo por fuente
+        window.updateSalaryInputFromSource = () => {};
+
+        // --- MÓDULO DE DEUDAS Y PRÉSTAMOS (NUEVO) ---
+        window.filterDebts = (type) => {
+            currentDebtFilter = type;
+            document.getElementById('tab-they-owe').className = type === 'they_owe' ? 'py-2.5 rounded-lg text-[10px] font-black uppercase transition-all bg-green-500 text-black shadow-lg shadow-green-500/20' : 'py-2.5 rounded-lg text-[10px] font-black uppercase text-gray-400 transition-all bg-transparent';
+            document.getElementById('tab-i-owe').className = type === 'i_owe' ? 'py-2.5 rounded-lg text-[10px] font-black uppercase transition-all bg-red-500 text-white shadow-lg shadow-red-500/20' : 'py-2.5 rounded-lg text-[10px] font-black uppercase text-gray-400 transition-all bg-transparent';
+            
+            const sumCard = document.getElementById('debt-summary-card');
+            const sumLabel = document.getElementById('debt-summary-label');
+            const sumIcon = document.getElementById('debt-summary-icon');
+
+            if(type === 'they_owe') {
+                sumCard.className = 'glass glass-card flex justify-between items-center border-l-2 border-green-500';
+                sumLabel.innerText = 'TOTAL A COBRAR';
+                sumIcon.setAttribute('data-lucide', 'trending-up');
+                sumIcon.className = 'text-green-500 w-6 h-6';
+            } else {
+                sumCard.className = 'glass glass-card flex justify-between items-center border-l-2 border-red-500';
+                sumLabel.innerText = 'TOTAL A PAGAR';
+                sumIcon.setAttribute('data-lucide', 'trending-down');
+                sumIcon.className = 'text-red-500 w-6 h-6';
+            }
+            lucide.createIcons();
+            window.renderDebts();
         };
 
-        document.addEventListener('DOMContentLoaded', () => { setTimeout(()=>showLoading(false),1500); const d = new Date(); document.getElementById('analysis-month').value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; });
+        window.renderDebts = () => {
+            const list = document.getElementById('debts-list');
+            const filtered = (currentDebts || []).filter(d => d.type === currentDebtFilter);
+            
+            const totalPending = filtered.filter(d => d.status === 'pending').reduce((a,c) => a+Number(c.amt), 0);
+            document.getElementById('debt-total-amount').innerText = `$${totalPending.toLocaleString()}`;
+
+            if(filtered.length === 0) {
+                list.innerHTML = `<div class="text-center py-12 text-gray-500 font-bold uppercase text-xs border border-white/5 border-dashed rounded-2xl bg-white/5">Sin registros en esta sección</div>`;
+                return;
+            }
+
+            list.innerHTML = filtered.sort((a,b)=>b.id-a.id).map(d => `
+                <div class="glass p-4 rounded-2xl flex items-center justify-between border border-white/5 ${d.status==='paid'?'opacity-40 grayscale':''}">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-800 to-black text-white flex items-center justify-center font-black text-sm uppercase shadow-inner shadow-white/10">${d.person.substring(0,2)}</div>
+                        <div>
+                            <div class="text-xs font-bold text-white uppercase ${d.status==='paid'?'line-through':''}">${d.person}</div>
+                            <div class="text-[9px] text-gray-400">${d.date} • ${d.status==='paid'?'SALDADO':'PENDIENTE'}</div>
+                        </div>
+                    </div>
+                    <div class="text-right flex flex-col items-end gap-1.5">
+                        <div class="font-black text-sm ${currentDebtFilter==='they_owe'?'text-green-400':'text-red-400'}">$${Number(d.amt).toLocaleString()}</div>
+                        ${d.status==='pending' 
+                            ? `<button onclick="settleDebt(${d.id})" class="text-[9px] bg-white/10 border border-white/20 px-3 py-1 rounded-full uppercase font-bold text-white hover:bg-white/20 transition-colors">Saldar</button>` 
+                            : `<i data-lucide="check-circle-2" class="w-5 h-5 text-gray-400"></i>`}
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        };
+
+        window.saveNewDebt = async () => {
+            const person = document.getElementById('new-debt-person').value.trim().toUpperCase();
+            const amt = Number(document.getElementById('new-debt-amt').value);
+            const type = document.getElementById('new-debt-type').value; 
+            
+            if(!person || !amt) return alert("⚠️ Ingresa un nombre y un monto válidos.");
+
+            showLoading(true);
+            await updateDoc(doc(db, "wallets_v4", walletKey), {
+                debts: arrayUnion({ id: Date.now(), person, amt, type, status: 'pending', date: new Date().toLocaleDateString() })
+            });
+            
+            document.getElementById('new-debt-person').value = '';
+            document.getElementById('new-debt-amt').value = '';
+            
+            window.filterDebts(type); // Saltar a la pestaña correspondiente
+            window.goToView('view-debts');
+        };
+
+        window.settleDebt = async (id) => {
+            if(!confirm("¿Confirmas que esta cuenta ha sido saldada/pagada?")) return;
+            showLoading(true);
+            
+            // Reconstruimos el array para cambiar el status localmente
+            const updatedDebts = currentDebts.map(d => d.id === id ? {...d, status: 'paid'} : d);
+            const debt = currentDebts.find(d => d.id === id);
+            const updates = { debts: updatedDebts };
+            
+            // Integración pro: Preguntar si quiere reflejar el pago en el balance general
+            if(confirm("¿Quieres que este pago afecte tu Balance Principal de forma automática?")) {
+                const transaction = {
+                    id: Date.now(),
+                    desc: `${debt.type === 'they_owe' ? 'COBRO DEUDA' : 'PAGO DEUDA'}: ${debt.person}`,
+                    amt: debt.amt,
+                    source: 'EFECTIVO',
+                    date: new Date().toLocaleDateString()
+                };
+                
+                if(debt.type === 'they_owe') {
+                    updates.incomes = arrayUnion(transaction); // Te pagaron -> Ingreso
+                } else {
+                    updates.expenses = arrayUnion({...transaction, category: 'GENERAL'}); // Pagaste -> Gasto
+                }
+            }
+
+            await updateDoc(doc(db, "wallets_v4", walletKey), updates);
+            // El renderDebts se llama automáticamente a través del listener de onSnapshot
+        };
+
+        // --- MÓDULO BÓVEDA DE TARJETAS (CARTERA) ---
+        window.renderCards = () => {
+            const list = document.getElementById('cards-list');
+            if(currentCards.length === 0) {
+                list.innerHTML = `<div class="text-center py-6 text-gray-500 font-bold uppercase text-[10px] border border-white/5 border-dashed rounded-2xl bg-white/5">No hay cuentas vinculadas</div>`;
+                return;
+            }
+
+            list.innerHTML = currentCards.map(c => {
+                // Generar gradientes según el banco para que se vea muy PRO
+                let bgClass = "bg-gradient-to-br from-gray-800 to-black border-gray-600";
+                let icon = "credit-card";
+                if(c.bank === 'NEQUI') { bgClass = "bg-gradient-to-br from-[#1c0b2b] to-black border-[#da0081]"; icon = "smartphone"; }
+                if(c.bank === 'BANCOLOMBIA') { bgClass = "bg-gradient-to-br from-[#ffd700]/20 to-black border-[#ffd700]/50"; icon = "landmark"; }
+                if(c.bank === 'DAVIPLATA') { bgClass = "bg-gradient-to-br from-red-900/40 to-black border-red-500/50"; icon = "smartphone"; }
+
+                // Ocultar número dejando solo ultimos 4 digitos
+                const last4 = c.number.slice(-4);
+                const maskedNum = c.number.length > 4 ? `•••• ${last4}` : c.number;
+
+                return `
+                <div class="glass p-4 rounded-2xl relative overflow-hidden border ${bgClass} shadow-lg">
+                    <div class="absolute top-0 right-0 p-3"><i data-lucide="${icon}" class="w-6 h-6 text-white/20"></i></div>
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="text-xs font-black text-white tracking-widest uppercase">${c.bank}</div>
+                        <button onclick="deleteCard(${c.id})" class="text-gray-500 hover:text-red-400 z-10 relative"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>
+                    <div class="font-mono text-lg text-white tracking-widest mb-4">${maskedNum}</div>
+                    <div class="flex justify-between items-end border-t border-white/10 pt-3">
+                        <div>
+                            <div class="text-[8px] text-gray-400 uppercase">Vence</div>
+                            <div class="text-xs font-mono text-white">${c.exp || 'N/A'}</div>
+                        </div>
+                        <div class="text-right flex items-center gap-3">
+                            <div>
+                                <div class="text-[8px] text-gray-400 uppercase">CVV</div>
+                                <div class="text-xs font-mono text-white blur-[3px] hover:blur-none transition-all cursor-pointer">${c.cvv || '***'}</div>
+                            </div>
+                            <div class="border-l border-white/10 pl-3">
+                                <div class="text-[8px] text-gray-400 uppercase">Clave</div>
+                                <div class="text-xs font-mono text-white blur-[3px] hover:blur-none transition-all cursor-pointer">${c.pin || '****'}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+            lucide.createIcons();
+        };
+
+        window.saveNewCard = async () => {
+            const bank = document.getElementById('new-card-bank').value;
+            const num = document.getElementById('new-card-number').value.trim();
+            const exp = document.getElementById('new-card-exp').value.trim();
+            const cvv = document.getElementById('new-card-cvv').value.trim();
+            const pin = document.getElementById('new-card-pin').value.trim();
+            
+            if(!num) return alert("⚠️ Debes ingresar el número de cuenta o tarjeta.");
+
+            showLoading(true);
+            await updateDoc(doc(db, "wallets_v4", walletKey), {
+                cards: arrayUnion({ id: Date.now(), bank, number: num, exp, cvv, pin })
+            });
+            
+            document.getElementById('new-card-number').value = '';
+            document.getElementById('new-card-exp').value = '';
+            document.getElementById('new-card-cvv').value = '';
+            document.getElementById('new-card-pin').value = '';
+            
+            window.goToView('view-wallet');
+        };
+
+        window.deleteCard = async (id) => {
+            if(!confirm("¿Eliminar esta tarjeta/cuenta de tu bóveda?")) return;
+            showLoading(true);
+            const updatedCards = currentCards.filter(c => c.id !== id);
+            await updateDoc(doc(db, "wallets_v4", walletKey), { cards: updatedCards });
+        };
+
+        // Iniciar
+        document.addEventListener('DOMContentLoaded', () => { 
+            // COMPROBAR SESION PERSISTENTE
+            const savedKey = localStorage.getItem('fp_wallet_key');
+            if(savedKey) {
+                walletKey = savedKey;
+                startUserSync(walletKey);
+                window.goToView('view-app');
+            } else {
+                setTimeout(()=>showLoading(false),1000); 
+            }
+            
+            const d = new Date(); document.getElementById('analysis-month').value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; 
+        });
     </script>
 </body>
 </html>
