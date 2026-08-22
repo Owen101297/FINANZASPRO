@@ -3,7 +3,7 @@ builder = "NIXPACKS"
 buildCommand = "npx prisma generate && npx next build"
 
 [deploy]
-startCommand = "npx prisma migrate deploy && npx next start -p $PORT"
+startCommand = "npx tsx scripts/migrate-firestore.ts && npx prisma migrate deploy && npx next start -p $PORT"
 healthcheckPath = "/login"
 healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"

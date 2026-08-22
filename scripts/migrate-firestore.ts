@@ -1,10 +1,13 @@
 /**
  * Migración one-off: Firestore (wallets_v4 + authorized_devices) → PostgreSQL.
  *
- * Uso:
+ * Uso local:
  *   1. Descarga el service account JSON de Firebase (Project settings → Service accounts)
  *   2. Configura .env: DATABASE_URL, FIREBASE_PROJECT_ID, FIREBASE_SERVICE_ACCOUNT_PATH
  *   3. npm run migrate:firestore
+ *
+ * Uso en Railway (startCommand temporal): define además
+ *   FIREBASE_SERVICE_ACCOUNT_JSON_B64 = base64 del JSON del service account
  *
  * Decisiones de mapeo (documentadas en README):
  *   - Email sintético: `<cedula>@finanzaspro.app` (la app antigua usaba `<cedula>@gmail.com` interno).
@@ -88,16 +91,26 @@ function toNum(v: number | string | undefined): number {
 
 async function main() {
   const projectId = requireEnv("FIREBASE_PROJECT_ID");
-  const saPath = requireEnv("FIREBASE_SERVICE_ACCOUNT_PATH");
+  const saPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
+  const saJsonB64 = process.env.FIREBASE_SERVICE_ACCOUNT_JSON_B64;
   const tempPassword = process.env.MIGRATE_TEMP_PASSWORD ?? "Cambio123*";
 
   console.log(`▸ Proyecto Firebase: ${projectId}`);
 
   if (!getApps().length) {
-    initializeApp({
-      credential: cert(JSON.parse(readFileSync(saPath, "utf8"))),
-      projectId,
-    });
+    let credentialsJson: string;
+    if (saJsonB64) {
+      credentialsJson = Buffer.from(saJsonB64, "base64").toString("utf8");
+      console.log("▸ Credenciales leídas de FIREBASE_SERVICE_ACCOUNT_JSON_B64");
+    } else if (saPath) {
+      credentialsJson = readFileSync(saPath, "utf8");
+      console.log(`▸ Credenciales leídas de ${saPath}`);
+    } else {
+      throw new Error(
+        "Define FIREBASE_SERVICE_ACCOUNT_PATH (archivo) o FIREBASE_SERVICE_ACCOUNT_JSON_B64 (base64)"
+      );
+    }
+    initializeApp({ credential: cert(JSON.parse(credentialsJson)), projectId });
   }
   const firestore = getFirestore();
 
@@ -127,12 +140,14 @@ async function main() {
 
   let first = true;
   let usersCreated = 0;
+  let usersFailed = 0;
 
   for (const doc of walletsSnap.docs) {
     const uid = doc.id;
-    const w = doc.data() as LegacyWallet;
-    const cedula = cedulaByWallet.get(uid) ?? uid.toLowerCase();
-    const email = `${cedula}@finanzaspro.app`;
+    try {
+      const w = doc.data() as LegacyWallet;
+      const cedula = cedulaByWallet.get(uid) ?? uid.toLowerCase();
+      const email = `${cedula}@finanzaspro.app`;
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
@@ -297,11 +312,17 @@ async function main() {
       `  ✔ ${email} (${role}): ${accountMap.size} cuentas, ${txCount} movimientos` +
         (skippedTransfers ? `, ${skippedTransfers} transferencias omitidas` : "")
     );
+      usersCreated++;
+    } catch (userErr) {
+      usersFailed++;
+      console.error(`  ✖ Error migrando wallet ${uid}:`, userErr instanceof Error ? userErr.message : userErr);
+    }
   }
 
-  console.log(`\n✔ Migración completada: ${usersCreated} usuarios creados.`);
+  console.log(`\n✔ Migración completada: ${usersCreated} usuarios creados, ${usersFailed} con error.`);
+  if (usersFailed > 0) process.exitCode = 1;
   console.log(
-    `⚠ Todos los usuarios migrados tienen la contraseña temporal "${tempPassword}" y deben cambiarla en el primer login.`
+    `⚠ Todos los usuarios migrados tienen la contraseña temporal "${process.env.MIGRATE_TEMP_PASSWORD ?? "Cambio123*"}" y deben cambiarla en el primer login.`
   );
 }
 
