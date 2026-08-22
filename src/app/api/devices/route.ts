@@ -8,7 +8,7 @@ import { deviceRegisterSchema } from "@/lib/validations";
  * permitida con dispositivo PENDING (para que quede visible en el panel admin).
  */
 export const POST = route(async (req: NextRequest) => {
-  const { user, sessionId } = await requireSessionUser(req);
+  const { user } = await requireSessionUser(req);
   const body = deviceRegisterSchema.parse(await readJson(req));
 
   const existing = await prisma.device.findUnique({

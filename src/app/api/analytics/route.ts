@@ -14,7 +14,6 @@ export const GET = route(async (req: NextRequest) => {
   const monthParam = req.nextUrl.searchParams.get("month");
   let start: Date;
   let end: Date;
-  let label: string;
 
   if (monthParam && /^\d{4}-\d{2}$/.test(monthParam)) {
     const [y, m] = monthParam.split("-").map(Number);
@@ -26,7 +25,7 @@ export const GET = route(async (req: NextRequest) => {
     start = new Date(now.getFullYear(), now.getMonth(), 1);
     end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
   }
-  label = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}`;
+  const label = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}`;
 
   const [transactions, salaryAgg] = await Promise.all([
     prisma.transaction.findMany({

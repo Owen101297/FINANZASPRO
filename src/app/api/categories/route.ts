@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { route, requireUser, readJson, audit } from "@/lib/server";
-import { ApiError, conflict } from "@/lib/errors";
+import { conflict } from "@/lib/errors";
 import { categoryCreateSchema } from "@/lib/validations";
 import { categoryDto } from "@/lib/mappers";
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose";
+import { jwtVerify } from "jose/jwt/verify";
 
 /** Rutas de página protegidas (requieren sesión válida). */
 const PROTECTED_PREFIXES = [
@@ -51,8 +51,26 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    ...PROTECTED_PREFIXES.map((p) => `${p}/:path*`),
-    ...PROTECTED_PREFIXES.map((p) => p),
+    "/dashboard",
+    "/dashboard/:path*",
+    "/transacciones",
+    "/transacciones/:path*",
+    "/cuentas",
+    "/cuentas/:path*",
+    "/categorias",
+    "/categorias/:path*",
+    "/ciclo",
+    "/ciclo/:path*",
+    "/deudas",
+    "/deudas/:path*",
+    "/suscripciones",
+    "/suscripciones/:path*",
+    "/metas",
+    "/metas/:path*",
+    "/analisis",
+    "/analisis/:path*",
+    "/admin",
+    "/admin/:path*",
     "/login",
     "/registro",
   ],

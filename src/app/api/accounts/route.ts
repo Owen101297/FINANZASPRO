@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { route, requireUser, readJson, audit } from "@/lib/server";
-import { notFound } from "@/lib/errors";
 import { accountCreateSchema } from "@/lib/validations";
 import { accountDto } from "@/lib/mappers";
 
