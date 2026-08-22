@@ -169,7 +169,6 @@ async function main() {
       },
     });
     first = false;
-    usersCreated++;
 
     const walletId = (
       await prisma.wallet.findUniqueOrThrow({ where: { userId: user.id }, select: { id: true } })
@@ -312,8 +311,8 @@ async function main() {
       `  ✔ ${email} (${role}): ${accountMap.size} cuentas, ${txCount} movimientos` +
         (skippedTransfers ? `, ${skippedTransfers} transferencias omitidas` : "")
     );
-      usersCreated++;
-    } catch (userErr) {
+    usersCreated++;
+  } catch (userErr) {
       usersFailed++;
       console.error(`  ✖ Error migrando wallet ${uid}:`, userErr instanceof Error ? userErr.message : userErr);
     }
