@@ -14,7 +14,7 @@ export const GET = route(async (req: NextRequest) => {
   const [user, device] = await Promise.all([
     prisma.user.findUnique({
       where: { id: session.sub },
-      select: { id: true, email: true, name: true, role: true },
+      select: { id: true, email: true, name: true, role: true, passwordReset: true },
     }),
     prisma.device.findUnique({
       where: { userId_deviceId: { userId: session.sub, deviceId: session.did } },

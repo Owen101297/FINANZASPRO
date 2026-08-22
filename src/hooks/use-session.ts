@@ -9,6 +9,8 @@ export interface SessionUser {
   email: string;
   name: string | null;
   role: "USER" | "ADMIN";
+  /** true = usa contraseña temporal y debe cambiarla */
+  passwordReset?: boolean;
 }
 
 export type DeviceStatus = "PENDING" | "ACTIVE" | "BLOCKED";

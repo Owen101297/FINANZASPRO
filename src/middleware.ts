@@ -13,6 +13,7 @@ const PROTECTED_PREFIXES = [
   "/metas",
   "/analisis",
   "/admin",
+  "/cuenta",
 ];
 
 const AUTH_PAGES = ["/login", "/registro"];
@@ -71,6 +72,8 @@ export const config = {
     "/analisis/:path*",
     "/admin",
     "/admin/:path*",
+    "/cuenta",
+    "/cuenta/:path*",
     "/login",
     "/registro",
   ],

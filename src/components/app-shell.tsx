@@ -20,6 +20,7 @@ import {
   Hourglass,
   Ban,
   Loader2,
+  UserCog,
 } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
 import { useTheme } from "@/components/theme-provider";
@@ -43,6 +44,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/suscripciones", label: "Suscripciones", icon: <Repeat className="size-5" /> },
   { href: "/metas", label: "Metas", icon: <Target className="size-5" /> },
   { href: "/analisis", label: "Análisis", icon: <ChartPie className="size-5" /> },
+  { href: "/cuenta", label: "Mi cuenta", icon: <UserCog className="size-5" /> },
 ];
 
 const ADMIN_NAV_ITEM: NavItem = {
@@ -197,13 +199,13 @@ function SessionFooter({
 }) {
   return (
     <div className="mt-4 border-t border-border pt-4">
-      <div className="mb-3 flex items-center gap-3 px-2">
+      <Link href="/cuenta" className="mb-3 flex items-center gap-3 rounded-xl px-2 py-1 transition-colors hover:bg-muted">
         <Avatar name={user.name ?? user.email} />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold">{user.name ?? "Usuario"}</p>
           <p className="truncate text-xs text-muted-foreground">{user.email}</p>
         </div>
-      </div>
+      </Link>
       <div className="flex items-center gap-2 px-2">
         <ThemeToggle />
         <Button variant="ghost" onClick={onLogout} className="flex-1 justify-start px-3 text-xs">

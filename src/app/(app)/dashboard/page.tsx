@@ -19,6 +19,7 @@ import {
   BalanceCard,
   BudgetAlertBanner,
   DashboardGreeting,
+  PasswordResetBanner,
 } from "@/components/dashboard-widgets";
 
 export default function DashboardPage() {
@@ -27,6 +28,7 @@ export default function DashboardPage() {
   return (
     <div className="animate-fade-in">
       <DashboardGreeting />
+      <PasswordResetBanner />
       <BudgetAlertBanner />
       <BalanceCard />
 

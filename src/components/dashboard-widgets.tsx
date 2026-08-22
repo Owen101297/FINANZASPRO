@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, KeyRound } from "lucide-react";
 import Link from "next/link";
 import { useWallet } from "@/hooks/use-wallet";
 import { useSession } from "@/hooks/use-session";
@@ -22,6 +22,28 @@ export function DashboardGreeting() {
       <div>
         <p className="text-xs text-muted-foreground">{greeting}</p>
         <h1 className="text-lg font-extrabold capitalize tracking-tight">{displayName}</h1>
+      </div>
+    </div>
+  );
+}
+
+/** Aviso para usuarios migrados que aún usan contraseña temporal. */
+export function PasswordResetBanner() {
+  const { user } = useSession();
+  if (!user?.passwordReset) return null;
+
+  return (
+    <div className="mb-5 flex items-start gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4">
+      <KeyRound className="mt-0.5 size-5 shrink-0 text-warning" />
+      <div className="flex-1 text-sm">
+        <p className="font-bold text-warning">Contraseña temporal</p>
+        <p className="mt-0.5 text-muted-foreground">
+          Tu cuenta usa una contraseña temporal.{" "}
+          <Link href="/cuenta" className="font-semibold underline underline-offset-2">
+            Cámbiala ahora
+          </Link>{" "}
+          para proteger tus finanzas.
+        </p>
       </div>
     </div>
   );
