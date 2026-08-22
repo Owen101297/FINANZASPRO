@@ -1,0 +1,246 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────── Enums ───────────────────────────
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum DeviceStatus {
+  PENDING
+  ACTIVE
+  BLOCKED
+}
+
+enum CategoryType {
+  INCOME
+  EXPENSE
+}
+
+enum TxType {
+  INCOME
+  EXPENSE
+}
+
+enum DebtStatus {
+  ACTIVE
+  PAID
+}
+
+// ─────────────────────────── Modelos ──────────────────────────
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  passwordHash   String
+  name           String?
+  role           Role     @default(USER)
+  /// Cédula original de la versión Firebase (solo migrados)
+  legacyCedula   String?  @unique
+  passwordReset  Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  devices Device[]
+  wallet  Wallet?
+  auditLogs AuditLog[]
+
+  @@map("users")
+}
+
+/// Dispositivos autorizados por el administrador
+model Device {
+  id         String       @id @default(cuid())
+  userId     String
+  /// Identificador generado por el cliente y persistido en localStorage
+  deviceId   String
+  label      String?
+  status     DeviceStatus @default(PENDING)
+  lastSeenAt DateTime?
+  createdAt  DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, deviceId])
+  @@index([status])
+  @@map("devices")
+}
+
+model Wallet {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  /// Ingreso mensual del ciclo
+  salary        Decimal  @default(0) @db.Decimal(14, 2)
+  /// Día del mes en que inicia el ciclo (1–28)
+  cycleStartDay Int      @default(1)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accounts      Account[]
+  categories    Category[]
+  transactions  Transaction[]
+  transfers     Transfer[]
+  debts         Debt[]
+  subscriptions Subscription[]
+  goals         Goal[]
+
+  @@map("wallets")
+}
+
+model Account {
+  id        String   @id @default(cuid())
+  walletId  String
+  name      String
+  balance   Decimal  @default(0) @db.Decimal(14, 2)
+  color     String?
+  archived  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  wallet        Wallet         @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  transactions  Transaction[]
+  transfersFrom Transfer[]     @relation("fromAccount")
+  transfersTo   Transfer[]     @relation("toAccount")
+  subscriptions Subscription[]
+
+  @@index([walletId])
+  @@map("accounts")
+}
+
+model Category {
+  id        String       @id @default(cuid())
+  walletId  String
+  name      String
+  type      CategoryType
+  color     String?
+  icon      String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  wallet       Wallet        @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@unique([walletId, name, type])
+  @@index([walletId])
+  @@map("categories")
+}
+
+model Transaction {
+  id         String   @id @default(cuid())
+  walletId   String
+  type       TxType
+  amount     Decimal  @db.Decimal(14, 2)
+  note       String?
+  date       DateTime @default(now())
+  accountId  String?
+  categoryId String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  wallet   Wallet    @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  account  Account?  @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([walletId, date])
+  @@index([walletId, type])
+  @@map("transactions")
+}
+
+model Transfer {
+  id            String   @id @default(cuid())
+  walletId      String
+  fromAccountId String
+  toAccountId   String
+  amount        Decimal  @db.Decimal(14, 2)
+  note          String?
+  date          DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  wallet      Wallet  @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  fromAccount Account @relation("fromAccount", fields: [fromAccountId], references: [id], onDelete: Restrict)
+  toAccount   Account @relation("toAccount", fields: [toAccountId], references: [id], onDelete: Restrict)
+
+  @@index([walletId, date])
+  @@map("transfers")
+}
+
+model Debt {
+  id          String     @id @default(cuid())
+  walletId    String
+  name        String
+  totalAmount Decimal    @db.Decimal(14, 2)
+  paidAmount  Decimal    @default(0) @db.Decimal(14, 2)
+  status      DebtStatus @default(ACTIVE)
+  dueDate     DateTime?
+  note        String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  wallet Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId, status])
+  @@map("debts")
+}
+
+model Subscription {
+  id         String   @id @default(cuid())
+  walletId   String
+  accountId  String?
+  name       String
+  amount     Decimal  @db.Decimal(14, 2)
+  /// Día del mes en que se cobra (1–31)
+  billingDay Int
+  active     Boolean  @default(true)
+  note       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  wallet  Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  account Account? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+
+  @@index([walletId, active])
+  @@map("subscriptions")
+}
+
+model Goal {
+  id           String    @id @default(cuid())
+  walletId     String
+  name         String
+  targetAmount Decimal   @db.Decimal(14, 2)
+  savedAmount  Decimal   @default(0) @db.Decimal(14, 2)
+  deadline     DateTime?
+  completedAt  DateTime?
+  note         String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  wallet Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId])
+  @@map("goals")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  /// Usuario que originó la acción (null = sistema)
+  actorId   String?
+  action    String
+  targetId  String?
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([action])
+  @@map("audit_logs")
+}
