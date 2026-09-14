@@ -29,7 +29,11 @@ export function useSession() {
   });
 
   const logout = useCallback(async () => {
-    await api.post("/api/auth/logout");
+    try {
+      await api.post("/api/auth/logout");
+    } catch {
+      // Offline o error momentáneo: la cookie expira sola, aún así se navega al login.
+    }
     mutate({ user: null, deviceStatus: null }, { revalidate: false });
     window.location.href = "/login";
   }, [mutate]);

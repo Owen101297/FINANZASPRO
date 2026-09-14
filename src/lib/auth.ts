@@ -14,10 +14,23 @@ export interface SessionPayload {
   did: string;
 }
 
+/** Valores de ejemplo/placeholder que jamás deben usarse en producción. */
+const FORBIDDEN_SECRETS = new Set(["cambia-esto-por-un-secreto-largo", "changeme", "secret", "your-secret", "auth_secret", "clave-secreta"]);
+
 function getSecretKey(): Uint8Array {
-  const secret = process.env.AUTH_SECRET;
-  if (!secret || secret.length < 16) {
-    throw new Error("AUTH_SECRET no está configurado o es demasiado corto (mín. 16 caracteres)");
+  const secret = (process.env.AUTH_SECRET ?? "").trim();
+  const normalized = secret.toLowerCase();
+  const isPlaceholder =
+    !secret ||
+    secret.length < 16 ||
+    FORBIDDEN_SECRETS.has(normalized) ||
+    normalized.startsWith("cambia-esto") ||
+    normalized.startsWith("changeme") ||
+    normalized.includes("secret-placeholder");
+  if (isPlaceholder) {
+    throw new Error(
+      "AUTH_SECRET no está configurado correctamente: usa un valor aleatorio de al menos 32 caracteres (node -e \"console.log(require('crypto').randomBytes(32).toString('base64url'))\")"
+    );
   }
   return new TextEncoder().encode(secret);
 }

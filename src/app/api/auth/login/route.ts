@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword, signSession, SESSION_COOKIE, sessionCookieOptions } from "@/lib/auth";
 import { route, readJson, audit } from "@/lib/server";
-import { unauthorized, forbidden } from "@/lib/errors";
+import { unauthorized, forbidden, tooMany } from "@/lib/errors";
 import { loginSchema } from "@/lib/validations";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 /**
  * Login con email + contraseña. Registra/actualiza el dispositivo que envía
@@ -14,6 +15,13 @@ import { loginSchema } from "@/lib/validations";
  */
 export const POST = route(async (req: NextRequest) => {
   const { email, password, deviceId } = loginSchema.parse(await readJson(req));
+
+  // Mitigación de fuerza bruta por IP + email
+  const attempt = rateLimit(`login:${clientIp(req)}:${email}`, {
+    max: 10,
+    windowMs: 15 * 60 * 1000,
+  });
+  if (!attempt.allowed) throw tooMany("Demasiados intentos fallidos. Espera unos minutos.");
 
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user || !user.passwordHash || !(await verifyPassword(password, user.passwordHash))) {

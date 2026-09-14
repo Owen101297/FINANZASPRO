@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Mail, Lock, Loader2 } from "lucide-react";
@@ -9,7 +9,15 @@ import { getDeviceId } from "@/lib/device";
 import { Button, Input, Label } from "@/components/ui/primitives";
 import { useToast } from "@/components/ui/toast";
 
-export default function LoginPage() {
+export default function Page() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPage />
+    </Suspense>
+  );
+}
+
+function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const toast = useToast();
@@ -33,8 +41,11 @@ export default function LoginPage() {
         router.push("/dashboard");
         return;
       }
+      // Solo rutas internas; evita open redirect (//evil.com, https://…)
       const next = searchParams.get("next");
-      router.push(next && next.startsWith("/") ? next : "/dashboard");
+      const safeNext =
+        next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
+      router.push(safeNext);
       router.refresh();
     } catch (err) {
       const message =

@@ -68,6 +68,12 @@ export async function requireUser(req: NextRequest): Promise<AuthContext> {
   });
   if (!user) throw unauthorized("Usuario no encontrado");
 
+  // Usuarios con contraseña temporal (migrados) deben cambiarla antes de operar.
+  // La ruta /api/auth/change-password usa requireSessionUser y no pasa por aquí.
+  if (user.passwordReset) {
+    throw new ApiError(403, "Debes cambiar tu contraseña temporal antes de continuar", "PASSWORD_RESET_REQUIRED");
+  }
+
   const device = await prisma.device.findUnique({
     where: { userId_deviceId: { userId: user.id, deviceId: session.did } },
   });

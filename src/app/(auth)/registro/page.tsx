@@ -15,6 +15,7 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,6 +24,10 @@ export default function RegisterPage() {
     setError(null);
     if (password.length < 8) {
       setError("La contraseña debe tener al menos 8 caracteres");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden");
       return;
     }
     setLoading(true);
@@ -101,6 +106,24 @@ export default function RegisterPage() {
               className="pl-10"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div>
+          <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
+          <div className="relative">
+            <Lock className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              id="confirmPassword"
+              type="password"
+              autoComplete="new-password"
+              required
+              minLength={8}
+              placeholder="Repite tu contraseña"
+              className="pl-10"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
             />
           </div>
         </div>

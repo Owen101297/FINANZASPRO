@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
@@ -21,11 +22,13 @@ import {
   Ban,
   Loader2,
   UserCog,
+  KeyRound,
 } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
 import { useTheme } from "@/components/theme-provider";
-import { Button, EmptyState } from "@/components/ui/primitives";
-import { PwaRegister } from "@/components/pwa-register";
+import { Button, EmptyState, Input, Label } from "@/components/ui/primitives";
+import { api } from "@/lib/client-api";
+import { useToast } from "@/components/ui/toast";
 
 interface NavItem {
   href: string;
@@ -60,8 +63,13 @@ const MOBILE_DOCK_BASE: NavItem[] = [
   NAV_ITEMS[7] as NavItem,
 ];
 
+/** Activo solo por segmento exacto ("/cuenta" no marca "/cuentas"). */
+function isActivePath(pathname: string, href: string): boolean {
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { user, deviceStatus, isLoading, logout } = useSession();
+  const { user, deviceStatus, isLoading, logout, refresh } = useSession();
   const pathname = usePathname();
 
   if (isLoading) {
@@ -86,6 +94,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     );
   }
 
+  if (user?.passwordReset) return <PasswordResetScreen refresh={refresh} logout={logout} />;
   if (deviceStatus === "PENDING") return <DevicePendingScreen logout={logout} />;
   if (deviceStatus === "BLOCKED") return <DeviceBlockedScreen logout={logout} />;
 
@@ -99,14 +108,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-dvh bg-background">
-      <PwaRegister />
 
       {/* Sidebar desktop */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-border bg-card px-4 py-6 md:flex">
         <Brand />
         <nav className="mt-8 flex flex-1 flex-col gap-1 overflow-y-auto scrollbar-thin">
           {navItems.map((item) => (
-            <NavLink key={item.href} item={item} active={pathname.startsWith(item.href)} />
+            <NavLink key={item.href} item={item} active={isActivePath(pathname, item.href)} />
           ))}
         </nav>
         <SessionFooter user={user} onLogout={logout} />
@@ -129,7 +137,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         className="fixed inset-x-3 bottom-3 z-40 flex items-center justify-around rounded-2xl border border-border bg-card/95 px-2 py-1.5 shadow-xl shadow-black/20 backdrop-blur safe-bottom md:hidden"
       >
         {dockItems.map((item) => {
-          const active = pathname.startsWith(item.href);
+          const active = isActivePath(pathname, item.href);
           return (
             <Link
               key={item.href}
@@ -236,6 +244,88 @@ function ThemeToggle() {
     <Button variant="ghost" size="sm" onClick={toggle} aria-label="Cambiar tema" className="px-2.5">
       {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
     </Button>
+  );
+}
+
+function PasswordResetScreen({
+  refresh,
+  logout,
+}: {
+  refresh: () => void;
+  logout: () => void;
+}) {
+  const toast = useToast();
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await api.post("/api/auth/change-password", {
+        currentPassword,
+        newPassword,
+      });
+      toast("Contraseña actualizada", "success");
+      setCurrentPassword("");
+      setNewPassword("");
+      refresh();
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "No se pudo cambiar la contraseña", "error");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="flex min-h-dvh items-center justify-center bg-background px-6">
+      <div className="w-full max-w-sm animate-scale-in rounded-card border border-border bg-card p-8 shadow-xl shadow-black/5">
+        <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-muted">
+          <KeyRound className="size-7 text-warning" />
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="text-center">
+            <h1 className="text-lg font-bold">Cambia tu contraseña temporal</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Por seguridad, debes definir una contraseña nueva antes de acceder a tus finanzas.
+            </p>
+          </div>
+          <div>
+            <Label htmlFor="pw-current">Contraseña actual</Label>
+            <Input
+              id="pw-current"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
+          </div>
+          <div>
+            <Label htmlFor="pw-new">Nueva contraseña</Label>
+            <Input
+              id="pw-new"
+              type="password"
+              autoComplete="new-password"
+              required
+              minLength={8}
+              maxLength={72}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+            <p className="mt-1 text-xs text-muted-foreground">Mínimo 8 caracteres.</p>
+          </div>
+          <Button type="submit" disabled={saving} className="w-full">
+            {saving && <Loader2 className="size-4 animate-spin" />}
+            Guardar contraseña
+          </Button>
+          <Button type="button" variant="ghost" onClick={logout} className="w-full text-xs">
+            Cerrar sesión
+          </Button>
+        </form>
+      </div>
+    </div>
   );
 }
 
