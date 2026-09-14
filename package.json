@@ -10,11 +10,7 @@
     "typecheck": "tsc --noEmit",
     "db:migrate": "prisma migrate deploy",
     "db:studio": "prisma studio",
-    "migrate:firestore": "tsx scripts/migrate-firestore.ts",
     "postinstall": "prisma generate"
-  },
-  "prisma": {
-    "seed": "tsx scripts/seed.ts"
   },
   "engines": {
     "node": ">=20"
@@ -25,7 +21,7 @@
     "clsx": "^2.1.1",
     "jose": "^6.1.0",
     "lucide-react": "^1.33.0",
-    "next": "15.5.23",
+    "next": "15.5.25",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "recharts": "^3.1.0",
@@ -39,11 +35,13 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "eslint": "^9.30.0",
-    "eslint-config-next": "15.5.23",
-    "firebase-admin": "^14.0.0",
+    "eslint-config-next": "15.5.25",
     "prisma": "^6.19.3",
     "tailwindcss": "^4.1.0",
     "tsx": "^4.20.0",
     "typescript": "~5.9.0"
+  },
+  "overrides": {
+    "postcss": "8.5.28"
   }
 }
