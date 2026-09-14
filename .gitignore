@@ -36,7 +36,3 @@ next-env.d.ts
 
 # prisma
 /prisma/migrations/dev.db*
-
-# firebase (credenciales locales)
-firebase-service-account.json
-serviceAccountKey*.json

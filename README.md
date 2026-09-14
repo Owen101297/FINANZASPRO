@@ -22,7 +22,6 @@ src/app/api/                # Backend: route handlers REST
 src/app/(auth)/             # Login y registro
 src/app/(app)/              # Vistas autenticadas (dashboard, movimientos, etc.)
 src/lib/                    # auth, validaciones zod, ciclo, insights, helpers server
-scripts/migrate-firestore.ts # Migración one-off desde Firebase v1
 ```
 
 ## Desarrollo local
@@ -47,7 +46,6 @@ npm run dev                   # http://localhost:3000
 | `npm run typecheck` | TypeScript strict |
 | `npm run db:migrate` | Aplica migraciones (`prisma migrate deploy`) |
 | `npm run db:studio` | Prisma Studio (inspección de datos) |
-| `npm run migrate:firestore` | Migración de datos legacy (ver abajo) |
 
 ## Variables de entorno
 
@@ -55,8 +53,6 @@ npm run dev                   # http://localhost:3000
 |---|---|
 | `DATABASE_URL` | Cadena de conexión PostgreSQL (Railway la inyecta al vincular el servicio) |
 | `AUTH_SECRET` | Secreto para firmar sesiones JWT (mín. 16 chars). Generar con `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"` |
-| `FIREBASE_PROJECT_ID` | Solo migración |
-| `FIREBASE_SERVICE_ACCOUNT_PATH` | Ruta al service account JSON (solo local, no subir al repo) |
 
 ## Modelo de autorización
 
@@ -74,27 +70,6 @@ Al registrar un gasto, el servidor calcula si el total del ciclo supera el **90%
 
 Motor de reglas locales (`src/lib/insights.ts`): tasa de ahorro, consumo del presupuesto, categoría dominante, peso de suscripciones y hábito de registro. Sin servicios externos ni costos por uso.
 
-## Migración desde Firebase (v1 → v2)
-
-```bash
-# .env
-DATABASE_URL="postgresql://..."
-FIREBASE_PROJECT_ID="gastos-dd902"
-FIREBASE_SERVICE_ACCOUNT_PATH="./firebase-service-account.json"
-
-npm run migrate:firestore
-```
-
-Mapeo aplicado:
-
-- Email sintético `<cedula>@finanzaspro.app`; cédula original guardada en `legacyCedula`.
-- Contraseña temporal única (`MIGRATE_TEMP_PASSWORD`, default `Cambio123*`) con flag `passwordReset=true`.
-- Primer usuario migrado → rol ADMIN.
-- Cuentas conservan nombre y saldo final; los gastos/ingresos se importan como transacciones históricas.
-- Ingresos marcados `isTransfer` (transferencias internas entre cuentas) se omiten para evitar duplicar montos.
-- Deudas, suscripciones y metas se importan con sus montos.
-- Dispositivos de `authorized_devices` se recrean como ACTIVE (o PENDING si estaban inactivos).
-
 ## Deploy en Railway
 
 1. Crear proyecto → **+ New → Database → PostgreSQL**.
@@ -106,7 +81,6 @@ Mapeo aplicado:
    Start command: `npx prisma migrate deploy && npx next start -p $PORT`
    (o usar `railway.toml` incluido)
 5. Generate Domain para exponer la app.
-6. Ejecutar la migración de Firestore apuntando `DATABASE_URL` a la BD de producción (una sola vez).
 
 ## Buenas prácticas implementadas
 
