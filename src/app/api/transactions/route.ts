@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { route, requireUser, readJson, audit } from "@/lib/server";
-import { notFound } from "@/lib/errors";
-import { transactionCreateSchema } from "@/lib/validations";
+import { notFound, badRequest } from "@/lib/errors";
+import { transactionCreateSchema, monthParamSchema } from "@/lib/validations";
 import { transactionDto, num } from "@/lib/mappers";
 import { getCycleRange } from "@/lib/cycle";
 
@@ -16,14 +16,12 @@ export const GET = route(async (req: NextRequest) => {
   const monthParam = req.nextUrl.searchParams.get("month");
   let start: Date;
   let end: Date;
-  if (monthParam && /^\d{4}-\d{2}$/.test(monthParam)) {
-    const [y, m] = monthParam.split("-").map(Number);
-    if (y !== undefined && m !== undefined) {
-      start = new Date(y, m - 1, 1);
-      end = new Date(y, m, 1);
-    } else {
-      ({ start, end } = getCycleRange(wallet.cycleStartDay));
-    }
+  if (monthParam) {
+    const parsed = monthParamSchema.safeParse(monthParam);
+    if (!parsed.success) throw badRequest("Mes inválido (usa el formato YYYY-MM)");
+    const [y, m] = parsed.data.split("-").map(Number);
+    start = new Date(y!, m! - 1, 1);
+    end = new Date(y!, m!, 1);
   } else {
     ({ start, end } = getCycleRange(wallet.cycleStartDay));
   }

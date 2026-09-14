@@ -47,7 +47,8 @@ export function MovementModal({
   const [date, setDate] = useState(todayLocalISO());
   const [saving, setSaving] = useState(false);
 
-  // Sincroniza con el estado externo al abrirse
+  // Sincroniza con el estado externo SOLO al abrirse o al cambiar de registro
+  // (no en cada re-render del padre, que pisaría lo que el usuario escribe).
   useEffect(() => {
     if (!state.open) return;
     setMode(state.mode ?? "gasto");
@@ -57,7 +58,7 @@ export function MovementModal({
     setToAccountId("");
     setNote(state.prefill?.note ?? "");
     setDate(state.prefill?.date ?? todayLocalISO());
-  }, [state]);
+  }, [state.open, state.editTxId, state.mode, state.prefill?.amount, state.prefill?.accountId, state.prefill?.categoryId, state.prefill?.note, state.prefill?.date]);
 
   const activeAccounts = useMemo(
     () => walletData?.accounts.filter((a) => !a.archived) ?? [],
@@ -74,8 +75,13 @@ export function MovementModal({
   const isTransfer = mode === "transferencia";
 
   async function handleSave() {
-    if (!amount || Number(amount) <= 0) {
+    const amountNum = Number(amount);
+    if (!amount || !Number.isFinite(amountNum) || amountNum <= 0) {
       toast("Ingresa un monto válido", "error");
+      return;
+    }
+    if (!date) {
+      toast("Selecciona una fecha", "error");
       return;
     }
 
@@ -87,14 +93,15 @@ export function MovementModal({
         await api.post("/api/transfers", {
           fromAccountId: accountId,
           toAccountId,
-          amount: Number(amount),
+          amount: amountNum,
           note: note.trim() || undefined,
+          date: new Date(`${date}T12:00:00`).toISOString(),
         });
         toast("Transferencia registrada", "success");
       } else {
         const payload = {
           type: mode === "ingreso" ? ("INCOME" as const) : ("EXPENSE" as const),
-          amount: Number(amount),
+          amount: amountNum,
           note: note.trim() || null,
           accountId: accountId || null,
           categoryId: categoryId || null,
@@ -210,7 +217,11 @@ export function MovementModal({
           <Select
             id="movement-account"
             value={accountId}
-            onChange={(e) => setAccountId(e.target.value)}
+            onChange={(e) => {
+              const v = e.target.value;
+              setAccountId(v);
+              if (v === toAccountId) setToAccountId("");
+            }}
           >
             <option value="">Sin cuenta</option>
             {activeAccounts.map((a) => (
@@ -241,18 +252,16 @@ export function MovementModal({
           </div>
         )}
 
-        {!isTransfer && (
-          <div>
-            <Label htmlFor="movement-date">Fecha</Label>
-            <Input
-              id="movement-date"
-              type="date"
-              max={todayLocalISO()}
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
-          </div>
-        )}
+        <div>
+          <Label htmlFor="movement-date">Fecha</Label>
+          <Input
+            id="movement-date"
+            type="date"
+            max={todayLocalISO()}
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+        </div>
 
         <div>
           <Label htmlFor="movement-note">Nota</Label>

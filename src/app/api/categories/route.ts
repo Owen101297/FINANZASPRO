@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { route, requireUser, readJson, audit } from "@/lib/server";
 import { conflict } from "@/lib/errors";
@@ -23,16 +24,23 @@ export const POST = route(async (req: NextRequest) => {
   });
   if (duplicate) throw conflict("Ya existe una categoría con ese nombre");
 
-  const created = await prisma.category.create({
-    data: {
-      walletId: wallet.id,
-      name: body.name,
-      type: body.type,
-      color: body.color ?? null,
-      icon: body.icon ?? null,
-    },
-  });
+  try {
+    const created = await prisma.category.create({
+      data: {
+        walletId: wallet.id,
+        name: body.name,
+        type: body.type,
+        color: body.color ?? null,
+        icon: body.icon ?? null,
+      },
+    });
 
-  await audit({ actorId: user.id, action: "CATEGORY_CREATED", targetId: created.id });
-  return NextResponse.json({ category: categoryDto(created) }, { status: 201 });
+    await audit({ actorId: user.id, action: "CATEGORY_CREATED", targetId: created.id });
+    return NextResponse.json({ category: categoryDto(created) }, { status: 201 });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      throw conflict("Ya existe una categoría con ese nombre");
+    }
+    throw err;
+  }
 });

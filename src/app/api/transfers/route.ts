@@ -35,11 +35,18 @@ export const POST = route(async (req: NextRequest) => {
   if (!fromAccount) throw notFound("Cuenta de origen no encontrada");
   if (!toAccount) throw notFound("Cuenta de destino no encontrada");
 
-  if (Number(fromAccount.balance) < body.amount) {
-    throw badRequest("Saldo insuficiente en la cuenta de origen");
-  }
-
   const transfer = await prisma.$transaction(async (tx) => {
+    // Decremento condicionado y atómico: bajo aislamiento READ COMMITTED,
+    // "updateMany" con condicion de saldo bloquea la fila y evita el doble gasto
+    // cuando dos transferencias concurrentes compiten por el mismo saldo.
+    const spent = await tx.account.updateMany({
+      where: { id: fromAccount.id, balance: { gte: body.amount } },
+      data: { balance: { decrement: body.amount } },
+    });
+    if (spent.count === 0) {
+      throw badRequest("Saldo insuficiente en la cuenta de origen");
+    }
+
     const created = await tx.transfer.create({
       data: {
         walletId: wallet.id,
@@ -47,13 +54,10 @@ export const POST = route(async (req: NextRequest) => {
         toAccountId: toAccount.id,
         amount: body.amount,
         note: body.note ?? null,
+        date: body.date ?? new Date(),
       },
     });
 
-    await tx.account.update({
-      where: { id: fromAccount.id },
-      data: { balance: { decrement: body.amount } },
-    });
     await tx.account.update({
       where: { id: toAccount.id },
       data: { balance: { increment: body.amount } },

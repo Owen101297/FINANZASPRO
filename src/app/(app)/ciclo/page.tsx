@@ -1,23 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { api } from "@/lib/client-api";
 import { useWallet } from "@/hooks/use-wallet";
 import { useToast } from "@/components/ui/toast";
-import { Button, Card, Input, Label, Progress } from "@/components/ui/primitives";
+import { Button, Card, EmptyState, Input, Label, Progress } from "@/components/ui/primitives";
 import { formatCurrency } from "@/lib/format";
 
 export default function CicloPage() {
-  const { data, refresh } = useWallet();
+  const { data, error, refresh } = useWallet();
   const toast = useToast();
 
   const [salary, setSalary] = useState("");
   const [cycleStartDay, setCycleStartDay] = useState("1");
   const [saving, setSaving] = useState(false);
+  // Hidrata el formulario solo la primera vez; no pisa lo que el usuario escribe
+  // cuando SWR revalida en cada foco.
+  const hydrated = useRef(false);
 
   useEffect(() => {
-    if (!data) return;
+    if (!data || hydrated.current) return;
+    hydrated.current = true;
     setSalary(String(data.wallet.salary));
     setCycleStartDay(String(data.wallet.cycleStartDay));
   }, [data]);
@@ -43,6 +47,17 @@ export default function CicloPage() {
     } finally {
       setSaving(false);
     }
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <EmptyState
+          title="No se pudo cargar tu ciclo"
+          hint="Revisa tu conexión e intenta de nuevo."
+        />
+      </Card>
+    );
   }
 
   if (!data) {

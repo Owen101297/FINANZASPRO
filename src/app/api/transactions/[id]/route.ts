@@ -32,6 +32,10 @@ export const PATCH = route(async (req: NextRequest, ctx) => {
   }
 
   const updated = await prisma.$transaction(async (tx) => {
+    // Bloquea la fila de la transacción hasta el commit: serializa PATCH/DELETE
+    // concurrentes sobre el mismo registro y evita que dos reversos se apliquen
+    // sobre el mismo saldo anterior.
+    await tx.$queryRaw`SELECT 1 FROM "transactions" WHERE "id" = ${id} FOR UPDATE`;
     const previous = await tx.transaction.findUniqueOrThrow({ where: { id } });
 
     // Revertir saldo anterior
@@ -85,6 +89,7 @@ export const DELETE = route(async (req: NextRequest, ctx) => {
   if (!existing) throw notFound("Transacción no encontrada");
 
   await prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT 1 FROM "transactions" WHERE "id" = ${id} FOR UPDATE`;
     const previous = await tx.transaction.findUniqueOrThrow({ where: { id } });
     if (previous.accountId) {
       const delta =

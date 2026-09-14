@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { ChevronLeft, ChevronRight, Loader2, Plus, Receipt } from "lucide-react";
 import { clsx } from "clsx";
@@ -19,7 +19,24 @@ type TxDto = TransactionItemData & {
   categoryId: string | null;
 };
 
-export default function TransaccionesPage() {
+const round2 = (n: number) => Math.round(n * 100) / 100;
+
+export default function Page() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center py-16">
+          <Loader2 className="size-6 animate-spin text-muted-foreground" />
+        </div>
+      }
+    >
+      <TransaccionesPage />
+    </Suspense>
+  );
+}
+
+function TransaccionesPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [month, setMonth] = useState(currentMonth());
   const [modalState, setModalState] = useState<MovementModalState>({ open: false });
@@ -29,10 +46,12 @@ export default function TransaccionesPage() {
     const newParam = searchParams.get("new");
     if (newParam === "gasto" || newParam === "ingreso" || newParam === "transferencia") {
       setModalState({ open: true, mode: newParam });
+      // Limpia ?new= para que navegar atrás o refrescar no reabran el modal.
+      router.replace(window.location.pathname, { scroll: false });
     }
-  }, [searchParams]);
+  }, [searchParams, router]);
 
-  const { data, isLoading, mutate } = useSWR<{ transactions: TxDto[] }>(
+  const { data, isLoading, error, mutate } = useSWR<{ transactions: TxDto[] }>(
     `/api/transactions?limit=500&month=${month}`,
     fetcher
   );
@@ -50,9 +69,11 @@ export default function TransaccionesPage() {
   }, [data]);
 
   const monthTotal = useMemo(() => {
-    return (data?.transactions ?? [])
-      .filter((t) => t.date.startsWith(month))
-      .reduce((acc, t) => acc + (t.type === "EXPENSE" ? -t.amount : t.amount), 0);
+    return round2(
+      (data?.transactions ?? [])
+        .filter((t) => t.date.startsWith(month))
+        .reduce((acc, t) => acc + (t.type === "EXPENSE" ? -t.amount : t.amount), 0)
+    );
   }, [data, month]);
 
   function openEdit(tx: TransactionItemData) {
@@ -115,6 +136,13 @@ export default function TransaccionesPage() {
         <div className="flex justify-center py-16">
           <Loader2 className="size-6 animate-spin text-muted-foreground" />
         </div>
+      ) : error ? (
+        <Card>
+          <EmptyState
+            title="No se pudieron cargar los movimientos"
+            hint="Revisa tu conexión e intenta de nuevo."
+          />
+        </Card>
       ) : grouped.length === 0 ? (
         <Card>
           <EmptyState
@@ -127,9 +155,8 @@ export default function TransaccionesPage() {
         <div className="space-y-5">
           {grouped.map(([day, txs]) => {
             const inMonth = day.startsWith(month);
-            const dayTotal = txs.reduce(
-              (acc, t) => acc + (t.type === "EXPENSE" ? -t.amount : t.amount),
-              0
+            const dayTotal = round2(
+              txs.reduce((acc, t) => acc + (t.type === "EXPENSE" ? -t.amount : t.amount), 0)
             );
             return (
               <section key={day} aria-label={day} className={clsx(!inMonth && "opacity-50")}>

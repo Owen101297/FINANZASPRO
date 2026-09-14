@@ -22,10 +22,12 @@ export const loginSchema = z.object({
 
 // ─────────────────────────── Wallet ───────────────────────────
 
-export const walletPatchSchema = z.object({
-  salary: z.number().min(0).max(1e12),
-  cycleStartDay: z.number().int().min(1).max(28),
-});
+export const walletPatchSchema = z
+  .object({
+    salary: z.number().min(0).max(1e12),
+    cycleStartDay: z.number().int().min(1).max(28),
+  })
+  .partial();
 
 // ─────────────────────────── Cuentas ──────────────────────────
 
@@ -56,15 +58,38 @@ export const categoryCreateSchema = z.object({
   icon: z.string().trim().max(30).optional().nullable(),
 });
 
-export const categoryUpdateSchema = categoryCreateSchema.partial();
+// El tipo (INCOME/EXPENSE) no se puede cambiar al editar, por eso no se expone aquí.
+export const categoryUpdateSchema = z
+  .object({
+    name: z.string().trim().min(1, "El nombre es obligatorio").max(40).optional(),
+    color: z
+      .string()
+      .regex(/^#[0-9a-fA-F]{6}$/)
+      .optional()
+      .nullable(),
+    icon: z.string().trim().max(30).optional().nullable(),
+  })
+  .refine((d) => Object.keys(d).length > 0, "Envía al menos un campo para actualizar");
 
 // ───────────────────────── Transacciones ──────────────────────
 
 const isoDate = z
+  .union([z.string().datetime({ offset: true }), z.string().regex(/^\d{4}-\d{2}-\d{2}$/)])
+  .transform((v) => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
+    if (m) {
+      // "YYYY-MM-DD" → mediodía local: evita que el parseo a medianoche UTC
+      // excluya movimientos del borde del mes frente a rangos en hora local.
+      return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12);
+    }
+    return new Date(v);
+  })
+  .refine((d) => !Number.isNaN(d.getTime()), "Fecha inválida");
+
+/** Parámetro de mes en rutas: YYYY-MM con mes válido (01-12). */
+export const monthParamSchema = z
   .string()
-  .datetime({ offset: true })
-  .or(z.string().regex(/^\d{4}-\d{2}-\d{2}(T[\d:.]+Z?)?$/))
-  .transform((v) => new Date(v));
+  .regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Mes inválido (usa el formato YYYY-MM)");
 
 export const transactionCreateSchema = z.object({
   type: z.enum(["INCOME", "EXPENSE"]),
@@ -85,6 +110,7 @@ export const transferCreateSchema = z
     toAccountId: z.string().cuid(),
     amount: z.number().positive("El monto debe ser mayor a 0").max(1e12),
     note: z.string().trim().max(200).optional().nullable(),
+    date: isoDate.optional(),
   })
   .refine((d) => d.fromAccountId !== d.toAccountId, {
     message: "Las cuentas de origen y destino deben ser distintas",

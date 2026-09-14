@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { CheckCircle2, AlertCircle, Info, X } from "lucide-react";
 import { clsx } from "clsx";
 
@@ -24,6 +24,7 @@ const icons: Record<ToastKind, React.ReactNode> = {
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const nextId = useRef(1);
 
   const dismiss = useCallback((id: number) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -31,15 +32,17 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const toast = useCallback(
     (message: string, kind: ToastKind = "info") => {
-      const id = Date.now() + Math.random();
+      const id = nextId.current++;
       setToasts((prev) => [...prev, { id, kind, message }]);
       setTimeout(() => dismiss(id), 4000);
     },
     [dismiss]
   );
 
+  const value = useMemo(() => ({ toast }), [toast]);
+
   return (
-    <ToastContext.Provider value={{ toast }}>
+    <ToastContext.Provider value={value}>
       {children}
       <div className="pointer-events-none fixed inset-x-0 top-4 z-[100] flex flex-col items-center gap-2 px-4">
         {toasts.map((t) => (

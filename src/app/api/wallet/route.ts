@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { route, requireUser, readJson } from "@/lib/server";
+import { route, requireUser, readJson, audit } from "@/lib/server";
+import { badRequest } from "@/lib/errors";
 import { walletPatchSchema } from "@/lib/validations";
 import { getCycleRange, getCycleProgress } from "@/lib/cycle";
 import { num, accountDto, categoryDto } from "@/lib/mappers";
@@ -59,12 +60,24 @@ export const GET = route(async (req: NextRequest) => {
 
 /** Actualiza salario y día de inicio del ciclo. */
 export const PATCH = route(async (req: NextRequest) => {
-  const { wallet } = await requireUser(req);
+  const { user, wallet } = await requireUser(req);
   const body = walletPatchSchema.parse(await readJson(req));
+
+  const data: { salary?: number; cycleStartDay?: number } = {};
+  if (body.salary !== undefined) data.salary = body.salary;
+  if (body.cycleStartDay !== undefined) data.cycleStartDay = body.cycleStartDay;
+  if (Object.keys(data).length === 0) throw badRequest("Envía al menos un campo para actualizar");
 
   const updated = await prisma.wallet.update({
     where: { id: wallet.id },
-    data: { salary: body.salary, cycleStartDay: body.cycleStartDay },
+    data,
+  });
+
+  await audit({
+    actorId: user.id,
+    action: "WALLET_UPDATED",
+    targetId: wallet.id,
+    meta: { salary: body.salary, cycleStartDay: body.cycleStartDay },
   });
 
   return NextResponse.json({

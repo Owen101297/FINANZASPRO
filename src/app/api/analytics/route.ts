@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { route, requireUser } from "@/lib/server";
+import { badRequest } from "@/lib/errors";
+import { monthParamSchema } from "@/lib/validations";
 import { num } from "@/lib/mappers";
 import { buildInsights } from "@/lib/insights";
 
@@ -15,11 +17,12 @@ export const GET = route(async (req: NextRequest) => {
   let start: Date;
   let end: Date;
 
-  if (monthParam && /^\d{4}-\d{2}$/.test(monthParam)) {
-    const [y, m] = monthParam.split("-").map(Number);
-    if (!y || !m) throw new Error("month inválido");
-    start = new Date(y, m - 1, 1);
-    end = new Date(y, m, 1);
+  if (monthParam) {
+    const parsed = monthParamSchema.safeParse(monthParam);
+    if (!parsed.success) throw badRequest("Mes inválido (usa el formato YYYY-MM)");
+    const [y, m] = parsed.data.split("-").map(Number);
+    start = new Date(y!, m! - 1, 1);
+    end = new Date(y!, m!, 1);
   } else {
     const now = new Date();
     start = new Date(now.getFullYear(), now.getMonth(), 1);

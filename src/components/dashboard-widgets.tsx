@@ -87,7 +87,22 @@ export function BudgetAlertBanner() {
 
 /** Tarjeta grande con balance total y progreso del ciclo. */
 export function BalanceCard() {
-  const { data, isLoading } = useWallet();
+  const { data, isLoading, error } = useWallet();
+
+  if (error) {
+    return (
+      <section
+        aria-label="Resumen financiero"
+        className="rounded-card border border-border bg-card p-6 text-sm text-muted-foreground"
+      >
+        No se pudo cargar tu resumen.{" "}
+        <Link href="/cuenta" className="font-semibold text-primary underline underline-offset-2">
+          Reintenta desde tu cuenta
+        </Link>
+        .
+      </section>
+    );
+  }
 
   if (isLoading || !data) {
     return <div className="h-44 animate-pulse rounded-card bg-muted" />;
