@@ -102,7 +102,7 @@ export async function middleware(req: NextRequest) {
 
   // Rutas API y estáticas: solo cabeceras de seguridad, sin locale ni auth
   const isApi = pathname === "/api" || pathname.startsWith("/api/");
-  const isStatic = pathname.startsWith("/_next") || pathname === "/favicon.ico" || pathname === "/robots.txt" || pathname === "/manifest.webmanifest" || pathname.startsWith("/icons/");
+  const isStatic = pathname.startsWith("/_next") || pathname === "/favicon.ico" || pathname === "/robots.txt" || pathname === "/manifest.webmanifest" || pathname === "/sw.js" || pathname.endsWith(".js") || pathname.startsWith("/icons/");
 
   if (isApi || isStatic) {
     const nonce = crypto.randomUUID();
