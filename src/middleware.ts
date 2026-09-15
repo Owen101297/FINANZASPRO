@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose/jwt/verify";
 import { hasLocale } from "next-intl";
 import { routing } from "@/routing";
+import { validateCsrf } from "@/lib/csrf";
 
 /**
  * Rutas de página protegidas (requieren sesión válida).
@@ -105,6 +106,12 @@ export async function middleware(req: NextRequest) {
   const isStatic = pathname.startsWith("/_next") || pathname === "/favicon.ico" || pathname === "/robots.txt" || pathname === "/manifest.webmanifest" || pathname === "/sw.js" || pathname.endsWith(".js") || pathname.startsWith("/icons/");
 
   if (isApi || isStatic) {
+    if (isApi && !validateCsrf(req)) {
+      return NextResponse.json(
+        { error: { message: "CSRF token inválido", code: "CSRF_INVALID" } },
+        { status: 403 }
+      );
+    }
     const nonce = crypto.randomUUID();
     const directives = securityDirectives(nonce);
     const headers = new Headers(req.headers);

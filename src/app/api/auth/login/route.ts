@@ -1,10 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { verifyPassword, signSession, SESSION_COOKIE, sessionCookieOptions } from "@/lib/auth";
+import { verifyPassword, signSession, SESSION_COOKIE, sessionCookieOptions, csrfCookieOptions } from "@/lib/auth";
+import { CSRF_COOKIE, generateCsrfToken } from "@/lib/csrf";
 import { route, readJson, audit } from "@/lib/server";
 import { unauthorized, forbidden, tooMany } from "@/lib/errors";
 import { loginSchema } from "@/lib/validations";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
+
+const DEVICE_COOKIE = "fp_device";
+
+function deviceCookieOptions() {
+  return {
+    httpOnly: true,
+    sameSite: "strict" as const,
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+  };
+}
 
 /**
  * Login con email + contraseña. Registra/actualiza el dispositivo que envía
@@ -61,6 +74,8 @@ export const POST = route(async (req: NextRequest) => {
     deviceStatus,
   });
   response.cookies.set(SESSION_COOKIE, token, sessionCookieOptions());
+  response.cookies.set(CSRF_COOKIE, generateCsrfToken(), csrfCookieOptions());
+  response.cookies.set(DEVICE_COOKIE, deviceId, deviceCookieOptions());
 
   await audit({
     actorId: user.id,

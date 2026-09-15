@@ -46,7 +46,17 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 export function sessionCookieOptions() {
   return {
     httpOnly: true,
-    sameSite: "lax" as const,
+    sameSite: "strict" as const,
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: SESSION_TTL_SECONDS,
+  };
+}
+
+export function csrfCookieOptions() {
+  return {
+    httpOnly: false,
+    sameSite: "strict" as const,
     secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: SESSION_TTL_SECONDS,

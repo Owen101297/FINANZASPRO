@@ -13,10 +13,29 @@ export class ApiClientError extends Error {
   }
 }
 
+function getCsrfToken(): string {
+  if (typeof document === "undefined") return "";
+  const match = document.cookie.match(/(?:^|;\s*)fp_csrf=([^;]*)/);
+  return match?.[1] ? decodeURIComponent(match[1]) : "";
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const method = init?.method?.toUpperCase() ?? "GET";
+  const needsCsrf = method === "POST" || method === "PATCH" || method === "DELETE";
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(init?.headers as Record<string, string> ?? {}),
+  };
+  if (needsCsrf) {
+    const csrf = getCsrfToken();
+    if (csrf) headers["X-CSRF-Token"] = csrf;
+  }
+
   const res = await fetch(path, {
     ...init,
-    headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
+    credentials: "include",
+    headers,
   });
 
   let body: unknown = null;
