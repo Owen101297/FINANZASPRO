@@ -25,14 +25,15 @@ async function call(
   cookie: string,
   method: string,
   path: string,
-  payload?: object
+  payload?: object,
+  params?: Record<string, string>
 ): Promise<{ status: number; body: any }> {
   const req = new NextRequest(`http://localhost${path}`, {
     method,
     headers: { cookie: `fp_session=${cookie}`, "content-type": "application/json" },
     ...(payload !== undefined ? { body: JSON.stringify(payload) } : {}),
   });
-  const res = await handler(req, { params: Promise.resolve({}) });
+  const res = await handler(req, { params: Promise.resolve(params ?? {}) });
   let body: unknown = null;
   try {
     body = await res.json();
@@ -87,7 +88,7 @@ async function main(): Promise<void> {
   // 3) Editar el gasto a 950 (95%): CRUZA el umbral -> alerta + evento.
   const up = await call(PATCH, cookie, "PATCH", `/api/transactions/${expenseId}`, {
     amount: 950,
-  });
+  }, { id: expenseId });
   if (up.status !== 200) die(`editar a 950 respondió ${up.status} (esperaba 200)`);
   if (up.body.budgetAlert !== true) die("subir 800->950 no disparó la alerta de cruce");
   if ((await budgetAudits()) !== 1) die("esperaba 1 evento BUDGET_ALERT tras cruzar");
@@ -95,14 +96,14 @@ async function main(): Promise<void> {
   // 4) Editar a 980: ya estaba sobre el 90%, no es un cruce nuevo.
   const over = await call(PATCH, cookie, "PATCH", `/api/transactions/${expenseId}`, {
     amount: 980,
-  });
+  }, { id: expenseId });
   if (over.body.budgetAlert !== false) die("editar ya estando sobre el 90% repitió la alerta");
   if ((await budgetAudits()) !== 1) die("se registró más de un BUDGET_ALERT sin cruce nuevo");
 
   // 5) Editar a 850: vuelve a bajar del umbral, sin alerta.
   const down = await call(PATCH, cookie, "PATCH", `/api/transactions/${expenseId}`, {
     amount: 850,
-  });
+  }, { id: expenseId });
   if (down.body.budgetAlert !== false) die("bajar del 90% debería quedar sin alerta");
   if ((await budgetAudits()) !== 1) die("bajar del umbral registró un BUDGET_ALERT");
 
@@ -110,12 +111,14 @@ async function main(): Promise<void> {
   const convert = await call(PATCH, cookie, "PATCH", `/api/transactions/${incomeId}`, {
     type: "EXPENSE",
     amount: 950,
-  });
+  }, { id: incomeId });
   if (convert.body.budgetAlert !== true) die("ingreso->gasto que cruza no disparó la alerta");
   if ((await budgetAudits()) !== 2) die("esperaba 2 eventos BUDGET_ALERT en total");
 
   // 7) Borrar el primer gasto: el total baja, el umbral nunca se cruza hacia arriba.
-  const del = await call(DELETE, cookie, "DELETE", `/api/transactions/${expenseId}`);
+  const del = await call(DELETE, cookie, "DELETE", `/api/transactions/${expenseId}`, undefined, {
+    id: expenseId,
+  });
   if (del.status !== 200) die(`borrar respondió ${del.status} (esperaba 200)`);
   if ((await budgetAudits()) !== 2) die("borrar un gasto registró BUDGET_ALERT (no debería)");
 
