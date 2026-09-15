@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { SearchX } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { Button } from "@/components/ui/primitives";
 
 /**
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/primitives";
  * solicitada (GET /cualquier-cosa-inexistente devuelve esta página).
  */
 export default async function NotFound() {
+  const locale = await getLocale();
   const t = await getTranslations("notFound");
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-5">
@@ -19,7 +20,7 @@ export default async function NotFound() {
         <p className="max-w-xs text-sm text-muted-foreground">
           {t("message")}
         </p>
-        <Link href="/dashboard">
+        <Link href={`/${locale}/dashboard`}>
           <Button className="mt-2">{t("backHome")}</Button>
         </Link>
       </div>

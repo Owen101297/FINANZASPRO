@@ -7,10 +7,11 @@ import { Mail, Lock, User, Loader2 } from "lucide-react";
 import { api, ApiClientError } from "@/lib/client-api";
 import { Button, Input, Label } from "@/components/ui/primitives";
 import { useToast } from "@/components/ui/toast";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export default function RegisterPage() {
   const t = useTranslations("auth.register");
+  const locale = useLocale();
   const router = useRouter();
   const toast = useToast();
 
@@ -40,7 +41,7 @@ export default function RegisterPage() {
         password,
       });
       toast(t("success"), "success");
-      router.push("/login");
+      router.push(`/${locale}/login`);
     } catch (err) {
       const message =
         err instanceof ApiClientError ? err.message : t("error");
@@ -144,7 +145,7 @@ export default function RegisterPage() {
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         {t("hasAccount")}{" "}
-        <Link href="/login" className="font-semibold text-primary hover:underline">
+        <Link href={`/${locale}/login`} className="font-semibold text-primary hover:underline">
           {t("login")}
         </Link>
       </p>

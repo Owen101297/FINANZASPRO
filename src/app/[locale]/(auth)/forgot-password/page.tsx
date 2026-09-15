@@ -6,10 +6,11 @@ import { Mail, Loader2, CheckCircle2 } from "lucide-react";
 import { api, ApiClientError } from "@/lib/client-api";
 import { Button, Input, Label } from "@/components/ui/primitives";
 import { useToast } from "@/components/ui/toast";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export default function ForgotPasswordPage() {
   const t = useTranslations("auth.forgotPassword");
+  const locale = useLocale();
   const toast = useToast();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -42,7 +43,7 @@ export default function ForgotPasswordPage() {
           </p>
         </div>
         <Link
-          href="/login"
+          href={`/${locale}/login`}
           className="block text-center text-sm font-semibold text-primary hover:underline"
         >
           {t("backToLogin")}
@@ -85,7 +86,7 @@ export default function ForgotPasswordPage() {
       </form>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        <Link href="/login" className="font-semibold text-primary hover:underline">
+        <Link href={`/${locale}/login`} className="font-semibold text-primary hover:underline">
           {t("backToLogin")}
         </Link>
       </p>

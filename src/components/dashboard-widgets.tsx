@@ -8,7 +8,7 @@ import { useSession } from "@/hooks/use-session";
 import { Avatar } from "@/components/app-shell";
 import { Badge, Progress } from "@/components/ui/primitives";
 import { formatCurrency } from "@/lib/format";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 /** Encabezado de página con saludo y resumen del ciclo. */
 export function DashboardGreeting() {
@@ -32,6 +32,7 @@ export function DashboardGreeting() {
 /** Aviso para usuarios migrados que aún usan contraseña temporal. */
 export function PasswordResetBanner() {
   const { user } = useSession();
+  const locale = useLocale();
   const t = useTranslations("dashboard");
   if (!user?.passwordReset) return null;
 
@@ -42,7 +43,7 @@ export function PasswordResetBanner() {
         <p className="font-bold text-warning">{t("tempPasswordBanner")}</p>
         <p className="mt-0.5 text-muted-foreground">
           {t("tempPasswordText")}{" "}
-          <Link href="/cuenta" className="font-semibold underline underline-offset-2">
+          <Link href={`/${locale}/cuenta`} className="font-semibold underline underline-offset-2">
             {t("changeNow")}
           </Link>{" "}
           {t("toProtect")}
@@ -55,6 +56,7 @@ export function PasswordResetBanner() {
 /** Banner de alerta cuando se supera el 90% del presupuesto. */
 export function BudgetAlertBanner() {
   const { data } = useWallet();
+  const locale = useLocale();
   const t = useTranslations("dashboard");
   const [dismissed, setDismissed] = useState(false);
 
@@ -72,7 +74,7 @@ export function BudgetAlertBanner() {
         <p className="font-bold text-warning">{t("budgetAlert")}</p>
         <p className="mt-0.5 text-muted-foreground">
           {t("budgetAlertText", { pct: String(Math.round(usedPct)), amount: formatCurrency(Math.max(0, cycleRemaining)) })}{" "}
-          <Link href="/analisis" className="font-semibold underline underline-offset-2">
+          <Link href={`/${locale}/analisis`} className="font-semibold underline underline-offset-2">
             {t("viewAnalysis")}
           </Link>
         </p>
@@ -91,6 +93,7 @@ export function BudgetAlertBanner() {
 /** Tarjeta grande con balance total y progreso del ciclo. */
 export function BalanceCard() {
   const { data, isLoading, error } = useWallet();
+  const locale = useLocale();
   const t = useTranslations("dashboard");
 
   if (error) {
@@ -100,7 +103,7 @@ export function BalanceCard() {
         className="rounded-card border border-border bg-card p-6 text-sm text-muted-foreground"
       >
         {t("summaryError")}{" "}
-        <Link href="/cuenta" className="font-semibold text-primary underline underline-offset-2">
+        <Link href={`/${locale}/cuenta`} className="font-semibold text-primary underline underline-offset-2">
           {t("retryFromAccount")}
         </Link>
         .

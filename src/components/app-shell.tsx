@@ -29,7 +29,7 @@ import { useTheme } from "@/components/theme-provider";
 import { Button, EmptyState, Input, Label } from "@/components/ui/primitives";
 import { api } from "@/lib/client-api";
 import { useToast } from "@/components/ui/toast";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 interface NavItem {
   href: string;
@@ -71,6 +71,7 @@ function isActivePath(pathname: string, href: string): boolean {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, deviceStatus, isLoading, logout, refresh } = useSession();
+  const locale = useLocale();
   const pathname = usePathname();
   const tNav = useTranslations("nav");
   const tSession = useTranslations("session");
@@ -90,7 +91,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           title={tSession("notFound")}
           hint={tSession("notFoundHint")}
         />
-        <Link href="/login" className="sr-only">
+        <Link href={`/${locale}/login`} className="sr-only">
           {tNav("goToLogin")}
         </Link>
       </div>
@@ -103,11 +104,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const resolvedNavItems = NAV_ITEMS.map(item => ({
     ...item,
+    href: `/${locale}${item.href}`,
     label: tNav(item.label),
   }));
 
   const resolvedAdminNavItem = {
     ...ADMIN_NAV_ITEM,
+    href: `/${locale}${ADMIN_NAV_ITEM.href}`,
     label: tNav(ADMIN_NAV_ITEM.label),
   };
 
@@ -121,6 +124,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const dockItems = baseDockItems.map(item => ({
     ...item,
+    href: `/${locale}${item.href}`,
     label: tNav(item.label),
   }));
 
@@ -129,18 +133,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Sidebar desktop */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-border bg-card px-4 py-6 md:flex">
-        <Brand />
+        <Brand locale={locale} />
         <nav className="mt-8 flex flex-1 flex-col gap-1 overflow-y-auto scrollbar-thin">
           {navItems.map((item) => (
             <NavLink key={item.href} item={item} active={isActivePath(pathname, item.href)} />
           ))}
         </nav>
-        <SessionFooter user={user} onLogout={logout} />
+        <SessionFooter user={user} onLogout={logout} locale={locale} />
       </aside>
 
       {/* Header mobile */}
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-card/90 px-4 py-3 backdrop-blur md:hidden">
-        <Brand compact />
+        <Brand compact locale={locale} />
         <ThemeToggle />
       </header>
 
@@ -184,9 +188,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Brand({ compact }: { compact?: boolean }) {
+function Brand({ compact, locale }: { compact?: boolean; locale: string }) {
   return (
-    <Link href="/dashboard" className="flex items-center gap-2.5 px-2">
+    <Link href={`/${locale}/dashboard`} className="flex items-center gap-2.5 px-2">
       <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/15 ring-1 ring-primary/25">
         <Wallet className="size-5 text-primary" />
       </div>
@@ -219,15 +223,17 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
 function SessionFooter({
   user,
   onLogout,
+  locale,
 }: {
   user: { name: string | null; email: string; role: string };
   onLogout: () => void;
+  locale: string;
 }) {
   const tSession = useTranslations("session");
   const tCommon = useTranslations("common");
   return (
     <div className="mt-4 border-t border-border pt-4">
-      <Link href="/cuenta" className="mb-3 flex items-center gap-3 rounded-xl px-2 py-1 transition-colors hover:bg-muted">
+      <Link href={`/${locale}/cuenta`} className="mb-3 flex items-center gap-3 rounded-xl px-2 py-1 transition-colors hover:bg-muted">
         <Avatar name={user.name ?? user.email} />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold">{user.name ?? tCommon("user")}</p>

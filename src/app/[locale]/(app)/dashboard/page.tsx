@@ -10,6 +10,7 @@ import {
   Loader2,
 } from "lucide-react";
 import useSWR from "swr";
+import { useLocale } from "next-intl";
 import { fetcher } from "@/lib/client-api";
 import { useWallet } from "@/hooks/use-wallet";
 import { formatCurrency } from "@/lib/format";
@@ -24,6 +25,7 @@ import {
 
 export default function DashboardPage() {
   const { data, isLoading } = useWallet();
+  const locale = useLocale();
 
   return (
     <div className="animate-fade-in">
@@ -35,17 +37,17 @@ export default function DashboardPage() {
       {/* Acciones rápidas */}
       <div className="mt-5 grid grid-cols-3 gap-3">
         <QuickAction
-          href="/transacciones?new=gasto"
+          href={`/${locale}/transacciones?new=gasto`}
           icon={<Plus className="size-5" />}
           label="Gasto"
         />
         <QuickAction
-          href="/transacciones?new=ingreso"
+          href={`/${locale}/transacciones?new=ingreso`}
           icon={<TrendingUp className="size-5" />}
           label="Ingreso"
         />
         <QuickAction
-          href="/transacciones?new=transferencia"
+          href={`/${locale}/transacciones?new=transferencia`}
           icon={<ArrowLeftRight className="size-5" />}
           label="Transferir"
         />
@@ -53,7 +55,7 @@ export default function DashboardPage() {
 
       {/* Cuentas */}
       <section className="mt-7" aria-label="Cuentas">
-        <SectionHeader title="Cuentas" href="/cuentas" count={data?.summary.accountCount} />
+        <SectionHeader title="Cuentas" href={`/${locale}/cuentas`} count={data?.summary.accountCount} />
         <Card className="p-4">
           {isLoading ? (
             <div className="flex justify-center py-4">
@@ -66,7 +68,7 @@ export default function DashboardPage() {
                 .map((account) => (
                   <Link
                     key={account.id}
-                    href="/transacciones"
+                    href={`/${locale}/transacciones`}
                     className="group flex items-center gap-2.5 rounded-xl border border-border bg-background/50 px-3.5 py-2.5 transition-colors hover:bg-muted"
                   >
                     <span
@@ -137,6 +139,7 @@ function SectionHeader({ title, href, count }: { title: string; href: string; co
 }
 
 function RecentTransactions() {
+  const locale = useLocale();
   const { data, isLoading } = useSWR<{ transactions: TransactionItemData[] }>(
     "/api/transactions?limit=8",
     fetcher
@@ -144,7 +147,7 @@ function RecentTransactions() {
 
   return (
     <section className="mt-7" aria-label="Movimientos recientes">
-      <SectionHeader title="Movimientos recientes" href="/transacciones" />
+      <SectionHeader title="Movimientos recientes" href={`/${locale}/transacciones`} />
       <Card className="divide-y divide-border p-2">
         {isLoading ? (
           <div className="flex justify-center py-6">

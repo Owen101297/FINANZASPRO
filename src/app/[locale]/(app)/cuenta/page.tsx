@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { KeyRound, Loader2, LogOut } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { api, ApiClientError } from "@/lib/client-api";
 import { useSession } from "@/hooks/use-session";
 import { useToast } from "@/components/ui/toast";
@@ -21,6 +21,7 @@ export default function CuentaPage() {
   const { user, logout, refresh } = useSession();
   const toast = useToast();
   const router = useRouter();
+  const locale = useLocale();
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -48,7 +49,7 @@ export default function CuentaPage() {
       setNewPassword("");
       setConfirmPassword("");
       refresh();
-      router.push("/dashboard");
+      router.push(`/${locale}/dashboard`);
     } catch (err) {
       const message =
         err instanceof ApiClientError ? err.message : t("passwordError");

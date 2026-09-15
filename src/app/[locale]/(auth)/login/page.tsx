@@ -8,7 +8,7 @@ import { api, ApiClientError } from "@/lib/client-api";
 import { getDeviceId } from "@/lib/device";
 import { Button, Input, Label } from "@/components/ui/primitives";
 import { useToast } from "@/components/ui/toast";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 export default function Page() {
   return (
@@ -20,6 +20,7 @@ export default function Page() {
 
 function LoginPage() {
   const t = useTranslations("auth.login");
+  const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
   const toast = useToast();
@@ -40,13 +41,13 @@ function LoginPage() {
         deviceId: getDeviceId(),
       });
       if (res.deviceStatus === "PENDING") {
-        router.push("/dashboard");
+        router.push(`/${locale}/dashboard`);
         return;
       }
       // Solo rutas internas; evita open redirect (//evil.com, https://…)
       const next = searchParams.get("next");
       const safeNext =
-        next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
+        next && next.startsWith("/") && !next.startsWith("//") ? next : `/${locale}/dashboard`;
       router.push(safeNext);
       router.refresh();
     } catch (err) {
@@ -117,7 +118,7 @@ function LoginPage() {
 
       <p className="mt-4 text-center text-sm">
         <Link
-          href="/forgot-password"
+          href={`/${locale}/forgot-password`}
           className="font-medium text-muted-foreground transition-colors hover:text-primary hover:underline"
         >
           {t("forgotPassword")}
@@ -126,7 +127,7 @@ function LoginPage() {
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         {t("noAccount")}{" "}
-        <Link href="/registro" className="font-semibold text-primary hover:underline">
+        <Link href={`/${locale}/registro`} className="font-semibold text-primary hover:underline">
           {t("register")}
         </Link>
       </p>

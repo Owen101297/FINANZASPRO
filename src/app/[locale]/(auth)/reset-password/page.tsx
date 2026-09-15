@@ -7,7 +7,7 @@ import { Lock, Loader2, CheckCircle2 } from "lucide-react";
 import { api, ApiClientError } from "@/lib/client-api";
 import { Button, Input, Label } from "@/components/ui/primitives";
 import { useToast } from "@/components/ui/toast";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export default function Page() {
   return (
@@ -19,6 +19,7 @@ export default function Page() {
 
 function ResetPasswordPage() {
   const t = useTranslations("auth.resetPassword");
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const toast = useToast();
   const token = searchParams.get("token") ?? "";
@@ -64,7 +65,7 @@ function ResetPasswordPage() {
           {t("invalidLinkMsg")}
         </p>
         <Link
-          href="/forgot-password"
+          href={`/${locale}/forgot-password`}
           className="mt-4 block text-sm font-semibold text-primary hover:underline"
         >
           {t("requestNew")}
@@ -82,7 +83,7 @@ function ResetPasswordPage() {
           {t("successMsg")}
         </p>
         <Link
-          href="/login"
+          href={`/${locale}/login`}
           className="mt-4 inline-block text-sm font-semibold text-primary hover:underline"
         >
           {t("login")}
