@@ -34,12 +34,15 @@ function securityDirectives(nonce: string): Record<string, string> {
     form-action 'self';
     frame-ancestors 'none';
     worker-src 'self';
+    report-uri /api/csp-report;
+    report-to csp-endpoint;
   `
     .replace(/\s{2,}/g, " ")
     .trim();
 
   return {
     "Content-Security-Policy": csp,
+    "Reporting-Endpoints": 'csp-endpoint="/api/csp-report"',
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
     "Referrer-Policy": "strict-origin-when-cross-origin",

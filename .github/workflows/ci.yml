@@ -107,7 +107,9 @@ jobs:
           echo "$HDRS" | grep -qi "content-security-policy:" || fail "FALTA Content-Security-Policy"
           echo "$HDRS" | grep -qi "x-content-type-options: nosniff" || fail "FALTA nosniff"
           echo "$HDRS" | grep -qi "x-frame-options: DENY" || fail "FALTA X-Frame-Options"
-          echo "smoke OK: servidor de producción sirve /login con cabeceras de seguridad"
+          echo "$HDRS" | grep -qi "reporting-endpoints:" || fail "FALTA Reporting-Endpoints"
+          echo "$HDRS" | grep -qi "report-to" || fail "FALTA report-to en CSP"
+          echo "smoke OK: servidor de producción sirve /login con cabeceras de seguridad + CSP reporting"
 
       # Ejecuta el route handler real de /api/auth/register con NextRequest
       # contra el Postgres efímero y verifica el invariante del bootstrap: dos
@@ -135,6 +137,11 @@ jobs:
           DATABASE_URL: postgresql://finanzas:finanzas@localhost:5432/finanzas_test
           AUTH_SECRET: ci-integration-secret-1234567890abcdef
         run: npx tsx scripts/ci-budget-test.ts
+
+      # Test del endpoint de reporte de violaciones CSP (P12).
+      # Valida que el handler acepta reports W3C y React, y devuelve 204.
+      - name: Test del endpoint CSP report
+        run: npx tsx scripts/ci-csp-report-test.ts
 
       # Ejecuta el route handler real POST /api/admin/data-cleanup y verifica
       # que la purga de P8 borra solo lo antiguo (audit_logs > 365 días, tokens
