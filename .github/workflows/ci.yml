@@ -107,6 +107,8 @@ jobs:
           echo "$HDRS" | grep -qi "content-security-policy:" || fail "FALTA Content-Security-Policy"
           echo "$HDRS" | grep -qi "x-content-type-options: nosniff" || fail "FALTA nosniff"
           echo "$HDRS" | grep -qi "x-frame-options: DENY" || fail "FALTA X-Frame-Options"
+          echo "$HDRS" | grep -qi "x-xss-protection: 0" || fail "FALTA X-XSS-Protection"
+          echo "$HDRS" | grep -qi "cross-origin-resource-policy: same-origin" || fail "FALTA Cross-Origin-Resource-Policy"
           echo "$HDRS" | grep -qi "reporting-endpoints:" || fail "FALTA Reporting-Endpoints"
           echo "$HDRS" | grep -qi "report-to" || fail "FALTA report-to en CSP"
           echo "smoke OK: servidor de producción sirve /login con cabeceras de seguridad + CSP reporting"
