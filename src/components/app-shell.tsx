@@ -14,6 +14,7 @@ import {
   Repeat,
   Target,
   ChartPie,
+  Users,
   ShieldCheck,
   LogOut,
   Sun,
@@ -25,6 +26,7 @@ import {
   KeyRound,
   MoreHorizontal,
   X,
+  CreditCard,
 } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
 import { useTheme } from "@/components/theme-provider";
@@ -47,9 +49,11 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/categorias", label: "categories", icon: <Tags className="size-5" /> },
   { href: "/ciclo", label: "cycle", icon: <CalendarClock className="size-5" /> },
   { href: "/deudas", label: "debts", icon: <Landmark className="size-5" /> },
+  { href: "/plan-pagos", label: "paymentPlan", icon: <CreditCard className="size-5" /> },
   { href: "/suscripciones", label: "subscriptions", icon: <Repeat className="size-5" /> },
   { href: "/metas", label: "goals", icon: <Target className="size-5" /> },
   { href: "/analisis", label: "analysis", icon: <ChartPie className="size-5" /> },
+  { href: "/comunidad", label: "community", icon: <Users className="size-5" /> },
   { href: "/cuenta", label: "myAccount", icon: <UserCog className="size-5" /> },
 ];
 

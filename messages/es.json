@@ -34,6 +34,7 @@
     "subscriptions": "Suscripciones",
     "goals": "Metas",
     "analysis": "Análisis",
+    "community": "Comunidad",
     "myAccount": "Mi cuenta",
     "admin": "Admin",
     "more": "Más",
@@ -41,7 +42,8 @@
     "mainNav": "Navegación principal",
     "closeSession": "Cerrar sesión",
     "changeTheme": "Cambiar tema",
-    "goToLogin": "Ir al login"
+    "goToLogin": "Ir al login",
+    "paymentPlan": "Plan de pagos"
   },
   "session": {
     "notFound": "Sesión no encontrada",
@@ -130,7 +132,15 @@
     "loadError": "No se pudieron cargar los movimientos",
     "loadErrorHint": "Revisa tu conexión e intenta de nuevo.",
     "empty": "Sin movimientos este mes",
-    "emptyHint": "Toca el botón + para registrar un gasto, ingreso o transferencia."
+    "emptyHint": "Toca el botón + para registrar un gasto, ingreso o transferencia.",
+    "selectMode": "Seleccionar",
+    "selectAll": "Seleccionar todo",
+    "deselectAll": "Deseleccionar todo",
+    "cancel": "Cancelar",
+    "selected": "{count} seleccionados",
+    "deleteSelected": "Eliminar",
+    "confirmBulkDelete": "¿Eliminar {count} transacciones?",
+    "bulkDeleted": "{count} transacciones eliminadas"
   },
   "cuentas": {
     "title": "Cuentas",
@@ -401,5 +411,30 @@
   },
   "metadata": {
     "description": "Control total de tus finanzas personales"
+  },
+  "comunidad": {
+    "title": "Comunidad",
+    "subtitle": "Administradores del sistema",
+    "accounts": "Cuentas",
+    "loadError": "No se pudo cargar la comunidad",
+    "loadErrorHint": "Revisa tu conexión e intenta de nuevo.",
+    "empty": "Sin administradores",
+    "emptyHint": "No hay administradores registrados aún."
+  },
+  "planPagos": {
+    "title": "Plan de Pagos",
+    "subtitle": "Calendario de pagos y abonos",
+    "totalDebt": "Deuda total",
+    "dueThisMonth": "Vence este mes",
+    "overdueWarning": "{count} deuda(s) vencida(s)",
+    "schedule": "Calendario",
+    "pay": "Abonar",
+    "makePayment": "Registrar abono",
+    "remaining": "Saldo pendiente",
+    "paymentAmount": "Monto del abono",
+    "confirmPayment": "Confirmar abono",
+    "paymentRecorded": "Abono de {amount} registrado",
+    "empty": "Sin deudas activas",
+    "emptyHint": "Registra una deuda en la sección de Deudas para ver tu plan de pagos."
   }
 }

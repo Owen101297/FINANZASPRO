@@ -41,7 +41,9 @@
     "mainNav": "Main navigation",
     "closeSession": "Close session",
     "changeTheme": "Change theme",
-    "goToLogin": "Go to login"
+    "goToLogin": "Go to login",
+    "community": "Community",
+    "paymentPlan": "Payment plan"
   },
   "session": {
     "notFound": "Session not found",
@@ -130,7 +132,15 @@
     "loadError": "Could not load transactions",
     "loadErrorHint": "Check your connection and try again.",
     "empty": "No transactions this month",
-    "emptyHint": "Tap the + button to record an expense, income, or transfer."
+    "emptyHint": "Tap the + button to record an expense, income, or transfer.",
+    "selectMode": "Select",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "cancel": "Cancel",
+    "selected": "{count} selected",
+    "deleteSelected": "Delete",
+    "confirmBulkDelete": "Delete {count} transactions?",
+    "bulkDeleted": "{count} transactions deleted"
   },
   "cuentas": {
     "title": "Accounts",
@@ -401,5 +411,30 @@
   },
   "metadata": {
     "description": "Full control of your personal finances"
+  },
+  "comunidad": {
+    "title": "Community",
+    "subtitle": "System administrators",
+    "accounts": "Accounts",
+    "loadError": "Could not load community",
+    "loadErrorHint": "Check your connection and try again.",
+    "empty": "No administrators",
+    "emptyHint": "No administrators registered yet."
+  },
+  "planPagos": {
+    "title": "Payment Plan",
+    "subtitle": "Payment schedule and installments",
+    "totalDebt": "Total debt",
+    "dueThisMonth": "Due this month",
+    "overdueWarning": "{count} overdue debt(s)",
+    "schedule": "Schedule",
+    "pay": "Pay",
+    "makePayment": "Record payment",
+    "remaining": "Remaining balance",
+    "paymentAmount": "Payment amount",
+    "confirmPayment": "Confirm payment",
+    "paymentRecorded": "Payment of {amount} recorded",
+    "empty": "No active debts",
+    "emptyHint": "Register a debt in the Debts section to see your payment plan."
   }
 }
