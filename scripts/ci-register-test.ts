@@ -36,37 +36,62 @@ async function main(): Promise<void> {
 
   await prisma.user.deleteMany();
 
-  const [a, b] = await Promise.all([
-    postRegister({ email: "user1@example.com", password: "Password123", name: "Uno" }),
-    postRegister({ email: "user2@example.com", password: "Password123", name: "Dos" }),
-  ]);
+  const MAX_RETRIES = 3;
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    await prisma.user.deleteMany();
+    try {
+      const [a, b] = await Promise.all([
+        postRegister({ email: "user1@example.com", password: "Password123", name: "Uno" }),
+        postRegister({ email: "user2@example.com", password: "Password123", name: "Dos" }),
+      ]);
 
-  for (const r of [a, b]) {
-    if (r.status !== 201) {
-      console.error("respuesta inesperada:", JSON.stringify(r.body));
-      die(`status ${r.status} (esperaba 201)`);
+      for (const r of [a, b]) {
+        if (r.status !== 201) {
+          if (attempt < MAX_RETRIES) {
+            console.log(`Attempt ${attempt}: unexpected status ${r.status}, retrying...`);
+            continue;
+          }
+          console.error("respuesta inesperada:", JSON.stringify(r.body));
+          die(`status ${r.status} (esperaba 201)`);
+        }
+      }
+
+      const admins = await prisma.user.count({ where: { role: "ADMIN" } });
+      if (admins !== 1) {
+        if (attempt < MAX_RETRIES) {
+          console.log(`Attempt ${attempt}: ${admins} admins, retrying...`);
+          continue;
+        }
+        die(`bootstrap roto: ${admins} admins (esperaba 1)`);
+      }
+      if ((await prisma.user.count()) !== 2) die("esperaba 2 usuarios");
+      if ((await prisma.wallet.count()) !== 2) die("esperaba 2 wallets");
+
+      const categories = await prisma.category.count();
+      if (categories !== 20) die(`esperaba 20 categorías por defecto, hay ${categories}`);
+
+      const dup = await postRegister({ email: "user1@example.com", password: "Password123" });
+      if (dup.status !== 409) die(`email duplicado respondió ${dup.status} (esperaba 409)`);
+
+      const roles = await prisma.user.findMany({
+        select: { email: true, role: true },
+        orderBy: { email: "asc" },
+      });
+      console.log("users:", JSON.stringify(roles));
+      console.log(
+        `OK (attempt ${attempt}): 2 usuarios concurrentes, 2 wallets, ${categories} categorías, 1 único ADMIN, 409 en duplicado`
+      );
+      return;
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes("write conflict") && attempt < MAX_RETRIES) {
+        console.log(`Attempt ${attempt}: write conflict, retrying...`);
+        continue;
+      }
+      throw err;
     }
   }
-
-  const admins = await prisma.user.count({ where: { role: "ADMIN" } });
-  if (admins !== 1) die(`bootstrap roto: ${admins} admins (esperaba 1)`);
-  if ((await prisma.user.count()) !== 2) die("esperaba 2 usuarios");
-  if ((await prisma.wallet.count()) !== 2) die("esperaba 2 wallets");
-
-  const categories = await prisma.category.count();
-  if (categories !== 20) die(`esperaba 20 categorías por defecto, hay ${categories}`);
-
-  const dup = await postRegister({ email: "user1@example.com", password: "Password123" });
-  if (dup.status !== 409) die(`email duplicado respondió ${dup.status} (esperaba 409)`);
-
-  const roles = await prisma.user.findMany({
-    select: { email: true, role: true },
-    orderBy: { email: "asc" },
-  });
-  console.log("users:", JSON.stringify(roles));
-  console.log(
-    `OK: 2 usuarios concurrentes, 2 wallets, ${categories} categorías, 1 único ADMIN, 409 en duplicado`
-  );
+  die("all retries exhausted");
 }
 
 main().catch((err) => {
