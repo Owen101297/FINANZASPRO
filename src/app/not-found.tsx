@@ -1,12 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { useLocale } from "next-intl";
 import { SearchX } from "lucide-react";
 import { Button } from "@/components/ui/primitives";
 
-/**
- * 404 personalizado. Se renderiza cuando Next.js no encuentra la ruta
- * solicitada (GET /cualquier-cosa-inexistente devuelve esta página).
- */
 export default function NotFound() {
+  const locale = useLocale();
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-5">
       <div className="flex flex-col items-center gap-4 text-center">
@@ -17,7 +17,7 @@ export default function NotFound() {
         <p className="max-w-xs text-sm text-muted-foreground">
           La ruta que buscas no existe o fue movida.
         </p>
-        <Link href="/dashboard">
+        <Link href={`/${locale}/dashboard`}>
           <Button className="mt-2">Volver al inicio</Button>
         </Link>
       </div>

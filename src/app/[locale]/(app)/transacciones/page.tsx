@@ -20,6 +20,13 @@ type TxDto = TransactionItemData & {
   categoryId: string | null;
 };
 
+type TransactionsResponse = {
+  transactions: TxDto[];
+  nextCursor: string | null;
+};
+
+const PAGE_SIZE = 20;
+
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
 export default function Page() {
@@ -43,23 +50,63 @@ function TransaccionesPage() {
   const [month, setMonth] = useState(currentMonth());
   const [modalState, setModalState] = useState<MovementModalState>({ open: false });
 
+  const [allTx, setAllTx] = useState<TxDto[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
   // Abrir modal por query param (?new=gasto|ingreso|transferencia)
   useEffect(() => {
     const newParam = searchParams.get("new");
     if (newParam === "gasto" || newParam === "ingreso" || newParam === "transferencia") {
       setModalState({ open: true, mode: newParam });
-      // Limpia ?new= para que navegar atrás o refrescar no reabran el modal.
       router.replace(window.location.pathname, { scroll: false });
     }
   }, [searchParams, router]);
 
-  const { data, isLoading, error, mutate } = useSWR<{ transactions: TxDto[] }>(
-    `/api/transactions?limit=500&month=${month}`,
+  // Reset pagination when month changes
+  useEffect(() => {
+    setAllTx([]);
+    setCursor(null);
+    setHasMore(true);
+  }, [month]);
+
+  const { data, isLoading, error } = useSWR<TransactionsResponse>(
+    `/api/transactions?limit=${PAGE_SIZE}&month=${month}`,
     fetcher
   );
 
+  // Merge first page data
+  useEffect(() => {
+    if (data) {
+      setAllTx(prev => {
+        if (prev.length > 0) return prev;
+        return data.transactions;
+      });
+      setCursor(data.nextCursor);
+      setHasMore(data.nextCursor !== null);
+    }
+  }, [data]);
+
+  async function loadMore() {
+    if (!cursor) return;
+    setLoadingMore(true);
+    try {
+      const res = await fetcher<TransactionsResponse>(
+        `/api/transactions?limit=${PAGE_SIZE}&month=${month}&cursor=${cursor}`
+      );
+      setAllTx(prev => [...prev, ...res.transactions]);
+      setCursor(res.nextCursor);
+      setHasMore(res.nextCursor !== null);
+    } catch {
+      // Silenciar error; el usuario puede reintentar
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
   const grouped = useMemo(() => {
-    const list = (data?.transactions ?? []).slice();
+    const list = allTx.slice();
     const groups = new Map<string, TxDto[]>();
     for (const tx of list) {
       const key = tx.date.slice(0, 10);
@@ -68,15 +115,15 @@ function TransaccionesPage() {
       else groups.set(key, [tx]);
     }
     return Array.from(groups.entries()).sort((a, b) => b[0].localeCompare(a[0]));
-  }, [data]);
+  }, [allTx]);
 
   const monthTotal = useMemo(() => {
     return round2(
-      (data?.transactions ?? [])
+      allTx
         .filter((t) => t.date.startsWith(month))
         .reduce((acc, t) => acc + (t.type === "EXPENSE" ? -t.amount : t.amount), 0)
     );
-  }, [data, month]);
+  }, [allTx, month]);
 
   function openEdit(tx: TransactionItemData) {
     setModalState({
@@ -95,7 +142,10 @@ function TransaccionesPage() {
 
   function closeModal() {
     setModalState({ open: false });
-    mutate();
+    // Refrescar: reset pagination
+    setAllTx([]);
+    setCursor(null);
+    setHasMore(true);
   }
 
   return (
@@ -183,6 +233,22 @@ function TransaccionesPage() {
               </section>
             );
           })}
+
+          {hasMore && (
+            <div className="flex justify-center pt-2">
+              <button
+                onClick={loadMore}
+                disabled={loadingMore}
+                className="rounded-xl border border-border px-6 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
+              >
+                {loadingMore ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  t("loadMore")
+                )}
+              </button>
+            </div>
+          )}
         </div>
       )}
 

@@ -23,6 +23,8 @@ import {
   Loader2,
   UserCog,
   KeyRound,
+  MoreHorizontal,
+  X,
 } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
 import { useTheme } from "@/components/theme-provider";
@@ -58,10 +60,10 @@ const ADMIN_NAV_ITEM: NavItem = {
 };
 
 const MOBILE_DOCK_BASE: NavItem[] = [
-  NAV_ITEMS[0] as NavItem,
-  NAV_ITEMS[1] as NavItem,
-  NAV_ITEMS[8] as NavItem,
-  NAV_ITEMS[7] as NavItem,
+  NAV_ITEMS[0] as NavItem, // Dashboard
+  NAV_ITEMS[1] as NavItem, // Transacciones
+  NAV_ITEMS[2] as NavItem, // Cuentas
+  NAV_ITEMS[3] as NavItem, // Categorías
 ];
 
 /** Activo solo por segmento exacto ("/cuenta" no marca "/cuentas"). */
@@ -75,6 +77,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const tNav = useTranslations("nav");
   const tSession = useTranslations("session");
+  const [showMore, setShowMore] = useState(false);
 
   if (isLoading) {
     return (
@@ -117,16 +120,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const navItems =
     user.role === "ADMIN" ? [...resolvedNavItems, resolvedAdminNavItem] : resolvedNavItems;
 
-  const baseDockItems =
+  const baseDockItems: NavItem[] =
     user.role === "ADMIN"
-      ? [(MOBILE_DOCK_BASE[0] as NavItem), (MOBILE_DOCK_BASE[1] as NavItem), ADMIN_NAV_ITEM]
+      ? [MOBILE_DOCK_BASE[0] as NavItem, MOBILE_DOCK_BASE[1] as NavItem, MOBILE_DOCK_BASE[2] as NavItem, MOBILE_DOCK_BASE[3] as NavItem]
       : MOBILE_DOCK_BASE;
 
-  const dockItems = baseDockItems.map(item => ({
+  const dockItems = baseDockItems.map((item: NavItem) => ({
     ...item,
     href: `/${locale}${item.href}`,
     label: tNav(item.label),
   }));
+
+  const moreItems = navItems.filter((item: NavItem) =>
+    !baseDockItems.some((d: NavItem) => d.href === item.href.replace(`/${locale}`, ""))
+  );
 
   return (
     <div className="min-h-dvh bg-background">
@@ -176,14 +183,58 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           );
         })}
         <button
-          onClick={logout}
-          aria-label={tNav("closeSession")}
-          className="flex min-w-14 flex-col items-center gap-0.5 rounded-xl px-3 py-2 text-[10px] font-semibold text-muted-foreground transition-colors hover:text-destructive"
+          onClick={() => setShowMore(true)}
+          aria-label={tNav("more")}
+          className="flex min-w-14 flex-col items-center gap-0.5 rounded-xl px-3 py-2 text-[10px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
         >
-          <LogOut className="size-5" />
-          {tNav("logout")}
+          <MoreHorizontal className="size-5" />
+          {tNav("more")}
         </button>
       </nav>
+
+      {/* Bottom sheet "Más" */}
+      {showMore && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowMore(false)} />
+          <div className="absolute inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto rounded-t-2xl border border-border bg-card p-4 pb-28 shadow-xl animate-slide-up">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-bold">{tNav("more")}</h2>
+              <button onClick={() => setShowMore(false)} className="rounded-lg p-1 hover:bg-muted">
+                <X className="size-5" />
+              </button>
+            </div>
+            <nav className="flex flex-col gap-1">
+              {moreItems.map((item) => {
+                const active = isActivePath(pathname, item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setShowMore(false)}
+                    className={clsx(
+                      "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors",
+                      active
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    {item.icon}
+                    {item.label}
+                  </Link>
+                );
+              })}
+              <hr className="my-2 border-border" />
+              <button
+                onClick={() => { setShowMore(false); logout(); }}
+                className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+              >
+                <LogOut className="size-5" />
+                {tNav("logout")}
+              </button>
+            </nav>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

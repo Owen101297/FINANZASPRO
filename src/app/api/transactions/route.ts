@@ -10,6 +10,7 @@ import { evaluateBudgetCross } from "@/lib/budget-alert";
 /**
  * Lista transacciones del ciclo actual (o de un mes dado con ?month=YYYY-MM).
  * Incluye refs de cuenta y categoría para pintar la lista.
+ * Soporta paginación con cursor: ?cursor=<id>&limit=20
  */
 export const GET = route(async (req: NextRequest) => {
   const { wallet } = await requireUser(req);
@@ -27,20 +28,29 @@ export const GET = route(async (req: NextRequest) => {
     ({ start, end } = getCycleRange(wallet.cycleStartDay));
   }
 
-  const limitParam = Number(req.nextUrl.searchParams.get("limit") ?? "200");
-  const take = Math.min(Math.max(1, Math.floor(limitParam) || 200), 500);
+  const limitParam = Number(req.nextUrl.searchParams.get("limit") ?? "20");
+  const take = Math.min(Math.max(1, Math.floor(limitParam) || 20), 50);
+  const cursor = req.nextUrl.searchParams.get("cursor");
 
   const transactions = await prisma.transaction.findMany({
     where: { walletId: wallet.id, date: { gte: start, lt: end } },
     orderBy: [{ date: "desc" }, { createdAt: "desc" }],
-    take,
+    take: take + 1,
+    ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
     include: {
       account: { select: { id: true, name: true, color: true } },
       category: { select: { id: true, name: true, color: true } },
     },
   });
 
-  return NextResponse.json({ transactions: transactions.map(transactionDto) });
+  const hasMore = transactions.length > take;
+  const items = hasMore ? transactions.slice(0, take) : transactions;
+  const nextCursor = hasMore ? items[items.length - 1]!.id : null;
+
+  return NextResponse.json({
+    transactions: items.map(transactionDto),
+    nextCursor,
+  });
 });
 
 export const POST = route(async (req: NextRequest) => {

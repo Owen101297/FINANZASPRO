@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Mail, Lock, Loader2 } from "lucide-react";
+import { Mail, Lock, Loader2, Hourglass, Ban } from "lucide-react";
 import { api, ApiClientError } from "@/lib/client-api";
 import { getDeviceId } from "@/lib/device";
 import { Button, Input, Label } from "@/components/ui/primitives";
@@ -20,6 +20,7 @@ export default function Page() {
 
 function LoginPage() {
   const t = useTranslations("auth.login");
+  const tSession = useTranslations("session");
   const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -29,6 +30,7 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deviceState, setDeviceState] = useState<"idle" | "PENDING" | "BLOCKED">("idle");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -41,10 +43,14 @@ function LoginPage() {
         deviceId: getDeviceId(),
       });
       if (res.deviceStatus === "PENDING") {
-        router.push(`/${locale}/dashboard`);
+        setDeviceState("PENDING");
         return;
       }
-      // Solo rutas internas; evita open redirect (//evil.com, https://…)
+      if (res.deviceStatus === "BLOCKED") {
+        setDeviceState("BLOCKED");
+        return;
+      }
+      // Solo rutas internas; evita open redirect
       const next = searchParams.get("next");
       const safeNext =
         next && next.startsWith("/") && !next.startsWith("//") ? next : `/${locale}/dashboard`;
@@ -58,6 +64,40 @@ function LoginPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (deviceState === "PENDING") {
+    return (
+      <div className="flex flex-col items-center text-center">
+        <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-muted">
+          <Hourglass className="size-7 text-warning" />
+        </div>
+        <h1 className="mb-2 text-lg font-bold">{tSession("pendingDevice")}</h1>
+        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+          {tSession("pendingDeviceMsg")}
+        </p>
+        <Button variant="outline" onClick={() => setDeviceState("idle")} className="w-full">
+          {tSession("logoutBtn")}
+        </Button>
+      </div>
+    );
+  }
+
+  if (deviceState === "BLOCKED") {
+    return (
+      <div className="flex flex-col items-center text-center">
+        <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-muted">
+          <Ban className="size-7 text-destructive" />
+        </div>
+        <h1 className="mb-2 text-lg font-bold">{tSession("blockedDevice")}</h1>
+        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+          {tSession("blockedDeviceMsg")}
+        </p>
+        <Button variant="outline" onClick={() => setDeviceState("idle")} className="w-full">
+          {tSession("logoutBtn")}
+        </Button>
+      </div>
+    );
   }
 
   return (

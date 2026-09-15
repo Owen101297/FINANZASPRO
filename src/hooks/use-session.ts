@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { api } from "@/lib/client-api";
 import { useCallback } from "react";
+import { useLocale } from "next-intl";
 
 export interface SessionUser {
   id: string;
@@ -23,6 +24,7 @@ interface SessionResponse {
 const fetcher = (url: string) => api.get<SessionResponse>(url);
 
 export function useSession() {
+  const locale = useLocale();
   const { data, error, isLoading, mutate } = useSWR("/api/auth/session", fetcher, {
     revalidateOnFocus: true,
     dedupingInterval: 10_000,
@@ -35,8 +37,8 @@ export function useSession() {
       // Offline o error momentáneo: la cookie expira sola, aún así se navega al login.
     }
     mutate({ user: null, deviceStatus: null }, { revalidate: false });
-    window.location.href = "/login";
-  }, [mutate]);
+    window.location.href = `/${locale}/login`;
+  }, [mutate, locale]);
 
   return {
     user: data?.user ?? null,
