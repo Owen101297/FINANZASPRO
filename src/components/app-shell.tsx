@@ -29,6 +29,7 @@ import { useTheme } from "@/components/theme-provider";
 import { Button, EmptyState, Input, Label } from "@/components/ui/primitives";
 import { api } from "@/lib/client-api";
 import { useToast } from "@/components/ui/toast";
+import { useTranslations } from "next-intl";
 
 interface NavItem {
   href: string;
@@ -38,21 +39,21 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "Inicio", icon: <LayoutDashboard className="size-5" /> },
-  { href: "/transacciones", label: "Movimientos", icon: <Receipt className="size-5" /> },
-  { href: "/cuentas", label: "Cuentas", icon: <Wallet className="size-5" /> },
-  { href: "/categorias", label: "Categorías", icon: <Tags className="size-5" /> },
-  { href: "/ciclo", label: "Ciclo", icon: <CalendarClock className="size-5" /> },
-  { href: "/deudas", label: "Deudas", icon: <Landmark className="size-5" /> },
-  { href: "/suscripciones", label: "Suscripciones", icon: <Repeat className="size-5" /> },
-  { href: "/metas", label: "Metas", icon: <Target className="size-5" /> },
-  { href: "/analisis", label: "Análisis", icon: <ChartPie className="size-5" /> },
-  { href: "/cuenta", label: "Mi cuenta", icon: <UserCog className="size-5" /> },
+  { href: "/dashboard", label: "home", icon: <LayoutDashboard className="size-5" /> },
+  { href: "/transacciones", label: "transactions", icon: <Receipt className="size-5" /> },
+  { href: "/cuentas", label: "accounts", icon: <Wallet className="size-5" /> },
+  { href: "/categorias", label: "categories", icon: <Tags className="size-5" /> },
+  { href: "/ciclo", label: "cycle", icon: <CalendarClock className="size-5" /> },
+  { href: "/deudas", label: "debts", icon: <Landmark className="size-5" /> },
+  { href: "/suscripciones", label: "subscriptions", icon: <Repeat className="size-5" /> },
+  { href: "/metas", label: "goals", icon: <Target className="size-5" /> },
+  { href: "/analisis", label: "analysis", icon: <ChartPie className="size-5" /> },
+  { href: "/cuenta", label: "myAccount", icon: <UserCog className="size-5" /> },
 ];
 
 const ADMIN_NAV_ITEM: NavItem = {
   href: "/admin",
-  label: "Admin",
+  label: "admin",
   icon: <ShieldCheck className="size-5" />,
 };
 
@@ -71,6 +72,8 @@ function isActivePath(pathname: string, href: string): boolean {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, deviceStatus, isLoading, logout, refresh } = useSession();
   const pathname = usePathname();
+  const tNav = useTranslations("nav");
+  const tSession = useTranslations("session");
 
   if (isLoading) {
     return (
@@ -84,11 +87,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-background px-6">
         <EmptyState
-          title="Sesión no encontrada"
-          hint="Vuelve a iniciar sesión para continuar."
+          title={tSession("notFound")}
+          hint={tSession("notFoundHint")}
         />
         <Link href="/login" className="sr-only">
-          Ir al login
+          {tNav("goToLogin")}
         </Link>
       </div>
     );
@@ -98,13 +101,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (deviceStatus === "PENDING") return <DevicePendingScreen logout={logout} />;
   if (deviceStatus === "BLOCKED") return <DeviceBlockedScreen logout={logout} />;
 
-  const navItems =
-    user.role === "ADMIN" ? [...NAV_ITEMS, ADMIN_NAV_ITEM] : NAV_ITEMS;
+  const resolvedNavItems = NAV_ITEMS.map(item => ({
+    ...item,
+    label: tNav(item.label),
+  }));
 
-  const dockItems =
+  const resolvedAdminNavItem = {
+    ...ADMIN_NAV_ITEM,
+    label: tNav(ADMIN_NAV_ITEM.label),
+  };
+
+  const navItems =
+    user.role === "ADMIN" ? [...resolvedNavItems, resolvedAdminNavItem] : resolvedNavItems;
+
+  const baseDockItems =
     user.role === "ADMIN"
       ? [(MOBILE_DOCK_BASE[0] as NavItem), (MOBILE_DOCK_BASE[1] as NavItem), ADMIN_NAV_ITEM]
       : MOBILE_DOCK_BASE;
+
+  const dockItems = baseDockItems.map(item => ({
+    ...item,
+    label: tNav(item.label),
+  }));
 
   return (
     <div className="min-h-dvh bg-background">
@@ -133,7 +151,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Dock móvil */}
       <nav
-        aria-label="Navegación principal"
+        aria-label={tNav("mainNav")}
         className="fixed inset-x-3 bottom-3 z-40 flex items-center justify-around rounded-2xl border border-border bg-card/95 px-2 py-1.5 shadow-xl shadow-black/20 backdrop-blur safe-bottom md:hidden"
       >
         {dockItems.map((item) => {
@@ -155,11 +173,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         })}
         <button
           onClick={logout}
-          aria-label="Cerrar sesión"
+          aria-label={tNav("closeSession")}
           className="flex min-w-14 flex-col items-center gap-0.5 rounded-xl px-3 py-2 text-[10px] font-semibold text-muted-foreground transition-colors hover:text-destructive"
         >
           <LogOut className="size-5" />
-          Salir
+          {tNav("logout")}
         </button>
       </nav>
     </div>
@@ -205,19 +223,21 @@ function SessionFooter({
   user: { name: string | null; email: string; role: string };
   onLogout: () => void;
 }) {
+  const tSession = useTranslations("session");
+  const tCommon = useTranslations("common");
   return (
     <div className="mt-4 border-t border-border pt-4">
       <Link href="/cuenta" className="mb-3 flex items-center gap-3 rounded-xl px-2 py-1 transition-colors hover:bg-muted">
         <Avatar name={user.name ?? user.email} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">{user.name ?? "Usuario"}</p>
+          <p className="truncate text-sm font-semibold">{user.name ?? tCommon("user")}</p>
           <p className="truncate text-xs text-muted-foreground">{user.email}</p>
         </div>
       </Link>
       <div className="flex items-center gap-2 px-2">
         <ThemeToggle />
         <Button variant="ghost" onClick={onLogout} className="flex-1 justify-start px-3 text-xs">
-          <LogOut className="size-4" /> Cerrar sesión
+          <LogOut className="size-4" /> {tSession("logoutBtn")}
         </Button>
       </div>
     </div>
@@ -240,8 +260,9 @@ export function Avatar({ name }: { name: string }) {
 
 function ThemeToggle() {
   const { theme, toggle } = useTheme();
+  const tNav = useTranslations("nav");
   return (
-    <Button variant="ghost" size="sm" onClick={toggle} aria-label="Cambiar tema" className="px-2.5">
+    <Button variant="ghost" size="sm" onClick={toggle} aria-label={tNav("changeTheme")} className="px-2.5">
       {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
     </Button>
   );
@@ -255,6 +276,7 @@ function PasswordResetScreen({
   logout: () => void;
 }) {
   const toast = useToast();
+  const tSession = useTranslations("session");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [saving, setSaving] = useState(false);
@@ -267,12 +289,12 @@ function PasswordResetScreen({
         currentPassword,
         newPassword,
       });
-      toast("Contraseña actualizada", "success");
+      toast(tSession("passwordUpdated"), "success");
       setCurrentPassword("");
       setNewPassword("");
       refresh();
     } catch (err) {
-      toast(err instanceof Error ? err.message : "No se pudo cambiar la contraseña", "error");
+      toast(err instanceof Error ? err.message : tSession("passwordError"), "error");
     } finally {
       setSaving(false);
     }
@@ -286,13 +308,13 @@ function PasswordResetScreen({
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="text-center">
-            <h1 className="text-lg font-bold">Cambia tu contraseña temporal</h1>
+            <h1 className="text-lg font-bold">{tSession("tempPassword")}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Por seguridad, debes definir una contraseña nueva antes de acceder a tus finanzas.
+              {tSession("tempPasswordDesc")}
             </p>
           </div>
           <div>
-            <Label htmlFor="pw-current">Contraseña actual</Label>
+            <Label htmlFor="pw-current">{tSession("currentPassword")}</Label>
             <Input
               id="pw-current"
               type="password"
@@ -303,7 +325,7 @@ function PasswordResetScreen({
             />
           </div>
           <div>
-            <Label htmlFor="pw-new">Nueva contraseña</Label>
+            <Label htmlFor="pw-new">{tSession("newPassword")}</Label>
             <Input
               id="pw-new"
               type="password"
@@ -314,14 +336,14 @@ function PasswordResetScreen({
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
             />
-            <p className="mt-1 text-xs text-muted-foreground">Mínimo 8 caracteres.</p>
+            <p className="mt-1 text-xs text-muted-foreground">{tSession("minChars")}</p>
           </div>
           <Button type="submit" disabled={saving} className="w-full">
             {saving && <Loader2 className="size-4 animate-spin" />}
-            Guardar contraseña
+            {tSession("savePassword")}
           </Button>
           <Button type="button" variant="ghost" onClick={logout} className="w-full text-xs">
-            Cerrar sesión
+            {tSession("logoutBtn")}
           </Button>
         </form>
       </div>
@@ -330,22 +352,24 @@ function PasswordResetScreen({
 }
 
 function DevicePendingScreen({ logout }: { logout: () => void }) {
+  const tSession = useTranslations("session");
   return (
     <GateScreen
       icon={<Hourglass className="size-7 text-warning" />}
-      title="Dispositivo pendiente de aprobación"
-      message="Un administrador debe autorizar este dispositivo antes de que puedas acceder a tus finanzas. Recibirás acceso en cuanto sea aprobado."
+      title={tSession("pendingDevice")}
+      message={tSession("pendingDeviceMsg")}
       onLogout={logout}
     />
   );
 }
 
 function DeviceBlockedScreen({ logout }: { logout: () => void }) {
+  const tSession = useTranslations("session");
   return (
     <GateScreen
       icon={<Ban className="size-7 text-destructive" />}
-      title="Dispositivo bloqueado"
-      message="Este dispositivo fue bloqueado por un administrador. Si crees que es un error, contacta al administrador de tu cuenta."
+      title={tSession("blockedDevice")}
+      message={tSession("blockedDeviceMsg")}
       onLogout={logout}
     />
   );
@@ -362,6 +386,7 @@ function GateScreen({
   message: string;
   onLogout: () => void;
 }) {
+  const tSession = useTranslations("session");
   return (
     <div className="flex min-h-dvh items-center justify-center bg-background px-6">
       <div className="w-full max-w-sm animate-scale-in rounded-card border border-border bg-card p-8 text-center shadow-xl shadow-black/5">
@@ -371,7 +396,7 @@ function GateScreen({
         <h1 className="mb-2 text-lg font-bold">{title}</h1>
         <p className="mb-6 text-sm leading-relaxed text-muted-foreground">{message}</p>
         <Button variant="outline" onClick={onLogout} className="w-full">
-          Cerrar sesión
+          {tSession("logoutBtn")}
         </Button>
       </div>
     </div>

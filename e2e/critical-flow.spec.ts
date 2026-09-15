@@ -2,27 +2,26 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Páginas públicas", () => {
   test("login carga con formulario", async ({ page }) => {
-    await page.goto("/login");
+    await page.goto("/es/login");
     await expect(page.locator("input[type='password']").first()).toBeVisible();
   });
 
   test("registro carga con formulario", async ({ page }) => {
-    await page.goto("/registro");
+    await page.goto("/es/registro");
     await expect(page.locator("input[type='password']").first()).toBeVisible();
   });
 
   test("forgot-password carga correctamente", async ({ page }) => {
-    const res = await page.goto("/forgot-password");
-    // 200 or 500 (500 when AUTH_SECRET is missing in test env)
+    const res = await page.goto("/es/forgot-password");
     expect([200, 500]).toContain(res?.status());
   });
 
   test("página inexistente retorna 404", async ({ page }) => {
-    const res = await page.goto("/esta-pagina-no-existe-xyz");
+    const res = await page.goto("/es/esta-pagina-no-existe-xyz");
     expect(res?.status()).toBe(404);
   });
 
-  test("landing redirige o carga", async ({ page }) => {
+  test("landing redirige a /es", async ({ page }) => {
     const res = await page.goto("/");
     expect(res?.status()).toBeLessThan(500);
   });
@@ -30,17 +29,17 @@ test.describe("Páginas públicas", () => {
 
 test.describe("Protección de rutas", () => {
   test("dashboard redirige a login sin sesión", async ({ page }) => {
-    await page.goto("/dashboard");
+    await page.goto("/es/dashboard");
     await expect(page).toHaveURL(/.*login/, { timeout: 10000 });
   });
 
   test("transacciones redirige a login sin sesión", async ({ page }) => {
-    await page.goto("/transacciones");
+    await page.goto("/es/transacciones");
     await expect(page).toHaveURL(/.*login/, { timeout: 10000 });
   });
 
   test("admin redirige a login sin sesión", async ({ page }) => {
-    await page.goto("/admin");
+    await page.goto("/es/admin");
     await expect(page).toHaveURL(/.*login/, { timeout: 10000 });
   });
 });
@@ -60,7 +59,6 @@ test.describe("API sin autenticación", () => {
     const res = await request.post("/api/auth/login", {
       data: { email: "test@test.com", password: "wrong", deviceId: "TEST123" },
     });
-    // Should return 401, 400, or 500 (500 when AUTH_SECRET is missing in test env)
     expect([400, 401, 500]).toContain(res.status());
   });
 });

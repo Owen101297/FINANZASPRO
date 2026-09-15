@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button, Modal } from "@/components/ui/primitives";
 
 /**
@@ -22,12 +23,13 @@ export function useConfirm() {
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
   const resolveRef = useRef<(v: boolean) => void>(undefined);
+  const t = useTranslations("common");
 
-  const confirm = useCallback((t: string, m: string): Promise<boolean> => {
+  const confirm = useCallback((titleText: string, messageText: string): Promise<boolean> => {
     return new Promise<boolean>((resolve) => {
       resolveRef.current = resolve;
-      setTitle(t);
-      setMessage(m);
+      setTitle(titleText);
+      setMessage(messageText);
       setOpen(true);
     });
   }, []);
@@ -48,10 +50,10 @@ export function useConfirm() {
             onClick={() => close(false)}
             className="flex-1"
           >
-            Cancelar
+            {t("cancel")}
           </Button>
           <Button variant="danger" onClick={() => close(true)}>
-            Confirmar
+            {t("confirm")}
           </Button>
         </div>
       </Modal>

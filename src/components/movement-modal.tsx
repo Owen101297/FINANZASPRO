@@ -8,6 +8,7 @@ import { useWallet } from "@/hooks/use-wallet";
 import { useConfirm } from "@/hooks/use-confirm";
 import { Button, Input, Label, Modal, Select } from "@/components/ui/primitives";
 import { clsx } from "clsx";
+import { useTranslations } from "next-intl";
 
 type Mode = "gasto" | "ingreso" | "transferencia";
 
@@ -39,6 +40,8 @@ export function MovementModal({
   const { data: walletData, refresh: refreshWallet } = useWallet();
   const toast = useToast();
   const { confirm, ConfirmDialog } = useConfirm();
+  const t = useTranslations("movement");
+  const tCommon = useTranslations("common");
 
   const [mode, setMode] = useState<Mode>(state.mode ?? "gasto");
   const [amount, setAmount] = useState("");
@@ -79,19 +82,19 @@ export function MovementModal({
   async function handleSave() {
     const amountNum = Number(amount);
     if (!amount || !Number.isFinite(amountNum) || amountNum <= 0) {
-      toast("Ingresa un monto válido", "error");
+      toast(t("invalidAmount"), "error");
       return;
     }
     if (!date) {
-      toast("Selecciona una fecha", "error");
+      toast(t("selectDate"), "error");
       return;
     }
 
     setSaving(true);
     try {
       if (isTransfer) {
-        if (!accountId || !toAccountId) throw new Error("Selecciona ambas cuentas");
-        if (accountId === toAccountId) throw new Error("Las cuentas deben ser distintas");
+        if (!accountId || !toAccountId) throw new Error(t("selectBothAccounts"));
+        if (accountId === toAccountId) throw new Error(t("differentAccounts"));
         await api.post("/api/transfers", {
           fromAccountId: accountId,
           toAccountId,
@@ -99,7 +102,7 @@ export function MovementModal({
           note: note.trim() || undefined,
           date: new Date(`${date}T12:00:00`).toISOString(),
         });
-        toast("Transferencia registrada", "success");
+        toast(t("registeredTransfer"), "success");
       } else {
         const payload = {
           type: mode === "ingreso" ? ("INCOME" as const) : ("EXPENSE" as const),
@@ -111,11 +114,11 @@ export function MovementModal({
         };
         if (state.editTxId) {
           await api.patch(`/api/transactions/${state.editTxId}`, payload);
-          toast("Movimiento actualizado", "success");
+          toast(t("updated"), "success");
         } else {
           await api.post("/api/transactions", payload);
           toast(
-            payload.type === "INCOME" ? "Ingreso registrado" : "Gasto registrado",
+            payload.type === "INCOME" ? t("registeredIncome") : t("registeredExpense"),
             "success"
           );
         }
@@ -123,7 +126,7 @@ export function MovementModal({
       refreshWallet();
       onClose();
     } catch (err) {
-      toast(err instanceof Error ? err.message : "Error al guardar", "error");
+      toast(err instanceof Error ? err.message : t("saveError"), "error");
     } finally {
       setSaving(false);
     }
@@ -131,16 +134,16 @@ export function MovementModal({
 
   async function handleDelete() {
     if (!state.editTxId) return;
-    const ok = await confirm("Eliminar movimiento", "Esta acción no se puede deshacer. ¿Eliminar?");
+    const ok = await confirm(t("confirmDelete"), t("confirmDeleteMsg"));
     if (!ok) return;
     setSaving(true);
     try {
       await api.delete(`/api/transactions/${state.editTxId}`);
-      toast("Movimiento eliminado", "success");
+      toast(t("deleted"), "success");
       refreshWallet();
       onClose();
     } catch (err) {
-      toast(err instanceof Error ? err.message : "Error al eliminar", "error");
+      toast(err instanceof Error ? err.message : t("deleteError"), "error");
     } finally {
       setSaving(false);
     }
@@ -154,7 +157,7 @@ export function MovementModal({
         : "border-sky-500/40 focus:border-sky-500 text-sky-500";
 
   const title =
-    state.editTxId ? "Editar movimiento" : isTransfer ? "Nueva transferencia" : `Nuevo ${mode}`;
+    state.editTxId ? t("editMovement") : isTransfer ? t("newTransfer") : mode === "gasto" ? t("newExpense") : t("newIncome");
 
   return (
     <>
@@ -170,7 +173,7 @@ export function MovementModal({
                 mode === m ? "bg-card shadow-sm" : "text-muted-foreground hover:text-foreground"
               )}
             >
-              {m}
+              {m === "gasto" ? t("expense") : m === "ingreso" ? t("income") : t("transfer")}
             </button>
           ))}
         </div>
@@ -178,7 +181,7 @@ export function MovementModal({
 
       {/* Monto */}
       <div className="mb-4">
-        <Label htmlFor="movement-amount">Monto</Label>
+        <Label htmlFor="movement-amount">{tCommon("amount")}</Label>
         <div className="relative">
           <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-light text-muted-foreground">
             $
@@ -201,13 +204,13 @@ export function MovementModal({
       <div className="space-y-3.5">
         {!isTransfer && (
           <div>
-            <Label htmlFor="movement-category">Categoría</Label>
+            <Label htmlFor="movement-category">{t("category")}</Label>
             <Select
               id="movement-category"
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
             >
-              <option value="">Sin categoría</option>
+              <option value="">{tCommon("noCategory")}</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -218,7 +221,7 @@ export function MovementModal({
         )}
 
         <div>
-          <Label htmlFor="movement-account">{isTransfer ? "Desde" : "Cuenta"}</Label>
+          <Label htmlFor="movement-account">{isTransfer ? t("from") : t("account")}</Label>
           <Select
             id="movement-account"
             value={accountId}
@@ -228,7 +231,7 @@ export function MovementModal({
               if (v === toAccountId) setToAccountId("");
             }}
           >
-            <option value="">Sin cuenta</option>
+            <option value="">{t("noAccount")}</option>
             {activeAccounts.map((a) => (
               <option key={a.id} value={a.id}>
                 {a.name}
@@ -239,13 +242,13 @@ export function MovementModal({
 
         {isTransfer && (
           <div>
-            <Label htmlFor="movement-to">Hacia</Label>
+            <Label htmlFor="movement-to">{t("to")}</Label>
             <Select
               id="movement-to"
               value={toAccountId}
               onChange={(e) => setToAccountId(e.target.value)}
             >
-              <option value="">Selecciona cuenta destino</option>
+              <option value="">{t("selectDestAccount")}</option>
               {activeAccounts
                 .filter((a) => a.id !== accountId)
                 .map((a) => (
@@ -258,7 +261,7 @@ export function MovementModal({
         )}
 
         <div>
-          <Label htmlFor="movement-date">Fecha</Label>
+          <Label htmlFor="movement-date">{tCommon("date")}</Label>
           <Input
             id="movement-date"
             type="date"
@@ -269,12 +272,12 @@ export function MovementModal({
         </div>
 
         <div>
-          <Label htmlFor="movement-note">Nota</Label>
+          <Label htmlFor="movement-note">{tCommon("note")}</Label>
           <Input
             id="movement-note"
             type="text"
             maxLength={200}
-            placeholder="Opcional"
+            placeholder={tCommon("optional")}
             value={note}
             onChange={(e) => setNote(e.target.value)}
           />
@@ -283,16 +286,16 @@ export function MovementModal({
 
       <div className="mt-6 flex gap-3">
         {state.editTxId && (
-          <Button variant="danger" onClick={handleDelete} disabled={saving} aria-label="Eliminar movimiento">
+          <Button variant="danger" onClick={handleDelete} disabled={saving} aria-label={t("confirmDelete")}>
             <Trash2 className="size-4" />
           </Button>
         )}
         <Button variant="secondary" onClick={onClose} disabled={saving} className="flex-1">
-          Cancelar
+          {tCommon("cancel")}
         </Button>
         <Button onClick={handleSave} disabled={saving} className="flex-[2]">
           {saving && <Loader2 className="size-4 animate-spin" />}
-          Guardar
+          {tCommon("save")}
         </Button>
       </div>
     </Modal>

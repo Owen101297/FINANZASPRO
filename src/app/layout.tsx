@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
 import { ToastProvider } from "@/components/ui/toast";
 import { PwaRegister } from "@/components/pwa-register";
 
@@ -24,7 +23,6 @@ const jetbrains = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "FinanzasPro",
-  description: "Control total de tus finanzas personales",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "FinanzasPro" },
 };
@@ -43,7 +41,7 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const nonce = (await headers()).get("x-nonce");
   return (
-    <html lang="es" suppressHydrationWarning>
+    <div className={`${inter.variable} ${jetbrains.variable}`}>
       <head>
         <script
           nonce={nonce ?? undefined}
@@ -52,14 +50,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           }}
         />
       </head>
-      <body className={`${inter.variable} ${jetbrains.variable} font-sans antialiased`}>
-        <ThemeProvider>
-          <ToastProvider>
-            <PwaRegister />
-            {children}
-          </ToastProvider>
-        </ThemeProvider>
-      </body>
-    </html>
+      <ToastProvider>
+        <PwaRegister />
+        {children}
+      </ToastProvider>
+    </div>
   );
 }

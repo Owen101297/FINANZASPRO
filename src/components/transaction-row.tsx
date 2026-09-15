@@ -2,6 +2,7 @@
 
 import { clsx } from "clsx";
 import { formatCurrency, formatDayMonth } from "@/lib/format";
+import { useTranslations } from "next-intl";
 
 export interface TransactionItemData {
   id: string;
@@ -33,8 +34,9 @@ function colorFor(name: string | null, explicit?: string | null): string {
 }
 
 export function TransactionRow({ tx, onEdit }: { tx: TransactionItemData; onEdit?: (tx: TransactionItemData) => void }) {
+  const t = useTranslations("common");
   const isIncome = tx.type === "INCOME";
-  const label = tx.category?.name ?? "Sin categoría";
+  const label = tx.category?.name ?? t("noCategory");
   const color = colorFor(label, tx.category?.color);
 
   return (

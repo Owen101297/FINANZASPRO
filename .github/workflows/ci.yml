@@ -96,14 +96,14 @@ jobs:
           OK=0
           for i in $(seq 1 60); do
             if ! kill -0 $SERVER_PID 2>/dev/null; then echo "server murió durante el health check"; break; fi
-            CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 4 http://localhost:3100/login) || CODE=000
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 4 http://localhost:3100/es/login) || CODE=000
             if [ -n "$CODE" ] && [ "$CODE" != "000" ]; then OK=1; break; fi
             sleep 1
           done
-          [ "$OK" = "1" ] || fail "servidor no respondió /login (health último code=$CODE)"
+          [ "$OK" = "1" ] || fail "servidor no respondió /es/login (health último code=$CODE)"
           echo "smoke: server up (login=$CODE)"
 
-          HDRS=$(curl -sI --max-time 10 http://localhost:3100/login) || fail "no respondió HEAD en /login"
+          HDRS=$(curl -sI --max-time 10 http://localhost:3100/es/login) || fail "no respondió HEAD en /es/login"
           echo "$HDRS" | grep -qi "content-security-policy:" || fail "FALTA Content-Security-Policy"
           echo "$HDRS" | grep -qi "x-content-type-options: nosniff" || fail "FALTA nosniff"
           echo "$HDRS" | grep -qi "x-frame-options: DENY" || fail "FALTA X-Frame-Options"
