@@ -145,3 +145,18 @@ jobs:
           DATABASE_URL: postgresql://finanzas:finanzas@localhost:5432/finanzas_test
           AUTH_SECRET: ci-integration-secret-1234567890abcdef
         run: npx tsx scripts/ci-cleanup-test.ts
+
+      # Tests unitarios con vitest (funciones puras: formato, ciclos, etc.)
+      - name: Test unitarios (vitest)
+        run: npm test
+
+      # Tests E2E con Playwright (solo chromium para velocidad en CI)
+      - name: Instalar Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Test E2E (Playwright)
+        env:
+          BASE_URL: http://localhost:3100
+          AUTH_SECRET: ci-smoke-secret-1234567890123456
+          DATABASE_URL: postgresql://finanzas:finanzas@localhost:5432/finanzas_test
+        run: npx playwright test --project=chromium

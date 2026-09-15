@@ -6,6 +6,7 @@ import { Loader2, Plus, Pencil, Tags, Trash2 } from "lucide-react";
 import { clsx } from "clsx";
 import { api, fetcher } from "@/lib/client-api";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/hooks/use-confirm";
 import {
   Button,
   Card,
@@ -40,6 +41,7 @@ export default function CategoriasPage() {
   const [name, setName] = useState("");
   const [color, setColor] = useState(COLORS[0]);
   const [saving, setSaving] = useState(false);
+  const { confirm, ConfirmDialog } = useConfirm();
 
   function openCreate() {
     setEditing(null);
@@ -79,6 +81,8 @@ export default function CategoriasPage() {
   }
 
   async function handleDelete(category: CategoryDto) {
+    const ok = await confirm("Eliminar categoría", `¿Eliminar "${category.name}"? Los movimientos asociados perderán su categoría.`);
+    if (!ok) return;
     try {
       await api.delete(`/api/categories/${category.id}`);
       toast("Categoría eliminada", "success");
@@ -90,6 +94,7 @@ export default function CategoriasPage() {
   }
 
   return (
+    <>
     <div className="animate-fade-in">
       <header className="mb-5 flex items-center justify-between">
         <div>
@@ -218,5 +223,7 @@ export default function CategoriasPage() {
         </div>
       </Modal>
     </div>
+    {ConfirmDialog}
+    </>
   );
 }

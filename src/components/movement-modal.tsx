@@ -5,6 +5,7 @@ import { Loader2, Trash2 } from "lucide-react";
 import { api } from "@/lib/client-api";
 import { useToast } from "@/components/ui/toast";
 import { useWallet } from "@/hooks/use-wallet";
+import { useConfirm } from "@/hooks/use-confirm";
 import { Button, Input, Label, Modal, Select } from "@/components/ui/primitives";
 import { clsx } from "clsx";
 
@@ -37,6 +38,7 @@ export function MovementModal({
 }) {
   const { data: walletData, refresh: refreshWallet } = useWallet();
   const toast = useToast();
+  const { confirm, ConfirmDialog } = useConfirm();
 
   const [mode, setMode] = useState<Mode>(state.mode ?? "gasto");
   const [amount, setAmount] = useState("");
@@ -129,6 +131,8 @@ export function MovementModal({
 
   async function handleDelete() {
     if (!state.editTxId) return;
+    const ok = await confirm("Eliminar movimiento", "Esta acción no se puede deshacer. ¿Eliminar?");
+    if (!ok) return;
     setSaving(true);
     try {
       await api.delete(`/api/transactions/${state.editTxId}`);
@@ -153,6 +157,7 @@ export function MovementModal({
     state.editTxId ? "Editar movimiento" : isTransfer ? "Nueva transferencia" : `Nuevo ${mode}`;
 
   return (
+    <>
     <Modal open={state.open} onClose={onClose} title={title}>
       {!state.editTxId && (
         <div className="mb-5 grid grid-cols-3 gap-1 rounded-xl bg-muted p-1">
@@ -291,5 +296,7 @@ export function MovementModal({
         </Button>
       </div>
     </Modal>
+    {ConfirmDialog}
+    </>
   );
 }

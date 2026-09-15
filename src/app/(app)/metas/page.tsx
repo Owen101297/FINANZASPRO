@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { Loader2, Plus, Target, Trash2 } from "lucide-react";
 import { api, fetcher } from "@/lib/client-api";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/hooks/use-confirm";
 import {
   Badge,
   Button,
@@ -38,6 +39,7 @@ export default function MetasPage() {
   const [savedAmount, setSavedAmount] = useState("0");
   const [deadline, setDeadline] = useState("");
   const [saving, setSaving] = useState(false);
+  const { confirm, ConfirmDialog } = useConfirm();
 
   const { activeGoals, completedGoals } = useMemo(() => {
     const list = data?.goals ?? [];
@@ -106,6 +108,8 @@ export default function MetasPage() {
   }
 
   async function handleDelete(goal: GoalDto) {
+    const ok = await confirm("Eliminar meta", `¿Eliminar "${goal.name}"? Esta acción no se puede deshacer.`);
+    if (!ok) return;
     try {
       await api.delete(`/api/goals/${goal.id}`);
       toast("Meta eliminada", "success");
@@ -117,6 +121,7 @@ export default function MetasPage() {
   }
 
   return (
+    <>
     <div className="animate-fade-in">
       <header className="mb-6 flex items-center justify-between">
         <div>
@@ -245,6 +250,8 @@ export default function MetasPage() {
         </div>
       </Modal>
     </div>
+    {ConfirmDialog}
+    </>
   );
 }
 

@@ -16,6 +16,7 @@ import { clsx } from "clsx";
 import { api, fetcher } from "@/lib/client-api";
 import { useSession } from "@/hooks/use-session";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/hooks/use-confirm";
 import { Avatar } from "@/components/app-shell";
 import { Badge, Card, EmptyState, Modal } from "@/components/ui/primitives";
 import { formatCurrency } from "@/lib/format";
@@ -62,6 +63,7 @@ export default function AdminPage() {
   const [tab, setTab] = useState<Tab>("devices");
   const [confirmDelete, setConfirmDelete] = useState<UserRow | null>(null);
   const [busy, setBusy] = useState(false);
+  const { confirm, ConfirmDialog } = useConfirm();
 
   const devices = useSWR<{ devices: DeviceRow[] }>("/api/admin/devices", fetcher);
   const users = useSWR<{ users: UserRow[] }>("/api/admin/users", fetcher);
@@ -85,6 +87,8 @@ export default function AdminPage() {
   }
 
   async function deleteDevice(device: DeviceRow) {
+    const ok = await confirm("Eliminar dispositivo", `¿Eliminar el dispositivo "${device.deviceId}"?`);
+    if (!ok) return;
     try {
       await api.delete(`/api/admin/devices?deviceId=${device.id}`);
       toast("Dispositivo eliminado", "success");
@@ -124,6 +128,7 @@ export default function AdminPage() {
     devices.data?.devices.filter((d) => d.status === "PENDING").length ?? 0;
 
   return (
+    <>
     <div className="animate-fade-in">
       <header className="mb-6 flex items-center gap-3">
         <span className="flex size-11 items-center justify-center rounded-xl bg-accent/15 text-accent ring-1 ring-accent/25">
@@ -200,6 +205,8 @@ export default function AdminPage() {
         </div>
       </Modal>
     </div>
+    {ConfirmDialog}
+    </>
   );
 }
 

@@ -6,6 +6,7 @@ import { Loader2, Plus, Repeat, Trash2 } from "lucide-react";
 import { clsx } from "clsx";
 import { api, fetcher } from "@/lib/client-api";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/hooks/use-confirm";
 import { Button, Card, EmptyState, Input, Label, Modal } from "@/components/ui/primitives";
 import { formatCurrency } from "@/lib/format";
 
@@ -33,6 +34,7 @@ export default function SuscripcionesPage() {
   const [amount, setAmount] = useState("");
   const [billingDay, setBillingDay] = useState("1");
   const [saving, setSaving] = useState(false);
+  const { confirm, ConfirmDialog } = useConfirm();
 
   const { activeList, inactiveList, monthlyTotal } = useMemo(() => {
     const list = data?.subscriptions ?? [];
@@ -98,6 +100,8 @@ export default function SuscripcionesPage() {
   }
 
   async function handleDelete(subscription: SubscriptionDto) {
+    const ok = await confirm("Eliminar suscripción", `¿Eliminar "${subscription.name}"? Esta acción no se puede deshacer.`);
+    if (!ok) return;
     try {
       await api.delete(`/api/subscriptions/${subscription.id}`);
       toast("Suscripción eliminada", "success");
@@ -157,6 +161,7 @@ export default function SuscripcionesPage() {
   }
 
   return (
+    <>
     <div className="animate-fade-in">
       <header className="mb-6 flex items-center justify-between">
         <div>
@@ -272,5 +277,7 @@ export default function SuscripcionesPage() {
         </div>
       </Modal>
     </div>
+    {ConfirmDialog}
+    </>
   );
 }

@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { Loader2, Landmark, Plus, Trash2 } from "lucide-react";
 import { api, fetcher } from "@/lib/client-api";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/hooks/use-confirm";
 import {
   Badge,
   Button,
@@ -38,6 +39,7 @@ export default function DeudasPage() {
   const [paidAmount, setPaidAmount] = useState("0");
   const [dueDate, setDueDate] = useState("");
   const [saving, setSaving] = useState(false);
+  const { confirm, ConfirmDialog } = useConfirm();
 
   const summary = useMemo(() => {
     const list = data?.debts ?? [];
@@ -112,6 +114,8 @@ export default function DeudasPage() {
   }
 
   async function handleDelete(debt: DebtDto) {
+    const ok = await confirm("Eliminar deuda", `¿Eliminar "${debt.name}"? Esta acción no se puede deshacer.`);
+    if (!ok) return;
     try {
       await api.delete(`/api/debts/${debt.id}`);
       toast("Deuda eliminada", "success");
@@ -123,6 +127,7 @@ export default function DeudasPage() {
   }
 
   return (
+    <>
     <div className="animate-fade-in">
       <header className="mb-6 flex items-center justify-between">
         <div>
@@ -255,6 +260,8 @@ export default function DeudasPage() {
         </div>
       </Modal>
     </div>
+    {ConfirmDialog}
+    </>
   );
 }
 

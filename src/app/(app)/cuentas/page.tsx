@@ -6,6 +6,7 @@ import { Loader2, Plus, Wallet as WalletIcon, Pencil, Trash2 } from "lucide-reac
 import { api, fetcher } from "@/lib/client-api";
 import { useWallet } from "@/hooks/use-wallet";
 import { useToast } from "@/components/ui/toast";
+import { useConfirm } from "@/hooks/use-confirm";
 import {
   Badge,
   Button,
@@ -39,6 +40,7 @@ export default function CuentasPage() {
   const [balance, setBalance] = useState("0");
   const [color, setColor] = useState(COLORS[0]);
   const [saving, setSaving] = useState(false);
+  const { confirm, ConfirmDialog } = useConfirm();
 
   function openCreate() {
     setEditing(null);
@@ -86,6 +88,8 @@ export default function CuentasPage() {
   }
 
   async function handleDelete(account: AccountDto) {
+    const ok = await confirm("Eliminar cuenta", `¿Eliminar "${account.name}"? Los movimientos asociados perderán su cuenta.`);
+    if (!ok) return;
     setSaving(true);
     try {
       await api.delete(`/api/accounts/${account.id}`);
@@ -111,6 +115,7 @@ export default function CuentasPage() {
   }
 
   return (
+    <>
     <div className="animate-fade-in">
       <header className="mb-6 flex items-center justify-between">
         <div>
@@ -250,5 +255,7 @@ export default function CuentasPage() {
         </div>
       </Modal>
     </div>
+    {ConfirmDialog}
+    </>
   );
 }
