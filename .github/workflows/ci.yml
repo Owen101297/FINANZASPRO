@@ -96,7 +96,7 @@ jobs:
           OK=0
           for i in $(seq 1 60); do
             if ! kill -0 $SERVER_PID 2>/dev/null; then echo "server murió durante el health check"; break; fi
-            CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 4 http://localhost:3100/login)
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 4 http://localhost:3100/login) || CODE=000
             if [ -n "$CODE" ] && [ "$CODE" != "000" ]; then OK=1; break; fi
             sleep 1
           done
