@@ -38,6 +38,10 @@ async function main(): Promise<void> {
   if (!process.env.AUTH_SECRET) die("AUTH_SECRET no está definido");
 
   await prisma.user.deleteMany();
+  // Los tests anteriores dejan audit_logs/tokens huérfanos (actorId se pone a
+  // NULL al borrar users): los aislamos para que los conteos sean deterministas.
+  await prisma.auditLog.deleteMany();
+  await prisma.passwordResetToken.deleteMany();
 
   const admin = await prisma.user.create({
     data: {
