@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { route, requireUser, readJson, audit } from "@/lib/server";
+import { route, requireUser, readJson, audit, privateCache } from "@/lib/server";
 import { conflict } from "@/lib/errors";
 import { categoryCreateSchema } from "@/lib/validations";
 import { categoryDto } from "@/lib/mappers";
@@ -12,7 +12,7 @@ export const GET = route(async (req: NextRequest) => {
     where: { walletId: wallet.id },
     orderBy: [{ type: "asc" }, { name: "asc" }],
   });
-  return NextResponse.json({ categories: categories.map(categoryDto) });
+  return privateCache(NextResponse.json({ categories: categories.map(categoryDto) }));
 });
 
 export const POST = route(async (req: NextRequest) => {

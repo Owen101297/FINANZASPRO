@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { route, requireUser, readJson, audit } from "@/lib/server";
+import { route, requireUser, readJson, audit, privateCache } from "@/lib/server";
 import { badRequest } from "@/lib/errors";
 import { walletPatchSchema } from "@/lib/validations";
 import { getCycleRange, getCycleProgress } from "@/lib/cycle";
@@ -34,7 +34,7 @@ export const GET = route(async (req: NextRequest) => {
   const cycleExpenses = num(cycleAgg._sum.amount);
   const totalBalance = accounts.reduce((acc, a) => acc + num(a.balance), 0);
 
-  return NextResponse.json({
+  return privateCache(NextResponse.json({
     wallet: {
       salary,
       cycleStartDay: wallet.cycleStartDay,
@@ -55,7 +55,7 @@ export const GET = route(async (req: NextRequest) => {
     accounts: accounts.map(accountDto),
     categories: categories.map(categoryDto),
     user: { id: user.id, name: user.name, email: user.email, role: user.role },
-  });
+  }));
 });
 
 /** Actualiza salario y día de inicio del ciclo. */

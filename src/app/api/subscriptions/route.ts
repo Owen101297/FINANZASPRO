@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { route, requireUser, readJson, audit } from "@/lib/server";
+import { route, requireUser, readJson, audit, privateCache } from "@/lib/server";
 import { notFound } from "@/lib/errors";
 import { subscriptionCreateSchema } from "@/lib/validations";
 import { subscriptionDto } from "@/lib/mappers";
@@ -12,7 +12,7 @@ export const GET = route(async (req: NextRequest) => {
     orderBy: [{ active: "desc" }, { billingDay: "asc" }],
     include: { account: { select: { id: true, name: true } } },
   });
-  return NextResponse.json({ subscriptions: subscriptions.map(subscriptionDto) });
+  return privateCache(NextResponse.json({ subscriptions: subscriptions.map(subscriptionDto) }));
 });
 
 export const POST = route(async (req: NextRequest) => {

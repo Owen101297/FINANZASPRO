@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { route, requireUser } from "@/lib/server";
+import { route, requireUser, privateCache } from "@/lib/server";
 import { badRequest } from "@/lib/errors";
 import { monthParamSchema } from "@/lib/validations";
 import { num } from "@/lib/mappers";
@@ -105,8 +105,8 @@ export const GET = route(async (req: NextRequest) => {
     transactionCount: transactions.length,
   };
 
-  return NextResponse.json({
+  return privateCache(NextResponse.json({
     analysis,
     insights: buildInsights(analysis),
-  });
+  }));
 });

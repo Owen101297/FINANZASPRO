@@ -37,7 +37,11 @@ export interface WalletData {
 }
 
 export function useWallet() {
-  const { data, error, isLoading, mutate } = useSWR<WalletData>("/api/wallet", fetcher);
+  const { data, error, isLoading, mutate } = useSWR<WalletData>("/api/wallet", fetcher, {
+    revalidateOnFocus: true,
+    dedupingInterval: 5_000,
+    refreshInterval: 30_000,
+  });
   return {
     data,
     error,

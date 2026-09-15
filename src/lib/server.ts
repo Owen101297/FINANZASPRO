@@ -135,6 +135,16 @@ export async function readJson<T>(req: NextRequest): Promise<T> {
   }
 }
 
+/**
+ * Cache-Control para respuestas de datos autenticados:
+ * `private` (nunca CDN), `max-age=0` (no stale), `must-revalidate`.
+ * SWR se encarga del stale-while-revalidate en el cliente.
+ */
+export function privateCache(res: NextResponse): NextResponse {
+  res.headers.set("Cache-Control", "private, max-age=0, must-revalidate");
+  return res;
+}
+
 /** Solo valida sesión JWT y existencia del usuario (sin chequear dispositivo). */
 export async function requireSessionUser(req: NextRequest) {
   const token = req.cookies.get("fp_session")?.value;

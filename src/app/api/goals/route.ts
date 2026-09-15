@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { route, requireUser, readJson, audit } from "@/lib/server";
+import { route, requireUser, readJson, audit, privateCache } from "@/lib/server";
 import { goalCreateSchema } from "@/lib/validations";
 import { goalDto, num } from "@/lib/mappers";
 
@@ -10,7 +10,7 @@ export const GET = route(async (req: NextRequest) => {
     where: { walletId: wallet.id },
     orderBy: [{ completedAt: "asc" }, { createdAt: "desc" }],
   });
-  return NextResponse.json({ goals: goals.map(goalDto) });
+  return privateCache(NextResponse.json({ goals: goals.map(goalDto) }));
 });
 
 export const POST = route(async (req: NextRequest) => {

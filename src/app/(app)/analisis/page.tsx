@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import useSWR from "swr";
 import {
   Brain,
@@ -8,21 +8,12 @@ import {
   ChevronRight,
   Loader2,
 } from "lucide-react";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Tooltip as ChartTooltip,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { clsx } from "clsx";
 import { fetcher } from "@/lib/client-api";
 import { currentMonth, formatCurrency, monthLabel, shiftMonth } from "@/lib/format";
 import { Card, EmptyState, PageHeader } from "@/components/ui/primitives";
+
+const Charts = lazy(() => import("./charts"));
 
 interface InsightDto {
   kind: "positive" | "warning" | "danger" | "info";
@@ -131,99 +122,16 @@ export default function AnalisisPage() {
                 hint="Cuando registres gastos verás aquí su distribución."
               />
             ) : (
-              <>
-                <div className="relative mx-auto mt-2 h-56 max-w-xs">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={chartData}
-                        dataKey="total"
-                        nameKey="name"
-                        innerRadius="62%"
-                        outerRadius="92%"
-                        paddingAngle={3}
-                        strokeWidth={0}
-                      >
-                        {chartData.map((entry) => (
-                          <Cell key={entry.name} fill={entry.fill} />
-                        ))}
-                      </Pie>
-                      <ChartTooltip
-                        formatter={(value) => formatCurrency(Number(value))}
-                        contentStyle={{
-                          backgroundColor: "var(--card)",
-                          border: "1px solid var(--border)",
-                          borderRadius: 12,
-                          fontSize: 12,
-                          color: "var(--foreground)",
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Total</span>
-                    <span className="font-mono text-xl font-extrabold">
-                      {formatCurrency(data.analysis.totals.expense)}
-                    </span>
+              <Suspense
+                fallback={
+                  <div className="flex justify-center py-10">
+                    <Loader2 className="size-5 animate-spin text-muted-foreground" />
                   </div>
-                </div>
-
-                <ul className="mt-4 space-y-2">
-                  {chartData.map((c) => (
-                    <li key={c.name} className="flex items-center gap-2.5 text-sm">
-                      <span
-                        aria-hidden
-                        className="size-2.5 shrink-0 rounded-full"
-                        style={{ backgroundColor: c.fill }}
-                      />
-                      <span className="flex-1 truncate">{c.name}</span>
-                      <span className="text-xs text-muted-foreground">{c.pct}%</span>
-                      <span className="w-24 shrink-0 text-right font-mono text-xs font-bold tabular-nums">
-                        {formatCurrency(c.total)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </>
+                }
+              >
+                <Charts chartData={chartData} dailySeries={data.analysis.dailySeries} totals={data.analysis.totals} transactionCount={data.analysis.transactionCount} subscriptionsMonthly={data.analysis.subscriptionsMonthly} />
+              </Suspense>
             )}
-          </Card>
-
-          {/* Gasto diario */}
-          <Card>
-            <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              Gasto por día
-            </h2>
-            <div className="h-44">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.analysis.dailySeries}>
-                  <XAxis
-                    dataKey="day"
-                    tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
-                    axisLine={false}
-                    tickLine={false}
-                    interval={2}
-                  />
-                  <YAxis hide />
-                  <ChartTooltip
-                    cursor={{ fill: "var(--muted)", opacity: 0.5 }}
-                    formatter={(value) => [formatCurrency(Number(value)), "Gasto"]}
-                    labelFormatter={(day) => `Día ${day}`}
-                    contentStyle={{
-                      backgroundColor: "var(--card)",
-                      border: "1px solid var(--border)",
-                      borderRadius: 12,
-                      fontSize: 12,
-                      color: "var(--foreground)",
-                    }}
-                  />
-                  <Bar dataKey="total" radius={[4, 4, 0, 0]} fill="#8b5cf6" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            <p className="mt-2 text-center text-[11px] text-muted-foreground">
-              {data.analysis.transactionCount} movimientos · suscripciones activas{" "}
-              {formatCurrency(data.analysis.subscriptionsMonthly)}/mes
-            </p>
           </Card>
         </>
       )}
