@@ -5,6 +5,7 @@ import { notFound, badRequest } from "@/lib/errors";
 import { transactionCreateSchema, monthParamSchema } from "@/lib/validations";
 import { transactionDto, num } from "@/lib/mappers";
 import { getCycleRange } from "@/lib/cycle";
+import { evaluateBudgetCross } from "@/lib/budget-alert";
 
 /**
  * Lista transacciones del ciclo actual (o de un mes dado con ?month=YYYY-MM).
@@ -89,33 +90,20 @@ export const POST = route(async (req: NextRequest) => {
       });
     }
 
-    // Alerta al superar el 90% del salario en el ciclo
+    // Alerta al superar el 90% del salario en el ciclo. Solo un gasto del ciclo
+    // puede cruzar el umbral, así que se omite el cálculo para ingresos.
     let budgetAlert = false;
     const salary = num(wallet.salary);
     if (body.type === "EXPENSE" && salary > 0) {
-      const range = getCycleRange(wallet.cycleStartDay, date);
-      const aggBefore = await tx.transaction.aggregate({
-        where: {
-          walletId: wallet.id,
-          type: "EXPENSE",
-          id: { not: created.id },
-          date: { gte: range.start, lt: range.end },
-        },
-        _sum: { amount: true },
-      });
-      const prevTotal = Number(aggBefore._sum.amount ?? 0);
-      const nowTotal = prevTotal + num(created.amount);
-      if (nowTotal > salary * 0.9 && prevTotal <= salary * 0.9) {
-        budgetAlert = true;
-        await tx.auditLog.create({
-          data: {
-            actorId: user.id,
-            action: "BUDGET_ALERT",
-            targetId: user.id,
-            meta: { totalExpenses: nowTotal, salary, thresholdPct: 90 },
-          },
-        });
-      }
+      budgetAlert = await evaluateBudgetCross(
+        tx,
+        { walletId: wallet.id, salary, cycleStartDay: wallet.cycleStartDay, actorId: user.id },
+        {
+          excludeId: created.id,
+          before: null,
+          after: { type: created.type, amount: num(created.amount), date },
+        }
+      );
     }
 
     return { created, budgetAlert };

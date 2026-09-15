@@ -125,3 +125,13 @@ jobs:
         env:
           DATABASE_URL: postgresql://finanzas:finanzas@localhost:5432/finanzas_test
         run: npx tsx scripts/ci-reset-test.ts
+
+      # Ejecuta los route handlers reales de transacciones y verifica que la
+      # alerta de presupuesto (BUDGET_ALERT) se dispara solo al CRUZAR el 90%:
+      # al crear, al editar (subir monto o pasar de ingreso a gasto) y nunca al
+      # borrar, porque entonces el total solo baja.
+      - name: Test de integración de la alerta de presupuesto (crear/editar/borrar)
+        env:
+          DATABASE_URL: postgresql://finanzas:finanzas@localhost:5432/finanzas_test
+          AUTH_SECRET: ci-integration-secret-1234567890abcdef
+        run: npx tsx scripts/ci-budget-test.ts

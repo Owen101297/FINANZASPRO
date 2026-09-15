@@ -5,6 +5,7 @@ import { paramId } from "@/lib/guards";
 import { notFound } from "@/lib/errors";
 import { transactionUpdateSchema } from "@/lib/validations";
 import { transactionDto, num } from "@/lib/mappers";
+import { evaluateBudgetCross } from "@/lib/budget-alert";
 
 /**
  * Actualiza una transacción revirtiendo el impacto anterior en el saldo de la
@@ -31,7 +32,7 @@ export const PATCH = route(async (req: NextRequest, ctx) => {
     if (!category) throw notFound("Categoría no encontrada");
   }
 
-  const updated = await prisma.$transaction(async (tx) => {
+  const { updated, budgetAlert } = await prisma.$transaction(async (tx) => {
     // Bloquea la fila de la transacción hasta el commit: serializa PATCH/DELETE
     // concurrentes sobre el mismo registro y evita que dos reversos se apliquen
     // sobre el mismo saldo anterior.
@@ -73,11 +74,28 @@ export const PATCH = route(async (req: NextRequest, ctx) => {
       });
     }
 
-    return next;
+    // Alerta de presupuesto: editar puede cruzar el 90% del salario (subir un
+    // gasto, pasar de ingreso a gasto o mover la fecha al ciclo activo). Para
+    // el borrado no aplica: el total de gastos solo puede bajar.
+    let budgetAlert = false;
+    const salary = num(wallet.salary);
+    if (salary > 0 && (previous.type === "EXPENSE" || next.type === "EXPENSE")) {
+      budgetAlert = await evaluateBudgetCross(
+        tx,
+        { walletId: wallet.id, salary, cycleStartDay: wallet.cycleStartDay, actorId: user.id },
+        {
+          excludeId: id,
+          before: { type: previous.type, amount: num(previous.amount), date: previous.date },
+          after: { type: next.type, amount: num(next.amount), date: next.date },
+        }
+      );
+    }
+
+    return { updated: next, budgetAlert };
   });
 
   await audit({ actorId: user.id, action: "TRANSACTION_UPDATED", targetId: id });
-  return NextResponse.json({ transaction: transactionDto(updated) });
+  return NextResponse.json({ transaction: transactionDto(updated), budgetAlert });
 });
 
 /** Elimina una transacción y revierte su impacto en el saldo. */
