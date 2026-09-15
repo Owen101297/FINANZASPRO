@@ -3,7 +3,6 @@ import { getMessages, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/routing";
 import { ThemeProvider } from "@/components/theme-provider";
-import "@/app/globals.css";
 
 export async function generateMetadata({
   params,
@@ -32,14 +31,10 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} suppressHydrationWarning>
-      <body className="min-h-dvh bg-background font-sans text-foreground antialiased">
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          <ThemeProvider>
-            {children}
-          </ThemeProvider>
-        </NextIntlClientProvider>
-      </body>
-    </html>
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <ThemeProvider>
+        {children}
+      </ThemeProvider>
+    </NextIntlClientProvider>
   );
 }

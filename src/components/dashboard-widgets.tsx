@@ -14,8 +14,11 @@ import { useTranslations, useLocale } from "next-intl";
 export function DashboardGreeting() {
   const { user } = useSession();
   const t = useTranslations("dashboard");
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? t("greeting.morning") : hour < 19 ? t("greeting.afternoon") : t("greeting.night");
+  const [greeting, setGreeting] = useState("");
+  useEffect(() => {
+    const hour = new Date().getHours();
+    setGreeting(hour < 12 ? t("greeting.morning") : hour < 19 ? t("greeting.afternoon") : t("greeting.night"));
+  }, [t]);
   const displayName = user?.name ?? user?.email.split("@")[0] ?? "";
 
   return (

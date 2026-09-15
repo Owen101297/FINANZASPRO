@@ -5,8 +5,6 @@ import "./globals.css";
 import { ToastProvider } from "@/components/ui/toast";
 import { PwaRegister } from "@/components/pwa-register";
 
-// La CSP con nonce requiere SSR por request (el nonce llega por cabecera),
-// no se puede prerenderizar estáticamente.
 export const dynamic = "force-dynamic";
 
 const inter = Inter({
@@ -23,7 +21,7 @@ const jetbrains = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "FinanzasPro",
-  manifest: "/manifest.webmanifest",
+  manifest: "https://finanzaspro.owenai.uk/manifest.webmanifest",
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "FinanzasPro" },
 };
 
@@ -41,7 +39,7 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const nonce = (await headers()).get("x-nonce");
   return (
-    <div className={`${inter.variable} ${jetbrains.variable}`}>
+    <html suppressHydrationWarning className={`${inter.variable} ${jetbrains.variable}`}>
       <head>
         <script
           nonce={nonce ?? undefined}
@@ -50,10 +48,12 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           }}
         />
       </head>
-      <ToastProvider>
-        <PwaRegister />
-        {children}
-      </ToastProvider>
-    </div>
+      <body className="min-h-dvh bg-background font-sans text-foreground antialiased">
+        <ToastProvider>
+          <PwaRegister />
+          {children}
+        </ToastProvider>
+      </body>
+    </html>
   );
 }
