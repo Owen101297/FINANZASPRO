@@ -168,4 +168,16 @@ jobs:
           BASE_URL: http://localhost:3100
           AUTH_SECRET: ci-smoke-secret-1234567890123456
           DATABASE_URL: postgresql://finanzas:finanzas@localhost:5432/finanzas_test
-        run: npx playwright test --project=chromium
+        run: |
+          npm start -- -p 3100 > /tmp/next-e2e.log 2>&1 &
+          E2E_PID=$!
+          trap 'kill $E2E_PID 2>/dev/null || true' EXIT
+
+          for i in $(seq 1 60); do
+            if ! kill -0 $E2E_PID 2>/dev/null; then echo "server died"; break; fi
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 4 http://localhost:3100/es/login) || CODE=000
+            if [ -n "$CODE" ] && [ "$CODE" != "000" ]; then echo "server up (code=$CODE)"; break; fi
+            sleep 1
+          done
+
+          npx playwright test --project=chromium
