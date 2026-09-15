@@ -3,14 +3,14 @@ import { test, expect } from "@playwright/test";
 test.describe("Auth pages", () => {
   test("login page loads with form", async ({ page }) => {
     await page.goto("/login");
-    await expect(page.locator("input[type='email'], #email")).toBeVisible();
-    await expect(page.locator("input[type='password']")).toBeVisible();
+    await expect(page.locator("#email, input[type='email']").first()).toBeVisible();
+    await expect(page.locator("input[type='password']").first()).toBeVisible();
   });
 
   test("register page loads with form", async ({ page }) => {
     await page.goto("/registro");
-    await expect(page.locator("input[type='email'], #email")).toBeVisible();
-    await expect(page.locator("input[type='password']")).toBeVisible();
+    await expect(page.locator("#email, input[type='email']").first()).toBeVisible();
+    await expect(page.locator("input[type='password']").first()).toBeVisible();
   });
 });
 
