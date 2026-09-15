@@ -78,16 +78,16 @@ jobs:
       - name: Build
         run: npm run build
 
-      # Levanta el servidor de producción real y comprueba que responde,
-      # que las cabeceras de seguridad llegan al cliente y que el bootstrap
-      # de admin es atómico (dos registros simultáneos = un único ADMIN).
-      # Todos los curl van acotados para no colgar el job si algo se tuerce.
-      - name: Smoke test de servidor de producción
+      # Levanta el servidor de producción real y comprueba que responde y que las
+      # cabeceras de seguridad del middleware llegan al cliente. NO se inyecta
+      # DATABASE_URL: las páginas son cliente puro y así el boot no depende de
+      # la red interna de GH (el registro se valida aparte, en el paso de
+      # integración, contra el Postgres efímero).
+      - name: Smoke test de servidor de producción (páginas + cabeceras)
         env:
           AUTH_SECRET: ci-smoke-secret-1234567890123456
-          DATABASE_URL: postgresql://finanzas:finanzas@localhost:5432/finanzas_test
         run: |
-          fail() { echo "::error::$1"; echo "--- next-smoke.log ---"; cat /tmp/next-smoke.log 2>/dev/null || true; echo "------------------------"; [ -f /tmp/reg1.json ] && echo "reg1: $(cat /tmp/reg1.json | head -c 200)"; [ -f /tmp/reg2.json ] && echo "reg2: $(cat /tmp/reg2.json | head -c 200)"; kill $SERVER_PID 2>/dev/null || true; exit 1; }
+          fail() { echo "::error::$1"; echo "--- next-smoke.log ---"; cat /tmp/next-smoke.log 2>/dev/null || true; kill $SERVER_PID 2>/dev/null || true; exit 1; }
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
 
           npm start -- -p 3100 > /tmp/next-smoke.log 2>&1 &
@@ -95,32 +95,25 @@ jobs:
 
           OK=0
           for i in $(seq 1 60); do
-            if ! kill -0 $SERVER_PID 2>/dev/null; then echo "server murio durante el health check"; break; fi
-            CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 4 http://localhost:3100/login || echo 000)
-            if [ "$CODE" != "000" ]; then OK=1; break; fi
+            if ! kill -0 $SERVER_PID 2>/dev/null; then echo "server murió durante el health check"; break; fi
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 4 http://localhost:3100/login)
+            if [ -n "$CODE" ] && [ "$CODE" != "000" ]; then OK=1; break; fi
             sleep 1
           done
-          [ "$OK" = "1" ] || fail "servidor no respondio /login (health ultimo code=$CODE)"
+          [ "$OK" = "1" ] || fail "servidor no respondió /login (health último code=$CODE)"
           echo "smoke: server up (login=$CODE)"
 
-          HDRS=$(curl -sI --max-time 10 http://localhost:3100/login) || fail "no respondio HEAD en /login"
+          HDRS=$(curl -sI --max-time 10 http://localhost:3100/login) || fail "no respondió HEAD en /login"
           echo "$HDRS" | grep -qi "content-security-policy:" || fail "FALTA Content-Security-Policy"
           echo "$HDRS" | grep -qi "x-content-type-options: nosniff" || fail "FALTA nosniff"
           echo "$HDRS" | grep -qi "x-frame-options: DENY" || fail "FALTA X-Frame-Options"
-          echo "smoke: cabeceras de seguridad OK"
+          echo "smoke OK: servidor de producción sirve /login con cabeceras de seguridad"
 
-          # Bootstrap ADMIN: dos registros concurrentes sobre DB vacía. Con el
-          # fix (aislamiento SERIALIZABLE + reintento) debe existir UN solo
-          # ADMIN. Email duplicado debe responder 409.
-          curl -s --max-time 20 -X POST http://localhost:3100/api/auth/register -H 'content-type: application/json' -d '{"email":"user1@example.com","password":"Password123","name":"Uno"}' -o /tmp/reg1.json &
-          curl -s --max-time 20 -X POST http://localhost:3100/api/auth/register -H 'content-type: application/json' -d '{"email":"user2@example.com","password":"Password123","name":"Dos"}' -o /tmp/reg2.json &
-          wait || fail "registros concurrentes fallaron (status no 0)"
-          echo "smoke: registros concurrentes hechos"
-
-          DUP=$(curl -s --max-time 10 -o /dev/null -w '%{http_code}' -X POST http://localhost:3100/api/auth/register -H 'content-type: application/json' -d '{"email":"user1@example.com","password":"Password123"}')
-          [ "$DUP" = "409" ] || fail "email duplicado respondio $DUP (esperaba 409)"
-          echo "smoke: 409 en email duplicado OK"
-
-          ADMINS=$(node -e "const{PrismaClient}=require(\"@prisma/client\");const p=new PrismaClient();p.user.count({where:{role:\"ADMIN\"}}).then(c=>{console.log(c);process.exit(c===1?0:1)}).catch(e=>{console.error(e);process.exit(2)})") || fail "no se pudo contar admins"
-          [ "$ADMINS" = "1" ] || fail "Bootstrap roto: $ADMINS admins (esperaba 1)"
-          echo "smoke: bootstrap OK — 1 único ADMIN con registros simultáneos"
+      # Ejecuta el route handler real de /api/auth/register con NextRequest
+      # contra el Postgres efímero y verifica el invariante del bootstrap: dos
+      # registros simultáneos sobre base vacía => exactamente UN ADMIN, y el
+      # email duplicado responde 409.
+      - name: Test de integración del bootstrap de admin (race)
+        env:
+          DATABASE_URL: postgresql://finanzas:finanzas@localhost:5432/finanzas_test
+        run: npx tsx scripts/ci-register-test.ts
