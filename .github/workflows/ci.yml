@@ -135,3 +135,13 @@ jobs:
           DATABASE_URL: postgresql://finanzas:finanzas@localhost:5432/finanzas_test
           AUTH_SECRET: ci-integration-secret-1234567890abcdef
         run: npx tsx scripts/ci-budget-test.ts
+
+      # Ejecuta el route handler real POST /api/admin/data-cleanup y verifica
+      # que la purga de P8 borra solo lo antiguo (audit_logs > 365 días, tokens
+      # de reset usados/vencidos, devices inactivos > 180 días) y que un USER
+      # recibe 403.
+      - name: Test de integración de la purga de datos antiguos
+        env:
+          DATABASE_URL: postgresql://finanzas:finanzas@localhost:5432/finanzas_test
+          AUTH_SECRET: ci-integration-secret-1234567890abcdef
+        run: npx tsx scripts/ci-cleanup-test.ts
