@@ -1,9 +1,14 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ToastProvider } from "@/components/ui/toast";
 import { PwaRegister } from "@/components/pwa-register";
+
+// La CSP con nonce requiere SSR por request (el nonce llega por cabecera),
+// no se puede prerenderizar estáticamente.
+export const dynamic = "force-dynamic";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -35,11 +40,13 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const nonce = (await headers()).get("x-nonce");
   return (
     <html lang="es" suppressHydrationWarning>
       <head>
         <script
+          nonce={nonce ?? undefined}
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('fp_theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})()`,
           }}

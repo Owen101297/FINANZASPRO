@@ -36,3 +36,6 @@ next-env.d.ts
 
 # prisma
 /prisma/migrations/dev.db*
+
+# artefactos de sesiones de navegador (playwright-mcp)
+.playwright-mcp/
