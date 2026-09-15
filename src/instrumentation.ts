@@ -1,4 +1,5 @@
 import { runDataCleanup } from "@/lib/cleanup";
+import { logError } from "@/lib/logger";
 
 const CLEANUP_INTERVAL_SECONDS = 21_600; // 6 h por defecto
 const CLEANUP_MIN_INTERVAL_SECONDS = 3_600; // 1 h como mínimo
@@ -21,7 +22,7 @@ export async function register(): Promise<void> {
 
   const timer = setInterval(() => {
     runDataCleanup().catch((err) => {
-      console.error("[cleanup] error en la purga periódica:", err);
+      logError("cleanup", "Error en la purga periódica", err);
     });
   }, intervalSeconds * 1000);
 

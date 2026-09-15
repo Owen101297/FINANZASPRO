@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logger } from "@/lib/logger";
+
+const log = logger("csp-report");
 
 /**
  * Endpoint para recibir informes de violaciones de CSP (Content Security Policy).
@@ -26,7 +29,7 @@ export async function POST(req: NextRequest) {
       timestamp: new Date().toISOString(),
     };
 
-    console.error("[CSP-VIOLATION]", JSON.stringify(violation));
+    log.warn("CSP violation", violation);
   } catch {
     // Si el body no es JSON válido o falta, ignorar silenciosamente.
   }

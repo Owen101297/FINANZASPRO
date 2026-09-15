@@ -1,5 +1,8 @@
 import nodemailer from "nodemailer";
 import fs from "node:fs";
+import { logger } from "@/lib/logger";
+
+const log = logger("mailer");
 
 const RESET_LOG_PATH = "/tmp/reset-mail.log";
 
@@ -39,10 +42,9 @@ export async function sendPasswordResetMail(to: string, resetUrl: string): Promi
 
   const cfg = smtpConfig();
   if (!cfg) {
-    const line = `PASSWORD_RESET ${to} ${resetUrl}`;
-    console.log(`[mailer:log] ${line}`);
+    log.info("Password reset (log mode)", { to, resetUrl });
     try {
-      fs.appendFileSync(RESET_LOG_PATH, `${new Date().toISOString()} ${line}\n`);
+      fs.appendFileSync(RESET_LOG_PATH, `${new Date().toISOString()} PASSWORD_RESET ${to} ${resetUrl}\n`);
     } catch {
       /* volumen efímero no disponible: no debe romper el flujo */
     }

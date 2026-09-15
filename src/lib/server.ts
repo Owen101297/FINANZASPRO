@@ -4,6 +4,7 @@ import type { User, Wallet, Device } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { verifySessionToken } from "@/lib/auth";
 import { ApiError, forbidden, unauthorized } from "@/lib/errors";
+import { logError } from "@/lib/logger";
 
 type RouteContext = { params: Promise<Record<string, string>> };
 
@@ -35,7 +36,7 @@ export function route<C extends RouteContext = RouteContext>(
           { status: err.status }
         );
       }
-      console.error("[api] Error no controlado:", err);
+      logError("api", "Error no controlado", err);
       return NextResponse.json(
         { error: { message: "Error interno del servidor", code: "INTERNAL" } },
         { status: 500 }
@@ -123,7 +124,7 @@ export async function audit(entry: {
       },
     });
   } catch (err) {
-    console.error("[audit] No se pudo registrar:", err);
+    logError("audit", "No se pudo registrar entrada de auditoría", err);
   }
 }
 
