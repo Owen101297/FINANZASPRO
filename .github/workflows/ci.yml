@@ -78,11 +78,13 @@ jobs:
       - name: Build
         run: npm run build
 
-      # Levanta el servidor de producción real y comprueba que responde y
-      # que las cabeceras de seguridad del middleware llegan al cliente.
+      # Levanta el servidor de producción real y comprueba que responde,
+      # que las cabeceras de seguridad llegan al cliente y que el bootstrap
+      # de admin es atómico (dos registros simultáneos = un único ADMIN).
       - name: Smoke test de servidor de producción
         env:
           AUTH_SECRET: ci-smoke-secret-1234567890123456
+          DATABASE_URL: postgresql://finanzas:finanzas@localhost:5432/finanzas_test
         run: |
           npm start -- -p 3100 > /tmp/next-smoke.log 2>&1 &
           SERVER_PID=$!
@@ -94,5 +96,17 @@ jobs:
           echo "$HDRS" | grep -qi "content-security-policy:" || { echo "FALTA Content-Security-Policy"; kill $SERVER_PID 2>/dev/null; exit 1; }
           echo "$HDRS" | grep -qi "x-content-type-options: nosniff" || { echo "FALTA nosniff"; kill $SERVER_PID 2>/dev/null; exit 1; }
           echo "$HDRS" | grep -qi "x-frame-options: DENY" || { echo "FALTA X-Frame-Options"; kill $SERVER_PID 2>/dev/null; exit 1; }
-          echo "Smoke OK: servidor responde con cabeceras de seguridad"
+
+          # Bootstrap ADMIN: dos registros concurrentes sobre DB vacia. Con el
+          # fix (aislamiento SERIALIZABLE + reintento) debe existir UN solo
+          # ADMIN. Email duplicado debe responder 409.
+          curl -s -X POST http://localhost:3100/api/auth/register -H 'content-type: application/json' -d '{"email":"user1@ci.test","password":"Password123","name":"Uno"}' -o /tmp/reg1.json &
+          curl -s -X POST http://localhost:3100/api/auth/register -H 'content-type: application/json' -d '{"email":"user2@ci.test","password":"Password123","name":"Dos"}' -o /tmp/reg2.json &
+          wait
+          DUP_CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:3100/api/auth/register -H 'content-type: application/json' -d '{"email":"user1@ci.test","password":"Password123"}')
+          [ "$DUP_CODE" = "409" ] || { echo "Email duplicado respondio $DUP_CODE (esperaba 409)"; kill $SERVER_PID 2>/dev/null; exit 1; }
+          ADMINS=$(node -e "const{PrismaClient}=require(\"@prisma/client\");const p=new PrismaClient();p.user.count({where:{role:\"ADMIN\"}}).then(c=>{console.log(c);process.exit(c===1?0:1)}).catch(e=>{console.error(e);process.exit(2)})")
+          [ "$ADMINS" = "1" ] || { echo "Bootstrap roto: $ADMINS admins (esperaba 1)"; kill $SERVER_PID 2>/dev/null; exit 1; }
+
+          echo "Smoke OK: headers, 409 en duplicado y 1 unico ADMIN en bootstrap"
           kill $SERVER_PID 2>/dev/null || true
