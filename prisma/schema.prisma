@@ -52,8 +52,25 @@ model User {
   devices Device[]
   wallet  Wallet?
   auditLogs AuditLog[]
+  passwordResetTokens PasswordResetToken[]
 
   @@map("users")
+}
+
+/// Token de recuperación de contraseña (un solo uso, expira a los 60 min).
+/// Solo se guarda el hash SHA-256 del token para no exponer datos sensibles.
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
 }
 
 /// Dispositivos autorizados por el administrador

@@ -117,3 +117,11 @@ jobs:
         env:
           DATABASE_URL: postgresql://finanzas:finanzas@localhost:5432/finanzas_test
         run: npx tsx scripts/ci-register-test.ts
+
+      # Ejecuta los route handlers reales de recuperación de contraseña. Sin
+      # SMTP configurado el mailer cae en modo log y permite validar el flujo
+      # completo: token de un solo uso, anti-enumeración y auditoría.
+      - name: Test de integración del reset de contraseña
+        env:
+          DATABASE_URL: postgresql://finanzas:finanzas@localhost:5432/finanzas_test
+        run: npx tsx scripts/ci-reset-test.ts

@@ -20,6 +20,15 @@ export const loginSchema = z.object({
   deviceId: deviceIdSchema,
 });
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().toLowerCase().email("Email inválido").max(120),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(20, "El enlace de recuperación es inválido").max(200),
+  newPassword: z.string().min(8, "La contraseña debe tener al menos 8 caracteres").max(72),
+});
+
 // ─────────────────────────── Wallet ───────────────────────────
 
 export const walletPatchSchema = z
