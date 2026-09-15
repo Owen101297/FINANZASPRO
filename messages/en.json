@@ -310,7 +310,12 @@
     "deleteUserMsg": "Delete {name}? Their wallet, transactions, accounts, and devices will be permanently deleted.",
     "deleteUserBtn": "Delete permanently",
     "userDeleted": "User deleted with all their data",
-    "systemActor": "system"
+    "systemActor": "system",
+    "common": {
+      "cancel": "Cancel",
+      "unnamed": "Unnamed",
+      "admin": "admin"
+    }
   },
   "cuenta": {
     "title": "My account",

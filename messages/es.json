@@ -310,7 +310,12 @@
     "deleteUserMsg": "¿Eliminar a {name}? Se borrarán permanentemente su wallet, movimientos, cuentas y dispositivos.",
     "deleteUserBtn": "Eliminar definitivamente",
     "userDeleted": "Usuario eliminado con todos sus datos",
-    "systemActor": "sistema"
+    "systemActor": "sistema",
+    "common": {
+      "cancel": "Cancelar",
+      "unnamed": "Sin nombre",
+      "admin": "admin"
+    }
   },
   "cuenta": {
     "title": "Mi cuenta",
