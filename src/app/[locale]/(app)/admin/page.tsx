@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import useSWR from "swr";
 import {
   Loader2,
@@ -57,6 +57,8 @@ const statusBadge = {
   ACTIVE: { tone: "positive" as const, statusKey: "active" as const },
   BLOCKED: { tone: "negative" as const, statusKey: "blocked" as const },
 };
+
+const statusOrder = { PENDING: 0, ACTIVE: 1, BLOCKED: 2 } as const;
 
 export default function AdminPage() {
   const t = useTranslations("admin");
@@ -138,7 +140,7 @@ export default function AdminPage() {
         </span>
         <div>
           <h1 className="text-[28px] font-extrabold tracking-tight">{t("title")}</h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
+          <p className="mt-0.5 text-[15px] text-muted-foreground">
             {t("subtitle")}
           </p>
         </div>
@@ -184,7 +186,7 @@ export default function AdminPage() {
       {tab === "audit" && <AuditTab {...audit} />}
 
       <Modal open={Boolean(confirmDelete)} onClose={() => setConfirmDelete(null)} title={t("deleteUser")}>
-        <p className="text-sm leading-relaxed text-muted-foreground">
+        <p className="text-[15px] leading-relaxed text-muted-foreground">
           {t("deleteUserMsg", { name: confirmDelete?.email ?? "" })}
         </p>
         <div className="mt-5 flex gap-3">
@@ -219,6 +221,17 @@ function Loading() {
   );
 }
 
+function SectionHeader({ title, count }: { title: string; count?: number }) {
+  return (
+    <div className="flex items-center gap-2 px-1 pb-1 pt-3">
+      <h3 className="text-[13px] font-medium text-muted-foreground">{title}</h3>
+      {count !== undefined && (
+        <span className="text-[13px] text-muted-foreground">({count})</span>
+      )}
+    </div>
+  );
+}
+
 function DevicesTab({
   data,
   isLoading,
@@ -232,81 +245,126 @@ function DevicesTab({
 }) {
   const t = useTranslations("admin");
   if (isLoading) return <Loading />;
-  const list = [...(data?.devices ?? [])].sort((a, b) => {
-    const order = { PENDING: 0, ACTIVE: 1, BLOCKED: 2 } as const;
-    return order[a.status] - order[b.status];
-  });
 
-  if (list.length === 0)
+  const allDevices = [...(data?.devices ?? [])].sort(
+    (a, b) => statusOrder[a.status] - statusOrder[b.status]
+  );
+
+  if (allDevices.length === 0)
     return (
       <Card className="p-4">
         <EmptyState icon={<Hourglass className="size-5" />} title={t("noDevices")} />
       </Card>
     );
 
-  return (
-    <div className="space-y-2.5">
-      {list.map((device) => {
-        const badge = statusBadge[device.status];
-        return (
-          <Card key={device.id} className="py-4">
-            <div className="flex items-center gap-3">
-              <span
-                className={clsx(
-                  "flex size-9 shrink-0 items-center justify-center rounded-xl",
-                  device.status === "PENDING"
-                    ? "bg-warning/15 text-warning"
-                    : device.status === "ACTIVE"
-                      ? "bg-positive/15 text-positive"
-                      : "bg-destructive/15 text-destructive"
-                )}
-              >
-                {device.status === "PENDING" ? (
-                  <Hourglass className="size-4" />
-                ) : device.status === "ACTIVE" ? (
-                  <Check className="size-4" />
-                ) : (
-                  <Ban className="size-4" />
-                )}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold">{device.user.name ?? device.user.email}</p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {device.user.email} · ID {device.deviceId.slice(0, 8)}…
-                </p>
-              </div>
-              <Badge tone={badge.tone}>{t(badge.statusKey)}</Badge>
-            </div>
+  const pending = allDevices.filter((d) => d.status === "PENDING");
+  const active = allDevices.filter((d) => d.status === "ACTIVE");
+  const blocked = allDevices.filter((d) => d.status === "BLOCKED");
 
-            {device.status !== "ACTIVE" && (
-              <button
-                onClick={() => void onStatus(device, "ACTIVE")}
-                className="mt-3 w-full rounded-xl bg-primary py-2 text-[13px] font-bold text-primary-foreground transition-opacity hover:opacity-90"
-              >
-                {t("approveAccess")}
-              </button>
-            )}
-            <div className="mt-2 flex gap-2">
-              {device.status === "ACTIVE" && (
-                <button
-                  onClick={() => void onStatus(device, "BLOCKED")}
-                  className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-muted py-2 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-destructive"
-                >
-                  <Ban className="size-3.5" /> {t("block")}
-                </button>
-              )}
-              <button
-                onClick={() => void onDelete(device)}
-                aria-label={`Eliminar dispositivo ${device.deviceId}`}
-                className="flex items-center justify-center gap-1.5 rounded-xl bg-muted px-3 py-2 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-destructive"
-              >
-                <Trash2 className="size-3.5" />
-              </button>
-            </div>
-          </Card>
-        );
-      })}
+  return (
+    <div>
+      {pending.length > 0 && (
+        <>
+          <SectionHeader title={t("pending")} count={pending.length} />
+          <div className="space-y-2">
+            {pending.map((device) => (
+              <DeviceCard key={device.id} device={device} onStatus={onStatus} onDelete={onDelete} />
+            ))}
+          </div>
+        </>
+      )}
+      {active.length > 0 && (
+        <>
+          <SectionHeader title={t("active")} count={active.length} />
+          <div className="space-y-2">
+            {active.map((device) => (
+              <DeviceCard key={device.id} device={device} onStatus={onStatus} onDelete={onDelete} />
+            ))}
+          </div>
+        </>
+      )}
+      {blocked.length > 0 && (
+        <>
+          <SectionHeader title={t("blocked")} count={blocked.length} />
+          <div className="space-y-2">
+            {blocked.map((device) => (
+              <DeviceCard key={device.id} device={device} onStatus={onStatus} onDelete={onDelete} />
+            ))}
+          </div>
+        </>
+      )}
     </div>
+  );
+}
+
+function DeviceCard({
+  device,
+  onStatus,
+  onDelete,
+}: {
+  device: DeviceRow;
+  onStatus: (d: DeviceRow, s: DeviceRow["status"]) => Promise<void>;
+  onDelete: (d: DeviceRow) => Promise<void>;
+}) {
+  const t = useTranslations("admin");
+  const badge = statusBadge[device.status];
+
+  return (
+    <Card className="p-4">
+      <div className="flex items-center gap-3">
+        <span
+          className={clsx(
+            "flex size-9 shrink-0 items-center justify-center rounded-xl",
+            device.status === "PENDING"
+              ? "bg-warning/15 text-warning"
+              : device.status === "ACTIVE"
+                ? "bg-positive/15 text-positive"
+                : "bg-destructive/15 text-destructive"
+          )}
+        >
+          {device.status === "PENDING" ? (
+            <Hourglass className="size-4" />
+          ) : device.status === "ACTIVE" ? (
+            <Check className="size-4" />
+          ) : (
+            <Ban className="size-4" />
+          )}
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[15px] font-medium">{device.user.name ?? device.user.email}</p>
+          <p className="truncate text-[13px] text-muted-foreground">
+            {device.user.email} · ID {device.deviceId.slice(0, 8)}…
+          </p>
+        </div>
+        <Badge tone={badge.tone}>{t(badge.statusKey)}</Badge>
+      </div>
+
+      {device.status !== "ACTIVE" && (
+        <button
+          onClick={() => void onStatus(device, "ACTIVE")}
+          className="mt-3 w-full rounded-xl bg-primary py-2 text-[13px] font-bold text-primary-foreground transition-opacity hover:opacity-90"
+        >
+          {t("approveAccess")}
+        </button>
+      )}
+      <div className="mt-2 flex gap-2">
+        {device.status === "ACTIVE" && (
+          <button
+            onClick={() => void onStatus(device, "BLOCKED")}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-muted py-2 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-destructive"
+          >
+            <Ban className="size-3.5" /> {t("block")}
+          </button>
+        )}
+        <button
+          onClick={() => void onDelete(device)}
+          aria-label={`Eliminar dispositivo ${device.deviceId}`}
+          className="flex items-center justify-center gap-1.5 rounded-xl bg-muted px-3 py-2 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-destructive"
+        >
+          <Trash2 className="size-3.5" />
+        </button>
+      </div>
+    </Card>
   );
 }
 
@@ -325,7 +383,17 @@ function UsersTab({
 }) {
   const t = useTranslations("admin");
   if (isLoading) return <Loading />;
-  const list = data?.users ?? [];
+
+  const list = useMemo(() => {
+    const users = data?.users ?? [];
+    return [...users].sort((a, b) => {
+      if (a.role === "ADMIN" && b.role !== "ADMIN") return -1;
+      if (a.role !== "ADMIN" && b.role === "ADMIN") return 1;
+      const nameA = (a.name ?? a.email).toLowerCase();
+      const nameB = (b.name ?? b.email).toLowerCase();
+      return nameA.localeCompare(nameB);
+    });
+  }, [data]);
 
   if (list.length === 0)
     return (
@@ -334,48 +402,84 @@ function UsersTab({
       </Card>
     );
 
-  return (
-    <div className="space-y-2.5">
-      {list.map((user) => {
-        const isMe = user.id === mySession?.id;
-        return (
-          <Card key={user.id} className="py-4">
-            <div className="flex items-center gap-3">
-              <Avatar name={user.name ?? user.email} />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold">
-                  {user.name ?? t("common.unnamed")}
-                  {isMe && <span className="ml-1.5 text-xs font-normal text-muted-foreground">{t("selfIndicator")}</span>}
-                </p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {user.email} · {user.deviceCount} {t("devicesCount")}
-                  {user.salary > 0 && ` · ${formatCurrency(user.salary)}`}
-                </p>
-              </div>
-              {user.role === "ADMIN" && <Badge tone="accent">{t("common.admin")}</Badge>}
-            </div>
+  const admins = list.filter((u) => u.role === "ADMIN");
+  const regularUsers = list.filter((u) => u.role !== "ADMIN");
 
-            {!isMe && (
-              <div className="mt-3 flex gap-2">
-                <button
-                  onClick={() => void onRole(user, user.role === "ADMIN" ? "USER" : "ADMIN")}
-                  className="flex-1 rounded-xl bg-muted py-2 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-accent"
-                >
-                  {user.role === "ADMIN" ? t("removeAdmin") : t("makeAdmin")}
-                </button>
-                <button
-                  onClick={() => onAskDelete(user)}
-                  aria-label={`Eliminar usuario ${user.email}`}
-                  className="flex items-center justify-center rounded-xl bg-muted px-3 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-destructive"
-                >
-                  <Trash2 className="size-3.5" />
-                </button>
-              </div>
-            )}
-          </Card>
-        );
-      })}
+  return (
+    <div>
+      {admins.length > 0 && (
+        <>
+          <SectionHeader title={t("common.admin")} count={admins.length} />
+          <div className="space-y-2">
+            {admins.map((user) => (
+              <UserCard key={user.id} user={user} mySession={mySession} onRole={onRole} onAskDelete={onAskDelete} />
+            ))}
+          </div>
+        </>
+      )}
+      {regularUsers.length > 0 && (
+        <>
+          <SectionHeader title={t("users")} count={regularUsers.length} />
+          <div className="space-y-2">
+            {regularUsers.map((user) => (
+              <UserCard key={user.id} user={user} mySession={mySession} onRole={onRole} onAskDelete={onAskDelete} />
+            ))}
+          </div>
+        </>
+      )}
     </div>
+  );
+}
+
+function UserCard({
+  user,
+  mySession,
+  onRole,
+  onAskDelete,
+}: {
+  user: UserRow;
+  mySession: { id: string } | null;
+  onRole: (u: UserRow, r: UserRow["role"]) => Promise<void>;
+  onAskDelete: (u: UserRow) => void;
+}) {
+  const t = useTranslations("admin");
+  const isMe = user.id === mySession?.id;
+
+  return (
+    <Card className="p-4">
+      <div className="flex items-center gap-3">
+        <Avatar name={user.name ?? user.email} />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[15px] font-medium">
+            {user.name ?? t("common.unnamed")}
+            {isMe && <span className="ml-1.5 text-[13px] text-muted-foreground">{t("selfIndicator")}</span>}
+          </p>
+          <p className="truncate text-[13px] text-muted-foreground">
+            {user.email} · {user.deviceCount} {t("devicesCount")}
+            {user.salary > 0 && ` · ${formatCurrency(user.salary)}`}
+          </p>
+        </div>
+        {user.role === "ADMIN" && <Badge tone="accent">{t("common.admin")}</Badge>}
+      </div>
+
+      {!isMe && (
+        <div className="mt-3 flex gap-2">
+          <button
+            onClick={() => void onRole(user, user.role === "ADMIN" ? "USER" : "ADMIN")}
+            className="flex-1 rounded-xl bg-muted py-2 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-accent"
+          >
+            {user.role === "ADMIN" ? t("removeAdmin") : t("makeAdmin")}
+          </button>
+          <button
+            onClick={() => onAskDelete(user)}
+            aria-label={`Eliminar usuario ${user.email}`}
+            className="flex items-center justify-center rounded-xl bg-muted px-3 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-destructive"
+          >
+            <Trash2 className="size-3.5" />
+          </button>
+        </div>
+      )}
+    </Card>
   );
 }
 
@@ -397,7 +501,7 @@ function AuditTab({ data, isLoading }: { data?: { logs: AuditRow[] }; isLoading:
         <div key={log.id} className="flex items-start gap-3 px-2 py-2.5">
           <ScrollText className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold">{log.action.replaceAll("_", " ")}</p>
+            <p className="text-[13px] font-medium">{log.action.replaceAll("_", " ")}</p>
             <p className="truncate text-[11px] text-muted-foreground">
               {log.actorEmail ?? t("systemActor")} ·{" "}
               {new Date(log.createdAt).toLocaleString("es-EC", {
