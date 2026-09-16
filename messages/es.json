@@ -47,7 +47,9 @@
     "changeTheme": "Cambiar tema",
     "goToLogin": "Ir al login",
     "paymentPlan": "Plan de pagos",
-    "sidebarNav": "Navegación principal"
+    "sidebarNav": "Navegación principal",
+    "collapseSidebar": "Colapsar menú",
+    "expandSidebar": "Expandir menú"
   },
   "session": {
     "notFound": "Sesión no encontrada",

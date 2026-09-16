@@ -27,6 +27,8 @@ import {
   MoreHorizontal,
   X,
   CreditCard,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
 import { useTheme } from "@/components/theme-provider";
@@ -82,6 +84,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const tNav = useTranslations("nav");
   const tSession = useTranslations("session");
   const [showMore, setShowMore] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   if (isLoading) {
     return (
@@ -143,7 +146,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-dvh bg-background">
 
       {/* Sidebar desktop */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-border bg-card px-4 py-6 md:flex">
+      <aside className={clsx(
+        "fixed inset-y-0 left-0 z-30 flex w-60 flex-col border-r border-border bg-card px-4 py-6 transition-transform duration-200",
+        sidebarOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
         <Brand locale={locale} />
         <nav aria-label={tNav("sidebarNav")} className="mt-8 flex flex-1 flex-col gap-1 overflow-y-auto scrollbar-thin">
           {navItems.map((item) => (
@@ -152,6 +158,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
         <SessionFooter user={user} onLogout={logout} locale={locale} />
       </aside>
+
+      {/* Toggle sidebar button - desktop only */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        aria-label={sidebarOpen ? tNav("collapseSidebar") : tNav("expandSidebar")}
+        className={clsx(
+          "fixed top-4 z-40 hidden rounded-lg border border-border bg-card p-1.5 text-muted-foreground shadow-sm transition-all hover:bg-muted hover:text-foreground md:block",
+          sidebarOpen ? "left-[248px]" : "left-3"
+        )}
+      >
+        {sidebarOpen ? <PanelLeftClose className="size-4" /> : <PanelLeftOpen className="size-4" />}
+      </button>
 
       {/* Header mobile */}
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-card/90 px-4 py-3 backdrop-blur md:hidden">

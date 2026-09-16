@@ -47,7 +47,9 @@
     "goToLogin": "Go to login",
     "community": "Community",
     "paymentPlan": "Payment plan",
-    "sidebarNav": "Main navigation"
+    "sidebarNav": "Main navigation",
+    "collapseSidebar": "Collapse menu",
+    "expandSidebar": "Expand menu"
   },
   "session": {
     "notFound": "Session not found",
