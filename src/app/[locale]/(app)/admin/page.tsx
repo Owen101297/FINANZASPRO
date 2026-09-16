@@ -382,7 +382,6 @@ function UsersTab({
   onAskDelete: (u: UserRow) => void;
 }) {
   const t = useTranslations("admin");
-  if (isLoading) return <Loading />;
 
   const list = useMemo(() => {
     const users = data?.users ?? [];
@@ -394,6 +393,8 @@ function UsersTab({
       return nameA.localeCompare(nameB);
     });
   }, [data]);
+
+  if (isLoading) return <Loading />;
 
   if (list.length === 0)
     return (
