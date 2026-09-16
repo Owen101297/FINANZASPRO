@@ -21,6 +21,7 @@ export const PATCH = route(async (req: NextRequest, ctx) => {
       ...(body.balance !== undefined && { balance: body.balance }),
       ...(body.color !== undefined && { color: body.color ?? null }),
       ...(body.archived !== undefined && { archived: body.archived }),
+      ...(body.resetAt !== undefined && { resetAt: body.resetAt }),
     },
   });
 

@@ -186,7 +186,11 @@
     "deleteError": "Error deleting",
     "name": "Name",
     "cancel": "Cancel",
-    "save": "Save"
+    "save": "Save",
+    "resetBalance": "Reset to zero",
+    "confirmReset": "Confirm reset",
+    "confirmResetMsg": "Reset \"{name}\" to zero? Balance will be $0 and past transactions will be hidden from calculations.",
+    "balanceReset": "Balance reset"
   },
   "categorias": {
     "title": "Categories",

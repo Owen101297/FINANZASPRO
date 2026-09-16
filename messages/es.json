@@ -186,7 +186,11 @@
     "deleteError": "Error al eliminar",
     "name": "Nombre",
     "cancel": "Cancelar",
-    "save": "Guardar"
+    "save": "Guardar",
+    "resetBalance": "Reiniciar a cero",
+    "confirmReset": "Confirmar reinicio",
+    "confirmResetMsg": "¿Reiniciar \"{name}\" a cero? El saldo quedará en $0 y las transacciones pasadas se ocultarán del cálculo.",
+    "balanceReset": "Balance reiniciado"
   },
   "categorias": {
     "title": "Categorías",

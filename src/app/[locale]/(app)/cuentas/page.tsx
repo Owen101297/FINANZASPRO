@@ -25,6 +25,7 @@ interface AccountDto {
   balance: number;
   color: string | null;
   archived: boolean;
+  resetAt: string | null;
 }
 
 const COLORS = ["#10b981", "#3b82f6", "#8b5cf6", "#f59e0b", "#ec4899", "#06b6d4"];
@@ -113,6 +114,25 @@ export default function CuentasPage() {
       refreshWallet();
     } catch (err) {
       toast(err instanceof Error ? err.message : t("deleteError"), "error");
+    }
+  }
+
+  async function resetBalance(account: AccountDto) {
+    const ok = await confirm(t("confirmReset"), t("confirmResetMsg", { name: account.name }));
+    if (!ok) return;
+    setSaving(true);
+    try {
+      await api.patch(`/api/accounts/${account.id}`, {
+        balance: 0,
+        resetAt: new Date().toISOString(),
+      });
+      toast(t("balanceReset"), "success");
+      mutate();
+      refreshWallet();
+    } catch (err) {
+      toast(err instanceof Error ? err.message : t("saveError"), "error");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -242,9 +262,14 @@ export default function CuentasPage() {
 
           <div className="flex gap-3 pt-2">
             {editing && (
-              <Button variant="danger" onClick={() => handleDelete(editing)} disabled={saving} aria-label={t("confirmDelete")}>
-                <Trash2 className="size-4" />
-              </Button>
+              <>
+                <Button variant="outline" onClick={() => resetBalance(editing)} disabled={saving} aria-label={t("resetBalance")}>
+                  {t("resetBalance")}
+                </Button>
+                <Button variant="danger" onClick={() => handleDelete(editing)} disabled={saving} aria-label={t("confirmDelete")}>
+                  <Trash2 className="size-4" />
+                </Button>
+              </>
             )}
             <Button variant="secondary" onClick={() => setModalOpen(false)} disabled={saving} className="flex-1">
               {t("cancel")}

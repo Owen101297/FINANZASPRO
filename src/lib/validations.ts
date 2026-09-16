@@ -52,6 +52,7 @@ export const accountCreateSchema = z.object({
 
 export const accountUpdateSchema = accountCreateSchema.partial().extend({
   archived: z.boolean().optional(),
+  resetAt: z.date().optional().nullable(),
 });
 
 // ─────────────────────────── Categorías ───────────────────────

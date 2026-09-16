@@ -12,6 +12,7 @@ export type AccountRecord = {
   balance: Prisma.Decimal | number;
   color: string | null;
   archived: boolean;
+  resetAt?: Date | null;
   createdAt: Date;
 };
 
@@ -83,6 +84,7 @@ export const accountDto = (a: AccountRecord) => ({
   balance: num(a.balance),
   color: a.color,
   archived: a.archived,
+  resetAt: a.resetAt?.toISOString() ?? null,
   createdAt: a.createdAt.toISOString(),
 });
 

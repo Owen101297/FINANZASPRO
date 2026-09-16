@@ -120,6 +120,7 @@ model Account {
   balance   Decimal  @default(0) @db.Decimal(14, 2)
   color     String?
   archived  Boolean  @default(false)
+  resetAt   DateTime?  // Cuando se reinició el balance a cero
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
