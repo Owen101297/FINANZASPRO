@@ -193,4 +193,8 @@
   .safe-bottom {
     padding-bottom: max(env(safe-area-inset-bottom), 1rem);
   }
+
+  .scroll-padding-top-16 {
+    scroll-padding-top: 4rem;
+  }
 }

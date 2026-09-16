@@ -139,12 +139,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <div className="flex min-h-dvh bg-background">
+    <div className="flex h-dvh overflow-hidden bg-background">
 
       {/* Sidebar desktop */}
       <aside
         className={clsx(
-          "hidden flex-col bg-muted/50 px-3 py-5 transition-[width] duration-200 md:flex",
+          "sticky top-0 hidden h-dvh flex-col bg-muted/50 px-3 py-5 transition-[width] duration-200 md:flex",
           sidebarOpen ? "w-[220px]" : "w-0 overflow-hidden px-0"
         )}
       >
@@ -162,14 +162,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Columna principal */}
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         {/* Toggle sidebar button */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           aria-label={sidebarOpen ? tNav("collapseSidebar") : tNav("expandSidebar")}
           className={clsx(
-            "fixed top-4 z-40 hidden rounded-lg bg-card p-1.5 text-muted-foreground shadow-sm transition-all hover:bg-muted hover:text-foreground md:block",
-            sidebarOpen ? "left-[236px]" : "left-3"
+            "sticky top-4 z-40 hidden w-fit rounded-lg bg-card p-1.5 text-muted-foreground shadow-sm transition-all hover:bg-muted hover:text-foreground md:block",
+            sidebarOpen ? "ml-[208px]" : "ml-3"
           )}
         >
           {sidebarOpen ? <PanelLeftClose className="size-4" /> : <PanelLeftOpen className="size-4" />}
@@ -181,7 +181,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Contenido */}
-        <main className="flex-1 px-4 pb-28 pt-2 md:px-8 md:pb-10 md:pt-5 lg:px-10">
+        <main className="flex-1 overflow-y-auto scroll-padding-top-16 px-4 pb-28 pt-2 md:px-8 md:pb-10 md:pt-5 lg:px-10">
           <div className="mx-auto max-w-3xl">{children}</div>
         </main>
 
