@@ -53,7 +53,7 @@ export default function CicloPage() {
 
   if (error) {
     return (
-      <Card>
+      <Card className="p-4">
         <EmptyState
           title={t("loadError")}
           hint={t("loadErrorHint")}
@@ -82,7 +82,7 @@ export default function CicloPage() {
       </header>
 
       {/* Estado actual */}
-      <Card className="mb-5 bg-gradient-to-br from-emerald-600/10 to-transparent">
+      <Card className="mb-5 p-4 bg-gradient-to-br from-emerald-600/10 to-transparent">
         <div className="grid grid-cols-3 gap-4 text-center">
           <Stat label={t("salary")} value={formatCurrency(wallet.salary)} />
           <Stat
@@ -111,7 +111,7 @@ export default function CicloPage() {
       </Card>
 
       {/* Formulario */}
-      <Card>
+      <Card className="p-4">
         <form
           onSubmit={(e) => {
             e.preventDefault();

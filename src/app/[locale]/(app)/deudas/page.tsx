@@ -162,7 +162,7 @@ export default function DeudasPage() {
                 {t("paid")}
               </h2>
               {summary.paid.map((debt) => (
-                <Card key={debt.id} className="opacity-60">
+                <Card key={debt.id} className="p-4 opacity-60">
                   <div className="flex items-center gap-3">
                     <Landmark className="size-5 shrink-0 text-positive" />
                     <p className="flex-1 truncate text-sm font-semibold line-through">{debt.name}</p>
@@ -181,7 +181,7 @@ export default function DeudasPage() {
           )}
         </div>
       ) : (
-        <Card>
+        <Card className="p-4">
           <EmptyState
             icon={<Landmark className="size-5" />}
             title={t("empty")}
@@ -282,7 +282,7 @@ function DebtCard({
     debt.dueDate && debt.status === "ACTIVE" && new Date(debt.dueDate) < new Date();
 
   return (
-    <Card>
+    <Card className="p-4">
       <button onClick={() => onEdit(debt)} className="w-full text-left">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">

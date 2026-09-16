@@ -239,7 +239,7 @@ function DevicesTab({
 
   if (list.length === 0)
     return (
-      <Card>
+      <Card className="p-4">
         <EmptyState icon={<Hourglass className="size-5" />} title={t("noDevices")} />
       </Card>
     );
@@ -329,7 +329,7 @@ function UsersTab({
 
   if (list.length === 0)
     return (
-      <Card>
+      <Card className="p-4">
         <EmptyState icon={<UsersIcon className="size-5" />} title={t("noUsers")} />
       </Card>
     );
@@ -386,7 +386,7 @@ function AuditTab({ data, isLoading }: { data?: { logs: AuditRow[] }; isLoading:
 
   if (logs.length === 0)
     return (
-      <Card>
+      <Card className="p-4">
         <EmptyState icon={<ScrollText className="size-5" />} title={t("noAudit")} />
       </Card>
     );

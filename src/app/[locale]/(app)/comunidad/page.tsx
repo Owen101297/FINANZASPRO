@@ -50,11 +50,11 @@ function ComunidadPage() {
           <Loader2 className="size-6 animate-spin text-muted-foreground" />
         </div>
       ) : error ? (
-        <Card>
+        <Card className="p-4">
           <EmptyState title={t("loadError")} hint={t("loadErrorHint")} />
         </Card>
       ) : !data?.admins.length ? (
-        <Card>
+        <Card className="p-4">
           <EmptyState title={t("empty")} hint={t("emptyHint")} />
         </Card>
       ) : (

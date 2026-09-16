@@ -267,14 +267,14 @@ function TransaccionesPage() {
           <Loader2 className="size-6 animate-spin text-muted-foreground" />
         </div>
       ) : error ? (
-        <Card>
+        <Card className="p-4">
             <EmptyState
               title={t("loadError")}
               hint={t("loadErrorHint")}
             />
         </Card>
       ) : grouped.length === 0 ? (
-        <Card>
+        <Card className="p-4">
             <EmptyState
               icon={<Receipt className="size-5" />}
               title={t("empty")}

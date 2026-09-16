@@ -140,7 +140,7 @@ export default function CuentasPage() {
       ) : data && data.accounts.length > 0 ? (
         <div className="space-y-3">
           {data.accounts.map((account) => (
-            <Card key={account.id} className={account.archived ? "opacity-60" : undefined}>
+            <Card key={account.id} className={account.archived ? "p-4 opacity-60" : "p-4"}>
               <div className="flex items-center gap-3.5">
                 <span
                   aria-hidden
@@ -178,7 +178,7 @@ export default function CuentasPage() {
           ))}
         </div>
       ) : (
-        <Card>
+        <Card className="p-4">
           <EmptyState
             icon={<WalletIcon className="size-5" />}
             title={t("empty")}

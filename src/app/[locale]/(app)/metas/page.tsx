@@ -157,7 +157,7 @@ export default function MetasPage() {
                 {t("completed")}
               </h2>
               {completedGoals.map((goal) => (
-                <Card key={goal.id} className="bg-positive/5 opacity-80">
+                <Card key={goal.id} className="p-4 bg-positive/5 opacity-80">
                   <div className="flex items-center gap-3">
                     <span className="flex size-9 items-center justify-center rounded-xl bg-positive/15 text-positive">
                       <Target className="size-4" />
@@ -171,7 +171,7 @@ export default function MetasPage() {
           )}
         </div>
       ) : (
-        <Card>
+        <Card className="p-4">
           <EmptyState
             icon={<Target className="size-5" />}
             title={t("empty")}
@@ -272,7 +272,7 @@ function GoalCard({
   const late = goal.deadline && new Date(goal.deadline) < new Date();
 
   return (
-    <Card>
+    <Card className="p-4">
       <button onClick={() => onEdit(goal)} className="w-full text-left">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">

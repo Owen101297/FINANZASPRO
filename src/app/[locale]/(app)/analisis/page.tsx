@@ -151,7 +151,7 @@ export default function AnalisisPage() {
           )}
 
           {/* Distribución por categoría */}
-          <Card className="mb-6">
+          <Card className="mb-6 p-4">
             <h2 className="mb-1 text-[13px] font-bold text-muted-foreground">
               {t("expenseDistribution")}
             </h2>

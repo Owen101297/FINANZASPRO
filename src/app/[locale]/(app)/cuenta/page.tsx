@@ -63,7 +63,7 @@ export default function CuentaPage() {
     <div className="animate-fade-in">
       <PageHeader title={t("title")} subtitle={t("subtitle")} />
 
-      <Card className="mb-5">
+      <Card className="mb-5 p-4">
         <div className="flex items-center gap-3.5">
           <span className="flex size-11 items-center justify-center rounded-xl bg-primary/15 text-primary ring-1 ring-primary/25">
             <KeyRound className="size-5" />
@@ -81,7 +81,7 @@ export default function CuentaPage() {
         )}
       </Card>
 
-      <Card>
+      <Card className="p-4">
         <h2 className="mb-4 text-[13px] font-bold text-muted-foreground">
           {t("changePassword")}
         </h2>
@@ -132,7 +132,7 @@ export default function CuentaPage() {
         </form>
       </Card>
 
-      <Card className="mt-5">
+      <Card className="mt-5 p-4">
         <h2 className="mb-1 text-[13px] font-bold text-muted-foreground">
           {t("session")}
         </h2>
