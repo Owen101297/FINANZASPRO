@@ -170,10 +170,10 @@ export default function CicloPage() {
 
 function Stat({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
-    <div>
-      <p className="text-[11px] font-bold text-muted-foreground">{label}</p>
+    <div className="min-w-0 overflow-hidden">
+      <p className="truncate text-[11px] font-bold text-muted-foreground">{label}</p>
       <p
-        className={`mt-1 text-[15px] font-extrabold tabular-nums ${
+        className={`mt-1 truncate text-[15px] font-extrabold tabular-nums ${
           tone === "positive" ? "text-positive" : tone === "negative" ? "text-negative" : ""
         }`}
       >

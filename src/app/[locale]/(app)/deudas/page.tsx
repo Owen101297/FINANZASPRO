@@ -286,8 +286,8 @@ function DebtCard({
       <button onClick={() => onEdit(debt)} className="w-full text-left">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="truncate text-sm font-bold">{debt.name}</h2>
-            <p className="mt-0.5 text-xs text-muted-foreground">
+            <h2 className="truncate text-[15px] font-medium">{debt.name}</h2>
+            <p className="mt-0.5 truncate text-[13px] text-muted-foreground">
               {formatCurrency(debt.paidAmount)} {t("of")} {formatCurrency(debt.totalAmount)}
               {debt.dueDate && ` · ${t("dueDateText", { date: formatDate(debt.dueDate) })}`}
             </p>

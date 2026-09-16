@@ -276,8 +276,8 @@ function GoalCard({
       <button onClick={() => onEdit(goal)} className="w-full text-left">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="truncate text-sm font-bold">{goal.name}</h2>
-            <p className="mt-0.5 text-xs text-muted-foreground">
+            <h2 className="truncate text-[15px] font-medium">{goal.name}</h2>
+            <p className="mt-0.5 truncate text-[13px] text-muted-foreground">
               {t("remaining")}{" "}
               <span className="font-semibold text-foreground">{formatCurrency(remaining)}</span>
               {goal.deadline && ` · ${t("dueDateText", { date: formatDate(goal.deadline) })}`}
