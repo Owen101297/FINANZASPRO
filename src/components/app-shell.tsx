@@ -138,46 +138,84 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     !baseDockItems.some((d: NavItem) => d.href === item.href.replace(`/${locale}`, ""))
   );
 
+  const mini = !sidebarOpen;
+
   return (
     <div className="flex h-dvh overflow-hidden bg-background">
 
-      {/* Sidebar desktop */}
+      {/* Sidebar desktop — mini or full */}
       <aside
         className={clsx(
-          "sticky top-0 hidden h-dvh flex-col bg-muted/50 px-3 py-5 transition-[width] duration-200 md:flex",
-          sidebarOpen ? "w-[220px]" : "w-0 overflow-hidden px-0"
+          "sticky top-0 hidden h-dvh flex-col bg-muted/50 py-4 transition-[width] duration-200 md:flex",
+          mini ? "w-[60px] items-center px-2" : "w-[220px] px-3"
         )}
       >
-        {sidebarOpen && (
-          <>
-            <Brand locale={locale} />
-            <nav aria-label={tNav("sidebarNav")} className="mt-6 flex flex-1 flex-col gap-0.5 overflow-y-auto scrollbar-thin">
-              {navItems.map((item) => (
-                <NavLink key={item.href} item={item} active={isActivePath(pathname, item.href)} />
-              ))}
-            </nav>
-            <SessionFooter user={user} onLogout={logout} locale={locale} />
-          </>
-        )}
+        {/* Brand */}
+        <Link href={`/${locale}/dashboard`} className={clsx(
+          "flex shrink-0 items-center gap-2.5",
+          mini ? "size-10 justify-center rounded-lg" : "px-2"
+        )}>
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <Wallet className="size-4" />
+          </div>
+          {!mini && <span className="text-[15px] font-bold tracking-tight">FinanzasPro</span>}
+        </Link>
+
+        {/* Nav */}
+        <nav aria-label={tNav("sidebarNav")} className={clsx(
+          "mt-6 flex flex-1 flex-col gap-0.5 overflow-y-auto scrollbar-thin",
+          mini ? "items-center" : ""
+        )}>
+          {navItems.map((item) => (
+            <NavLink key={item.href} item={item} active={isActivePath(pathname, item.href)} mini={mini} />
+          ))}
+        </nav>
+
+        {/* Footer: toggle + session + logout */}
+        <div className={clsx(
+          "mt-4 shrink-0 border-t border-separator pt-3",
+          mini ? "w-full flex flex-col items-center" : ""
+        )}>
+          {/* Toggle button */}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label={sidebarOpen ? tNav("collapseSidebar") : tNav("expandSidebar")}
+            className={clsx(
+              "flex items-center justify-center rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+              mini ? "mb-2" : "mb-2 w-full gap-3 px-3 py-2 text-[13px]"
+            )}
+          >
+            {sidebarOpen ? <PanelLeftClose className="size-4" /> : <PanelLeftOpen className="size-4" />}
+            {!mini && <span>{tNav("collapseSidebar")}</span>}
+          </button>
+
+          {/* User info + logout */}
+          {!mini ? (
+            <>
+              <Link href={`/${locale}/cuenta`} className="mb-2 flex items-center gap-3 rounded-lg px-2 py-1 transition-colors hover:bg-muted">
+                <Avatar name={user.name ?? user.email} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13px] font-semibold">{user.name ?? user.email}</p>
+                  <p className="truncate text-[11px] text-muted-foreground">{user.email}</p>
+                </div>
+              </Link>
+              <Button variant="ghost" onClick={logout} className="w-full justify-start px-3 text-[13px]">
+                <LogOut className="size-4" /> {tSession("logoutBtn")}
+              </Button>
+            </>
+          ) : (
+            <Link href={`/${locale}/cuenta`} className="mb-1" title={user.name ?? user.email}>
+              <Avatar name={user.name ?? user.email} />
+            </Link>
+          )}
+        </div>
       </aside>
 
       {/* Columna principal */}
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        {/* Toggle sidebar button */}
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          aria-label={sidebarOpen ? tNav("collapseSidebar") : tNav("expandSidebar")}
-          className={clsx(
-            "sticky top-4 z-40 hidden w-fit rounded-lg bg-card p-1.5 text-muted-foreground shadow-sm transition-all hover:bg-muted hover:text-foreground md:block",
-            sidebarOpen ? "ml-[208px]" : "ml-3"
-          )}
-        >
-          {sidebarOpen ? <PanelLeftClose className="size-4" /> : <PanelLeftOpen className="size-4" />}
-        </button>
-
         {/* Header mobile */}
         <header className="sticky top-0 z-30 flex items-center justify-between bg-background/90 px-4 py-3 backdrop-blur md:hidden">
-          <Brand compact locale={locale} />
+          <BrandCompact locale={locale} />
         </header>
 
         {/* Contenido */}
@@ -266,64 +304,35 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Brand({ compact, locale }: { compact?: boolean; locale: string }) {
+function BrandCompact({ locale }: { locale: string }) {
   return (
-    <Link href={`/${locale}/dashboard`} className="flex items-center gap-2.5 px-2">
+    <Link href={`/${locale}/dashboard`} className="flex items-center gap-2.5">
       <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
         <Wallet className="size-4" />
       </div>
-      {!compact && (
-        <span className="text-[15px] font-bold tracking-tight">FinanzasPro</span>
-      )}
-      {compact && <span className="text-[15px] font-bold">FinanzasPro</span>}
+      <span className="text-[15px] font-bold">FinanzasPro</span>
     </Link>
   );
 }
 
-function NavLink({ item, active }: { item: NavItem; active: boolean }) {
+function NavLink({ item, active, mini }: { item: NavItem; active: boolean; mini: boolean }) {
   return (
     <Link
       href={item.href}
       aria-current={active ? "page" : undefined}
+      aria-label={item.label}
+      title={mini ? item.label : undefined}
       className={clsx(
-        "flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors",
+        "flex items-center gap-3 rounded-lg transition-colors",
+        mini ? "size-10 justify-center" : "px-3 py-2 text-[13px] font-medium",
         active
           ? "bg-primary/10 text-primary"
           : "text-muted-foreground hover:bg-muted hover:text-foreground"
       )}
     >
       {item.icon}
-      {item.label}
+      {!mini && <span>{item.label}</span>}
     </Link>
-  );
-}
-
-function SessionFooter({
-  user,
-  onLogout,
-  locale,
-}: {
-  user: { name: string | null; email: string; role: string };
-  onLogout: () => void;
-  locale: string;
-}) {
-  const tSession = useTranslations("session");
-  const tCommon = useTranslations("common");
-  return (
-    <div className="mt-4 border-t border-separator pt-4">
-      <Link href={`/${locale}/cuenta`} className="mb-3 flex items-center gap-3 rounded-lg px-2 py-1 transition-colors hover:bg-muted">
-        <Avatar name={user.name ?? user.email} />
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-[13px] font-semibold">{user.name ?? tCommon("user")}</p>
-          <p className="truncate text-[11px] text-muted-foreground">{user.email}</p>
-        </div>
-      </Link>
-      <div className="flex items-center gap-2 px-2">
-        <Button variant="ghost" onClick={onLogout} className="flex-1 justify-start px-3 text-[13px]">
-          <LogOut className="size-4" /> {tSession("logoutBtn")}
-        </Button>
-      </div>
-    </div>
   );
 }
 
