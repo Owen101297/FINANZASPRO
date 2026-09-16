@@ -183,7 +183,10 @@
     "confirmDelete": "Confirm delete",
     "confirmDeleteMsg": "Delete \"{name}\"? Associated transactions will lose their account.",
     "saveError": "Error saving",
-    "deleteError": "Error deleting"
+    "deleteError": "Error deleting",
+    "name": "Name",
+    "cancel": "Cancel",
+    "save": "Save"
   },
   "categorias": {
     "title": "Categories",

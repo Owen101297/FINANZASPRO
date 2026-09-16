@@ -183,7 +183,10 @@
     "confirmDelete": "Confirmar eliminación",
     "confirmDeleteMsg": "¿Eliminar \"{name}\"? Los movimientos asociados perderán su cuenta.",
     "saveError": "Error al guardar",
-    "deleteError": "Error al eliminar"
+    "deleteError": "Error al eliminar",
+    "name": "Nombre",
+    "cancel": "Cancelar",
+    "save": "Guardar"
   },
   "categorias": {
     "title": "Categorías",
