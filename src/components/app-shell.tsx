@@ -143,76 +143,85 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <div className="min-h-dvh bg-background">
+    <div className="flex min-h-dvh bg-background">
 
-      {/* Sidebar desktop */}
-      <aside className={clsx(
-        "fixed inset-y-0 left-0 z-30 flex w-60 flex-col border-r border-border bg-card px-4 py-6 transition-transform duration-200",
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      )}>
-        <Brand locale={locale} />
-        <nav aria-label={tNav("sidebarNav")} className="mt-8 flex flex-1 flex-col gap-1 overflow-y-auto scrollbar-thin">
-          {navItems.map((item) => (
-            <NavLink key={item.href} item={item} active={isActivePath(pathname, item.href)} />
-          ))}
-        </nav>
-        <SessionFooter user={user} onLogout={logout} locale={locale} />
-      </aside>
-
-      {/* Toggle sidebar button - desktop only */}
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        aria-label={sidebarOpen ? tNav("collapseSidebar") : tNav("expandSidebar")}
+      {/* Sidebar desktop — parte del flex flow, no fixed */}
+      <aside
         className={clsx(
-          "fixed top-4 z-40 hidden rounded-lg border border-border bg-card p-1.5 text-muted-foreground shadow-sm transition-all hover:bg-muted hover:text-foreground md:block",
-          sidebarOpen ? "left-[248px]" : "left-3"
+          "hidden flex-col border-r border-border bg-card px-4 py-6 transition-[width] duration-200 md:flex",
+          sidebarOpen ? "w-60" : "w-0 overflow-hidden px-0"
         )}
       >
-        {sidebarOpen ? <PanelLeftClose className="size-4" /> : <PanelLeftOpen className="size-4" />}
-      </button>
+        {sidebarOpen && (
+          <>
+            <Brand locale={locale} />
+            <nav aria-label={tNav("sidebarNav")} className="mt-8 flex flex-1 flex-col gap-1 overflow-y-auto scrollbar-thin">
+              {navItems.map((item) => (
+                <NavLink key={item.href} item={item} active={isActivePath(pathname, item.href)} />
+              ))}
+            </nav>
+            <SessionFooter user={user} onLogout={logout} locale={locale} />
+          </>
+        )}
+      </aside>
 
-      {/* Header mobile */}
-      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-card/90 px-4 py-3 backdrop-blur md:hidden">
-        <Brand compact locale={locale} />
-        <ThemeToggle />
-      </header>
-
-      {/* Contenido */}
-      <main className="px-4 pb-28 pt-5 md:pl-64 md:pr-8 md:pb-10 lg:px-10">
-        <div className="mx-auto max-w-3xl">{children}</div>
-      </main>
-
-      {/* Dock móvil */}
-      <nav
-        aria-label={tNav("mainNav")}
-        className="fixed inset-x-3 bottom-3 z-40 flex items-center justify-around rounded-2xl border border-border bg-card/95 px-2 py-1.5 shadow-xl shadow-black/20 backdrop-blur safe-bottom md:hidden"
-      >
-        {dockItems.map((item) => {
-          const active = isActivePath(pathname, item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={active ? "page" : undefined}
-              className={clsx(
-                "flex min-w-16 flex-col items-center gap-0.5 rounded-xl px-3 py-2 text-[10px] font-semibold transition-colors",
-                active ? "text-primary" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {item.icon}
-              {item.label}
-            </Link>
-          );
-        })}
+      {/* Columna principal */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        {/* Toggle sidebar button — desktop only, pegado al borde del sidebar */}
         <button
-          onClick={() => setShowMore(true)}
-          aria-label={tNav("more")}
-          className="flex min-w-14 flex-col items-center gap-0.5 rounded-xl px-3 py-2 text-[10px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          aria-label={sidebarOpen ? tNav("collapseSidebar") : tNav("expandSidebar")}
+          className={clsx(
+            "fixed top-4 z-40 hidden rounded-lg border border-border bg-card p-1.5 text-muted-foreground shadow-sm transition-all hover:bg-muted hover:text-foreground md:block",
+            sidebarOpen ? "left-[248px]" : "left-3"
+          )}
         >
-          <MoreHorizontal className="size-5" />
-          {tNav("more")}
+          {sidebarOpen ? <PanelLeftClose className="size-4" /> : <PanelLeftOpen className="size-4" />}
         </button>
-      </nav>
+
+        {/* Header mobile */}
+        <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-card/90 px-4 py-3 backdrop-blur md:hidden">
+          <Brand compact locale={locale} />
+          <ThemeToggle />
+        </header>
+
+        {/* Contenido */}
+        <main className="flex-1 px-4 pb-28 pt-5 md:px-8 md:pb-10 lg:px-10">
+          <div className="mx-auto max-w-3xl">{children}</div>
+        </main>
+
+        {/* Dock móvil */}
+        <nav
+          aria-label={tNav("mainNav")}
+          className="fixed inset-x-3 bottom-3 z-40 flex items-center justify-around rounded-2xl border border-border bg-card/95 px-2 py-1.5 shadow-xl shadow-black/20 backdrop-blur safe-bottom md:hidden"
+        >
+          {dockItems.map((item) => {
+            const active = isActivePath(pathname, item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                className={clsx(
+                  "flex min-w-16 flex-col items-center gap-0.5 rounded-xl px-3 py-2 text-[10px] font-semibold transition-colors",
+                  active ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {item.icon}
+                {item.label}
+              </Link>
+            );
+          })}
+          <button
+            onClick={() => setShowMore(true)}
+            aria-label={tNav("more")}
+            className="flex min-w-14 flex-col items-center gap-0.5 rounded-xl px-3 py-2 text-[10px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <MoreHorizontal className="size-5" />
+            {tNav("more")}
+          </button>
+        </nav>
+      </div>
 
       {/* Bottom sheet "Más" */}
       {showMore && (
