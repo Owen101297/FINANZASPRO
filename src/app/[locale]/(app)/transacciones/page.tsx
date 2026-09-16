@@ -207,14 +207,14 @@ function TransaccionesPage() {
               <>
                 <button
                   onClick={toggleSelectAll}
-                  className="flex size-11 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition-colors hover:bg-muted"
+                  className="flex size-11 items-center justify-center rounded-xl bg-muted text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground"
                   aria-label={selectedIds.size === allTx.length ? t("deselectAll") : t("selectAll")}
                 >
                   <CheckSquare className="size-5" />
                 </button>
                 <button
                   onClick={exitSelectMode}
-                  className="flex size-11 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition-colors hover:bg-muted"
+                  className="flex size-11 items-center justify-center rounded-xl bg-muted text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground"
                   aria-label={t("cancel")}
                 >
                   <X className="size-5" />
@@ -224,7 +224,7 @@ function TransaccionesPage() {
               <>
                 <button
                   onClick={() => setSelectMode(true)}
-                  className="flex size-11 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition-colors hover:bg-muted"
+                  className="flex size-11 items-center justify-center rounded-xl bg-muted text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground"
                   aria-label={t("selectMode")}
                 >
                   <CheckSquare className="size-5" />
@@ -243,7 +243,7 @@ function TransaccionesPage() {
       />
 
       {/* Selector de mes */}
-      <div className="mb-5 flex items-center justify-between rounded-card border border-border bg-card px-3 py-2.5">
+      <div className="mb-5 flex items-center justify-between rounded-card bg-muted/50 px-3 py-2.5">
         <button
           onClick={() => setMonth((m) => shiftMonth(m, -1))}
           aria-label={t("prevMonth")}
@@ -291,19 +291,19 @@ function TransaccionesPage() {
             return (
               <section key={day} aria-label={day} className={clsx(!inMonth && "opacity-50")}>
                 <div className="mb-1 flex items-center justify-between px-2">
-                  <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+                  <h3 className="text-[13px] font-medium text-muted-foreground">
                     {formatDayMonth(day)}
                   </h3>
                   <span
                     className={clsx(
-                      "font-mono text-xs font-semibold tabular-nums",
+                      "text-[13px] font-medium tabular-nums",
                       dayTotal >= 0 ? "text-positive" : "text-muted-foreground"
                     )}
                   >
                     {formatCurrency(dayTotal)}
                   </span>
                 </div>
-                <Card className="divide-y divide-border p-1.5">
+                <Card className="divide-y divide-separator p-1.5">
                   {txs.map((tx) => (
                     <TransactionRow
                       key={tx.id}
@@ -323,7 +323,7 @@ function TransaccionesPage() {
               <button
                 onClick={loadMore}
                 disabled={loadingMore}
-                className="rounded-xl border border-border px-6 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
+                className="rounded-xl bg-muted px-6 py-2.5 text-[15px] font-medium text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground disabled:opacity-50"
               >
                 {loadingMore ? (
                   <Loader2 className="size-4 animate-spin" />
@@ -340,14 +340,14 @@ function TransaccionesPage() {
 
       {/* Bulk action bar */}
       {selectMode && selectedIds.size > 0 && (
-        <div className="fixed inset-x-3 bottom-3 z-40 flex items-center justify-between rounded-2xl border border-border bg-card/95 px-4 py-3 shadow-xl shadow-black/20 backdrop-blur safe-bottom md:static md:inset-x-0 md:bottom-0 md:mt-4 md:rounded-xl md:border md:bg-card">
-          <span className="text-sm font-semibold">
+        <div className="fixed inset-x-3 bottom-3 z-40 flex items-center justify-between rounded-[22px] bg-[#f9f9f9]/80 px-4 py-3 shadow-[0_0_0_0.5px_rgba(0,0,0,0.08)] backdrop-blur-xl safe-bottom dark:bg-[#2c2c2e]/80 dark:shadow-[0_0_0_0.5px_rgba(255,255,255,0.08)] md:static md:inset-x-0 md:bottom-0 md:mt-4 md:rounded-xl md:bg-card md:shadow-none">
+          <span className="text-[15px] font-semibold">
             {t("selected", { count: selectedIds.size })}
           </span>
           <button
             onClick={bulkDelete}
             disabled={bulkLoading}
-            className="flex items-center gap-2 rounded-xl bg-destructive px-4 py-2 text-sm font-semibold text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-xl bg-destructive px-4 py-2 text-[15px] font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:opacity-50"
           >
             {bulkLoading ? (
               <Loader2 className="size-4 animate-spin" />

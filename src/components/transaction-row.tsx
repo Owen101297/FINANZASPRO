@@ -56,7 +56,7 @@ export function TransactionRow({
       aria-label={`${isIncome ? t("income") : t("expense")}: ${label}, ${formatCurrency(tx.amount)}, ${formatDayMonth(tx.date)}`}
       aria-pressed={onSelect ? selected : undefined}
       className={clsx(
-        "flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors",
+        "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
         (onEdit && !onSelect) && "hover:bg-muted",
         selected && "bg-primary/5 ring-1 ring-primary/25"
       )}
@@ -77,14 +77,14 @@ export function TransactionRow({
       )}
       <span
         aria-hidden
-        className="flex size-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold uppercase"
+        className="flex size-9 shrink-0 items-center justify-center rounded-lg text-[11px] font-bold uppercase"
         style={{ backgroundColor: `${color}22`, color }}
       >
         {label.slice(0, 2)}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-semibold">{label}</span>
-        <span className="block truncate text-xs text-muted-foreground">
+        <span className="block truncate text-[15px] font-medium">{label}</span>
+        <span className="block truncate text-[13px] text-muted-foreground">
           {formatDayMonth(tx.date)}
           {tx.account ? ` · ${tx.account.name}` : ""}
           {tx.note ? ` · ${tx.note}` : ""}
@@ -92,7 +92,7 @@ export function TransactionRow({
       </span>
       <span
         className={clsx(
-          "shrink-0 font-mono text-sm font-semibold tabular-nums",
+          "shrink-0 text-[15px] font-medium tabular-nums",
           isIncome ? "text-positive" : "text-foreground"
         )}
       >
