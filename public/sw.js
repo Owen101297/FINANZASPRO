@@ -25,17 +25,19 @@ self.addEventListener("activate", (e) => {
 
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
+  // Solo interceptar requests same-origin (ignorar Cloudflare, CDNs, etc.)
+  if (!e.request.url.startsWith(self.location.origin)) return;
   if (e.request.url.includes("/api/")) return;
 
   e.respondWith(
     fetch(e.request)
       .then((res) => {
-        if (res.ok && e.request.url.startsWith(self.location.origin)) {
+        if (res.ok) {
           const clone = res.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone));
         }
         return res;
       })
-      .catch(() => caches.match(e.request))
+      .catch(() => caches.match(e.request).then((cached) => cached || new Response("Offline", { status: 504, statusText: "Service Unavailable" })))
   );
 });

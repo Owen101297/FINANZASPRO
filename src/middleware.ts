@@ -36,7 +36,7 @@ function securityDirectives(nonce: string): Record<string, string> {
     style-src 'self' 'unsafe-inline';
     img-src 'self' data: blob:;
     font-src 'self' data:;
-    connect-src 'self';
+    connect-src 'self' https://static.cloudflareinsights.com;
     object-src 'none';
     base-uri 'self';
     form-action 'self';
