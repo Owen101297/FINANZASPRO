@@ -66,13 +66,12 @@ const ADMIN_NAV_ITEM: NavItem = {
 };
 
 const MOBILE_DOCK_BASE: NavItem[] = [
-  NAV_ITEMS[0] as NavItem, // Dashboard
-  NAV_ITEMS[1] as NavItem, // Transacciones
-  NAV_ITEMS[2] as NavItem, // Cuentas
-  NAV_ITEMS[3] as NavItem, // Categorías
+  NAV_ITEMS[0] as NavItem,
+  NAV_ITEMS[1] as NavItem,
+  NAV_ITEMS[2] as NavItem,
+  NAV_ITEMS[3] as NavItem,
 ];
 
-/** Activo solo por segmento exacto ("/cuenta" no marca "/cuentas"). */
 function isActivePath(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
@@ -145,17 +144,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-dvh bg-background">
 
-      {/* Sidebar desktop — parte del flex flow, no fixed */}
+      {/* Sidebar desktop */}
       <aside
         className={clsx(
-          "hidden flex-col border-r border-border bg-card px-4 py-6 transition-[width] duration-200 md:flex",
-          sidebarOpen ? "w-60" : "w-0 overflow-hidden px-0"
+          "hidden flex-col bg-muted/50 px-3 py-5 transition-[width] duration-200 md:flex",
+          sidebarOpen ? "w-[220px]" : "w-0 overflow-hidden px-0"
         )}
       >
         {sidebarOpen && (
           <>
             <Brand locale={locale} />
-            <nav aria-label={tNav("sidebarNav")} className="mt-8 flex flex-1 flex-col gap-1 overflow-y-auto scrollbar-thin">
+            <nav aria-label={tNav("sidebarNav")} className="mt-6 flex flex-1 flex-col gap-0.5 overflow-y-auto scrollbar-thin">
               {navItems.map((item) => (
                 <NavLink key={item.href} item={item} active={isActivePath(pathname, item.href)} />
               ))}
@@ -167,33 +166,33 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Columna principal */}
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Toggle sidebar button — desktop only, pegado al borde del sidebar */}
+        {/* Toggle sidebar button */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           aria-label={sidebarOpen ? tNav("collapseSidebar") : tNav("expandSidebar")}
           className={clsx(
-            "fixed top-4 z-40 hidden rounded-lg border border-border bg-card p-1.5 text-muted-foreground shadow-sm transition-all hover:bg-muted hover:text-foreground md:block",
-            sidebarOpen ? "left-[248px]" : "left-3"
+            "fixed top-4 z-40 hidden rounded-lg bg-card p-1.5 text-muted-foreground shadow-sm transition-all hover:bg-muted hover:text-foreground md:block",
+            sidebarOpen ? "left-[236px]" : "left-3"
           )}
         >
           {sidebarOpen ? <PanelLeftClose className="size-4" /> : <PanelLeftOpen className="size-4" />}
         </button>
 
         {/* Header mobile */}
-        <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-card/90 px-4 py-3 backdrop-blur md:hidden">
+        <header className="sticky top-0 z-30 flex items-center justify-between bg-background/90 px-4 py-3 backdrop-blur md:hidden">
           <Brand compact locale={locale} />
           <ThemeToggle />
         </header>
 
         {/* Contenido */}
-        <main className="flex-1 px-4 pb-28 pt-5 md:px-8 md:pb-10 lg:px-10">
+        <main className="flex-1 px-4 pb-28 pt-2 md:px-8 md:pb-10 md:pt-5 lg:px-10">
           <div className="mx-auto max-w-3xl">{children}</div>
         </main>
 
         {/* Dock móvil */}
         <nav
           aria-label={tNav("mainNav")}
-          className="fixed inset-x-3 bottom-3 z-40 flex items-center justify-around rounded-2xl border border-border bg-card/95 px-2 py-1.5 shadow-xl shadow-black/20 backdrop-blur safe-bottom md:hidden"
+          className="fixed inset-x-3 bottom-3 z-40 flex items-center justify-around rounded-[22px] bg-[#f9f9f9]/80 px-2 py-1.5 shadow-[0_0_0_0.5px_rgba(0,0,0,0.08)] backdrop-blur-xl safe-bottom dark:bg-[#2c2c2e]/80 dark:shadow-[0_0_0_0.5px_rgba(255,255,255,0.08)] md:hidden"
         >
           {dockItems.map((item) => {
             const active = isActivePath(pathname, item.href);
@@ -203,8 +202,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 className={clsx(
-                  "flex min-w-16 flex-col items-center gap-0.5 rounded-xl px-3 py-2 text-[10px] font-semibold transition-colors",
-                  active ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                  "flex min-w-[64px] flex-col items-center gap-0.5 rounded-2xl px-3 py-2 text-[10px] font-medium transition-colors",
+                  active ? "text-primary" : "text-muted-foreground"
                 )}
               >
                 {item.icon}
@@ -215,7 +214,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <button
             onClick={() => setShowMore(true)}
             aria-label={tNav("more")}
-            className="flex min-w-14 flex-col items-center gap-0.5 rounded-xl px-3 py-2 text-[10px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
+            className="flex min-w-[56px] flex-col items-center gap-0.5 rounded-2xl px-3 py-2 text-[10px] font-medium text-muted-foreground"
           >
             <MoreHorizontal className="size-5" />
             {tNav("more")}
@@ -226,15 +225,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* Bottom sheet "Más" */}
       {showMore && (
         <div className="fixed inset-0 z-50 md:hidden">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowMore(false)} />
-          <div className="absolute inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto rounded-t-2xl border border-border bg-card p-4 pb-28 shadow-xl animate-slide-up">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-bold">{tNav("more")}</h2>
-              <button onClick={() => setShowMore(false)} className="rounded-lg p-1 hover:bg-muted">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowMore(false)} />
+          <div className="absolute inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto rounded-t-[20px] bg-card p-4 pb-28 shadow-xl animate-slide-up">
+            <div className="mx-auto mb-1 h-[5px] w-[36px] rounded-full bg-[#c7c7cc] dark:bg-[#636366]" />
+            <div className="mb-4 flex items-center justify-between px-1">
+              <h2 className="text-[17px] font-semibold">{tNav("more")}</h2>
+              <button onClick={() => setShowMore(false)} className="rounded-full p-1 hover:bg-muted">
                 <X className="size-5" />
               </button>
             </div>
-            <nav className="flex flex-col gap-1">
+            <nav className="flex flex-col gap-0.5">
               {moreItems.map((item) => {
                 const active = isActivePath(pathname, item.href);
                 return (
@@ -243,10 +243,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     href={item.href}
                     onClick={() => setShowMore(false)}
                     className={clsx(
-                      "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors",
+                      "flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-medium transition-colors",
                       active
                         ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        : "text-foreground hover:bg-muted"
                     )}
                   >
                     {item.icon}
@@ -254,10 +254,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </Link>
                 );
               })}
-              <hr className="my-2 border-border" />
+              <div className="my-2 h-px bg-muted" />
               <button
                 onClick={() => { setShowMore(false); logout(); }}
-                className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+                className="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-medium text-destructive transition-colors hover:bg-destructive/10"
               >
                 <LogOut className="size-5" />
                 {tNav("logout")}
@@ -273,13 +273,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 function Brand({ compact, locale }: { compact?: boolean; locale: string }) {
   return (
     <Link href={`/${locale}/dashboard`} className="flex items-center gap-2.5 px-2">
-      <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/15 ring-1 ring-primary/25">
-        <Wallet className="size-5 text-primary" />
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+        <Wallet className="size-4" />
       </div>
       {!compact && (
-        <span className="text-base font-extrabold tracking-tight">FinanzasPro</span>
+        <span className="text-[15px] font-bold tracking-tight">FinanzasPro</span>
       )}
-      {compact && <span className="text-sm font-extrabold">FinanzasPro</span>}
+      {compact && <span className="text-[15px] font-bold">FinanzasPro</span>}
     </Link>
   );
 }
@@ -290,7 +290,7 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
       href={item.href}
       aria-current={active ? "page" : undefined}
       className={clsx(
-        "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+        "flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors",
         active
           ? "bg-primary/10 text-primary"
           : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -314,17 +314,17 @@ function SessionFooter({
   const tSession = useTranslations("session");
   const tCommon = useTranslations("common");
   return (
-    <div className="mt-4 border-t border-border pt-4">
-      <Link href={`/${locale}/cuenta`} className="mb-3 flex items-center gap-3 rounded-xl px-2 py-1 transition-colors hover:bg-muted">
+    <div className="mt-4 border-t border-separator pt-4">
+      <Link href={`/${locale}/cuenta`} className="mb-3 flex items-center gap-3 rounded-lg px-2 py-1 transition-colors hover:bg-muted">
         <Avatar name={user.name ?? user.email} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">{user.name ?? tCommon("user")}</p>
-          <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+          <p className="truncate text-[13px] font-semibold">{user.name ?? tCommon("user")}</p>
+          <p className="truncate text-[11px] text-muted-foreground">{user.email}</p>
         </div>
       </Link>
       <div className="flex items-center gap-2 px-2">
         <ThemeToggle />
-        <Button variant="ghost" onClick={onLogout} className="flex-1 justify-start px-3 text-xs">
+        <Button variant="ghost" onClick={onLogout} className="flex-1 justify-start px-3 text-[13px]">
           <LogOut className="size-4" /> {tSession("logoutBtn")}
         </Button>
       </div>
@@ -340,7 +340,7 @@ export function Avatar({ name }: { name: string }) {
     .map((s) => s[0]?.toUpperCase())
     .join("");
   return (
-    <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent/15 text-xs font-bold text-accent ring-1 ring-accent/25">
+    <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-accent/15 text-[11px] font-bold text-accent">
       {initials || "?"}
     </div>
   );
@@ -390,14 +390,14 @@ function PasswordResetScreen({
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-background px-6">
-      <div className="w-full max-w-sm animate-scale-in rounded-card border border-border bg-card p-8 shadow-xl shadow-black/5">
-        <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-muted">
+      <div className="w-full max-w-sm animate-scale-in rounded-card bg-card p-8 shadow-xl shadow-black/5">
+        <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-warning/10">
           <KeyRound className="size-7 text-warning" />
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="text-center">
-            <h1 className="text-lg font-bold">{tSession("tempPassword")}</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <h1 className="text-[17px] font-semibold">{tSession("tempPassword")}</h1>
+            <p className="mt-1 text-[15px] text-muted-foreground">
               {tSession("tempPasswordDesc")}
             </p>
           </div>
@@ -424,13 +424,13 @@ function PasswordResetScreen({
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
             />
-            <p className="mt-1 text-xs text-muted-foreground">{tSession("minChars")}</p>
+            <p className="mt-1 text-[13px] text-muted-foreground">{tSession("minChars")}</p>
           </div>
           <Button type="submit" disabled={saving} className="w-full">
             {saving && <Loader2 className="size-4 animate-spin" />}
             {tSession("savePassword")}
           </Button>
-          <Button type="button" variant="ghost" onClick={logout} className="w-full text-xs">
+          <Button type="button" variant="ghost" onClick={logout} className="w-full text-[13px]">
             {tSession("logoutBtn")}
           </Button>
         </form>
@@ -477,12 +477,12 @@ function GateScreen({
   const tSession = useTranslations("session");
   return (
     <div className="flex min-h-dvh items-center justify-center bg-background px-6">
-      <div className="w-full max-w-sm animate-scale-in rounded-card border border-border bg-card p-8 text-center shadow-xl shadow-black/5">
+      <div className="w-full max-w-sm animate-scale-in rounded-card bg-card p-8 text-center shadow-xl shadow-black/5">
         <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-muted">
           {icon}
         </div>
-        <h1 className="mb-2 text-lg font-bold">{title}</h1>
-        <p className="mb-6 text-sm leading-relaxed text-muted-foreground">{message}</p>
+        <h1 className="mb-2 text-[17px] font-semibold">{title}</h1>
+        <p className="mb-6 text-[15px] leading-relaxed text-muted-foreground">{message}</p>
         <Button variant="outline" onClick={onLogout} className="w-full">
           {tSession("logoutBtn")}
         </Button>
