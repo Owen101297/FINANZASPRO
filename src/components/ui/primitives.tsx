@@ -9,11 +9,10 @@ import type { ButtonHTMLAttributes, InputHTMLAttributes, SelectHTMLAttributes } 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "outline";
 
 const buttonVariants: Record<ButtonVariant, string> = {
-  primary:
-    "bg-primary text-primary-foreground hover:opacity-90 shadow-sm shadow-emerald-900/20",
-  secondary: "bg-secondary text-secondary-foreground hover:bg-muted",
-  ghost: "text-muted-foreground hover:text-foreground hover:bg-muted",
-  danger: "bg-destructive text-white hover:opacity-90",
+  primary: "bg-primary text-primary-foreground hover:opacity-90",
+  secondary: "bg-transparent text-primary hover:bg-primary/10",
+  ghost: "text-primary hover:bg-primary/10",
+  danger: "bg-transparent text-destructive hover:bg-destructive/10",
   outline: "border border-border bg-transparent hover:bg-muted text-foreground",
 };
 
@@ -29,10 +28,10 @@ export function Button({
   return (
     <button
       className={clsx(
-        "inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all",
+        "inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-all duration-150",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         "disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]",
-        size === "sm" ? "px-3 py-1.5 text-xs" : "px-4 py-2.5 text-sm",
+        size === "sm" ? "px-3 py-1.5 text-[13px]" : "px-4 py-2.5 text-[15px]",
         buttonVariants[variant],
         className
       )}
@@ -44,7 +43,7 @@ export function Button({
 // ─────────────────────────── Input ────────────────────────────
 
 const fieldClasses =
-  "w-full rounded-xl border border-border bg-input px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/70 transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-50";
+  "w-full rounded-xl bg-[#e5e5ea] dark:bg-[#2c2c2e] px-4 py-3 text-[17px] text-foreground placeholder:text-muted-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring/40 disabled:opacity-50";
 
 export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
   return <input className={clsx(fieldClasses, className)} {...props} />;
@@ -62,7 +61,7 @@ export function Label({ className, ...props }: React.LabelHTMLAttributes<HTMLLab
   return (
     <label
       className={clsx(
-        "mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground",
+        "mb-1.5 block text-[13px] font-medium text-muted-foreground",
         className
       )}
       {...props}
@@ -75,7 +74,7 @@ export function Label({ className, ...props }: React.LabelHTMLAttributes<HTMLLab
 export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={clsx("rounded-card border border-border bg-card p-5", className)}
+      className={clsx("rounded-card bg-card shadow-sm", className)}
       {...props}
     />
   );
@@ -87,10 +86,10 @@ type BadgeTone = "neutral" | "positive" | "negative" | "warning" | "accent";
 
 const badgeTones: Record<BadgeTone, string> = {
   neutral: "bg-muted text-muted-foreground",
-  positive: "bg-emerald-500/10 text-positive",
-  negative: "bg-rose-500/10 text-negative",
-  warning: "bg-amber-500/10 text-warning",
-  accent: "bg-violet-500/10 text-accent",
+  positive: "bg-positive/10 text-positive",
+  negative: "bg-negative/10 text-negative",
+  warning: "bg-warning/10 text-warning",
+  accent: "bg-accent/10 text-accent",
 };
 
 export function Badge({
@@ -101,7 +100,7 @@ export function Badge({
   return (
     <span
       className={clsx(
-        "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide",
+        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[13px] font-medium",
         badgeTones[tone],
         className
       )}
@@ -125,7 +124,7 @@ export function Progress({
     tone === "danger"
       ? "bg-destructive"
       : tone === "warning"
-        ? "bg-amber-500"
+        ? "bg-warning"
         : "bg-primary";
   return (
     <div
@@ -133,7 +132,7 @@ export function Progress({
       aria-valuenow={Math.round(value)}
       aria-valuemin={0}
       aria-valuemax={100}
-      className={clsx("h-2 w-full overflow-hidden rounded-full bg-muted", className)}
+      className={clsx("h-1.5 w-full overflow-hidden rounded-full bg-muted", className)}
     >
       <div
         className={clsx("h-full rounded-full transition-all duration-500", color)}
@@ -161,8 +160,8 @@ export function EmptyState({
           {icon}
         </div>
       )}
-      <p className="text-sm font-semibold text-foreground">{title}</p>
-      {hint && <p className="max-w-xs text-xs text-muted-foreground">{hint}</p>}
+      <p className="text-[17px] font-semibold text-foreground">{title}</p>
+      {hint && <p className="max-w-xs text-[15px] text-muted-foreground">{hint}</p>}
     </div>
   );
 }
@@ -247,7 +246,7 @@ export function Modal({
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
       <div
         role="presentation"
-        className="absolute inset-0 animate-fade-in bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 animate-fade-in bg-black/40 backdrop-blur-sm"
         onClick={onClose}
       />
       <div
@@ -256,10 +255,10 @@ export function Modal({
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className="relative z-10 max-h-[92vh] w-full animate-scale-in overflow-y-auto scrollbar-thin rounded-t-3xl border border-border bg-card p-6 sm:max-w-md sm:rounded-3xl safe-bottom outline-none"
+        className="relative z-10 max-h-[92vh] w-full animate-scale-in overflow-y-auto scrollbar-thin rounded-t-[20px] bg-card p-6 sm:max-w-md sm:rounded-2xl safe-bottom outline-none"
       >
-        <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-border sm:hidden" />
-        <h3 className="mb-5 text-lg font-bold">{title}</h3>
+        <div className="mx-auto mb-4 h-[5px] w-[36px] rounded-full bg-[#c7c7cc] dark:bg-[#636366] sm:hidden" />
+        <h3 className="mb-5 text-[17px] font-semibold">{title}</h3>
         {children}
       </div>
     </div>
@@ -280,8 +279,8 @@ export function PageHeader({
   return (
     <div className="mb-6 flex items-start justify-between gap-4">
       <div>
-        <h1 className="text-2xl font-extrabold tracking-tight">{title}</h1>
-        {subtitle && <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>}
+        <h1 className="text-[28px] font-bold tracking-tight">{title}</h1>
+        {subtitle && <p className="mt-0.5 text-[15px] text-muted-foreground">{subtitle}</p>}
       </div>
       {action}
     </div>

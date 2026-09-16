@@ -17,9 +17,9 @@ const ToastContext = createContext<{
 }>({ toast: () => {} });
 
 const icons: Record<ToastKind, React.ReactNode> = {
-  success: <CheckCircle2 className="size-4 text-emerald-500" />,
-  error: <AlertCircle className="size-4 text-rose-500" />,
-  info: <Info className="size-4 text-sky-500" />,
+  success: <CheckCircle2 className="size-4 text-positive" />,
+  error: <AlertCircle className="size-4 text-negative" />,
+  info: <Info className="size-4 text-primary" />,
 };
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
@@ -50,7 +50,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             key={t.id}
             role="status"
             className={clsx(
-              "pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-xl border bg-card px-4 py-3 text-sm shadow-lg shadow-black/10",
+              "pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-2xl bg-card px-4 py-3 text-[15px] shadow-lg shadow-black/10",
               "animate-toast-in"
             )}
           >
