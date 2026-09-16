@@ -53,6 +53,8 @@ export function TransactionRow({
     <button
       onClick={() => onSelect ? onSelect(tx.id) : onEdit?.(tx)}
       disabled={!onEdit && !onSelect}
+      aria-label={`${isIncome ? t("income") : t("expense")}: ${label}, ${formatCurrency(tx.amount)}, ${formatDayMonth(tx.date)}`}
+      aria-pressed={onSelect ? selected : undefined}
       className={clsx(
         "flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors",
         (onEdit && !onSelect) && "hover:bg-muted",

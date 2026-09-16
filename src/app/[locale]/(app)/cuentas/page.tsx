@@ -242,7 +242,7 @@ export default function CuentasPage() {
 
           <div className="flex gap-3 pt-2">
             {editing && (
-              <Button variant="danger" onClick={() => handleDelete(editing)} disabled={saving}>
+              <Button variant="danger" onClick={() => handleDelete(editing)} disabled={saving} aria-label={t("confirmDelete")}>
                 <Trash2 className="size-4" />
               </Button>
             )}

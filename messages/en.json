@@ -22,7 +22,10 @@
     "noCategory": "No category",
     "unnamed": "Unnamed",
     "admin": "admin",
-    "user": "User"
+    "user": "User",
+    "income": "Income",
+    "expense": "Expense",
+    "confirmDelete": "Confirm delete"
   },
   "nav": {
     "home": "Home",
@@ -43,7 +46,8 @@
     "changeTheme": "Change theme",
     "goToLogin": "Go to login",
     "community": "Community",
-    "paymentPlan": "Payment plan"
+    "paymentPlan": "Payment plan",
+    "sidebarNav": "Main navigation"
   },
   "session": {
     "notFound": "Session not found",
@@ -92,7 +96,22 @@
     "recentTransactions": "Recent transactions",
     "viewAll": "View all",
     "noTransactions": "No transactions yet",
-    "noTransactionsHint": "Record your first expense or income of the cycle using the buttons above."
+    "noTransactionsHint": "Record your first expense or income of the cycle using the buttons above.",
+    "topCategory": "Top spending",
+    "activeDebts": "Active debts",
+    "debt": "debt",
+    "debts": "debts",
+    "monthlyTrend": "Monthly trend",
+    "spendUp": "More than last month:",
+    "spendDown": "Less than last month:",
+    "onboarding": {
+      "title": "Getting started",
+      "createAccount": "Create your first account",
+      "setSalary": "Set your salary",
+      "createCategory": "Create a category",
+      "firstTransaction": "Record your first expense",
+      "dismiss": "Hide checklist"
+    }
   },
   "movement": {
     "expense": "expense",
@@ -159,7 +178,7 @@
     "updated": "Account updated",
     "created": "Account created",
     "deleted": "Account deleted",
-    "confirmDelete": "Delete account",
+    "confirmDelete": "Confirm delete",
     "confirmDeleteMsg": "Delete \"{name}\"? Associated transactions will lose their account.",
     "saveError": "Error saving",
     "deleteError": "Error deleting"
@@ -181,7 +200,7 @@
     "updated": "Category updated",
     "created": "Category created",
     "deleted": "Category deleted",
-    "confirmDelete": "Delete category",
+    "confirmDelete": "Confirm delete",
     "confirmDeleteMsg": "Delete \"{name}\"? Associated transactions will lose their category."
   },
   "ciclo": {
@@ -228,7 +247,7 @@
     "created": "Debt created",
     "markedPaid": "Debt paid!",
     "deleted": "Debt deleted",
-    "confirmDelete": "Delete debt",
+    "confirmDelete": "Confirm delete",
     "confirmDeleteMsg": "Delete \"{name}\"? This action cannot be undone."
   },
   "suscripciones": {
@@ -251,7 +270,7 @@
     "updated": "Subscription updated",
     "created": "Subscription created",
     "deleted": "Subscription deleted",
-    "confirmDelete": "Delete subscription",
+    "confirmDelete": "Confirm delete",
     "confirmDeleteMsg": "Delete \"{name}\"? This action cannot be undone."
   },
   "metas": {
@@ -275,7 +294,7 @@
     "updated": "Goal updated",
     "created": "Goal created",
     "deleted": "Goal deleted",
-    "confirmDelete": "Delete goal",
+    "confirmDelete": "Confirm delete",
     "confirmDeleteMsg": "Delete \"{name}\"? This action cannot be undone."
   },
   "analisis": {
@@ -291,7 +310,10 @@
     "total": "Total",
     "dailyExpense": "Daily spending",
     "dayLabel": "Day {day}",
-    "movementsStats": "{count} transactions · active subscriptions {amount}/mo"
+    "movementsStats": "{count} transactions · active subscriptions {amount}/mo",
+    "vsLastMonth": "vs. last month",
+    "moreSpending": "More spending than last month:",
+    "lessSpending": "Less spending than last month:"
   },
   "admin": {
     "title": "Administration",

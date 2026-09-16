@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { AlertTriangle, KeyRound } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { AlertTriangle, KeyRound, TrendingUp, TrendingDown, Landmark, Tag, Check, Circle } from "lucide-react";
 import Link from "next/link";
+import useSWR from "swr";
 import { useWallet } from "@/hooks/use-wallet";
 import { useSession } from "@/hooks/use-session";
 import { Avatar } from "@/components/app-shell";
-import { Badge, Progress } from "@/components/ui/primitives";
-import { formatCurrency } from "@/lib/format";
+import { Badge, Card, Progress } from "@/components/ui/primitives";
+import { fetcher } from "@/lib/client-api";
+import { formatCurrency, currentMonth, shiftMonth } from "@/lib/format";
 import { useTranslations, useLocale } from "next-intl";
 
 /** Encabezado de página con saludo y resumen del ciclo. */
@@ -172,5 +174,249 @@ export function BalanceCard() {
         </div>
       )}
     </section>
+  );
+}
+
+type TxDto = {
+  id: string;
+  type: "INCOME" | "EXPENSE";
+  amount: number;
+  date: string;
+  category: { id: string; name: string; color: string | null } | null;
+};
+
+/** Widget: Categoría con más gastos este ciclo */
+export function TopCategoryWidget() {
+  const t = useTranslations("dashboard");
+  const month = currentMonth();
+  const { data, isLoading } = useSWR<{ transactions: TxDto[] }>(
+    `/api/transactions?limit=200&month=${month}`,
+    fetcher
+  );
+
+  const topCategory = useMemo(() => {
+    if (!data?.transactions) return null;
+    const expenses = data.transactions.filter(tx => tx.type === "EXPENSE" && tx.category);
+    const byCategory = new Map<string, { name: string; color: string | null; total: number }>();
+    for (const tx of expenses) {
+      const cat = tx.category!;
+      const existing = byCategory.get(cat.id);
+      if (existing) existing.total += tx.amount;
+      else byCategory.set(cat.id, { name: cat.name, color: cat.color, total: tx.amount });
+    }
+    const sorted = Array.from(byCategory.values()).sort((a, b) => b.total - a.total);
+    return sorted[0] ?? null;
+  }, [data]);
+
+  if (isLoading) return <div className="h-20 animate-pulse rounded-card bg-muted" />;
+  if (!topCategory) return null;
+
+  return (
+    <section className="rounded-card border border-border bg-card p-4">
+      <div className="flex items-center gap-2">
+        <Tag className="size-4 text-muted-foreground" />
+        <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+          {t("topCategory")}
+        </h3>
+      </div>
+      <div className="mt-2 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span
+            className="size-3 rounded-full"
+            style={{ backgroundColor: topCategory.color ?? "#6b7280" }}
+          />
+          <span className="text-sm font-bold">{topCategory.name}</span>
+        </div>
+        <span className="font-mono text-sm font-bold tabular-nums text-negative">
+          −{formatCurrency(topCategory.total)}
+        </span>
+      </div>
+    </section>
+  );
+}
+
+/** Widget: Resumen de deudas activas */
+export function DebtsSummaryWidget() {
+  const t = useTranslations("dashboard");
+  const locale = useLocale();
+  const { data, isLoading } = useSWR<{ debts: Array<{ id: string; totalAmount: number; paidAmount: number; status: string }> }>(
+    "/api/debts",
+    fetcher
+  );
+
+  const summary = useMemo(() => {
+    if (!data?.debts) return null;
+    const active = data.debts.filter(d => d.status === "ACTIVE");
+    if (active.length === 0) return null;
+    const totalDebt = active.reduce((acc, d) => acc + (d.totalAmount - d.paidAmount), 0);
+    return { count: active.length, total: totalDebt };
+  }, [data]);
+
+  if (isLoading) return <div className="h-20 animate-pulse rounded-card bg-muted" />;
+  if (!summary) return null;
+
+  return (
+    <section className="rounded-card border border-border bg-card p-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Landmark className="size-4 text-muted-foreground" />
+          <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+            {t("activeDebts")}
+          </h3>
+        </div>
+        <Link
+          href={`/${locale}/deudas`}
+          className="text-[11px] font-semibold text-primary hover:underline"
+        >
+          {t("viewAll")}
+        </Link>
+      </div>
+      <div className="mt-2 flex items-center justify-between">
+        <span className="text-sm font-bold">
+          {summary.count} {summary.count === 1 ? t("debt") : t("debts")}
+        </span>
+        <span className="font-mono text-sm font-bold tabular-nums text-negative">
+          −{formatCurrency(summary.total)}
+        </span>
+      </div>
+    </section>
+  );
+}
+
+/** Widget: Trend comparando mes actual vs anterior */
+export function MonthlyTrendWidget() {
+  const t = useTranslations("dashboard");
+  const thisMonth = currentMonth();
+  const lastMonth = shiftMonth(thisMonth, -1);
+
+  const { data: thisData } = useSWR<{ transactions: TxDto[] }>(
+    `/api/transactions?limit=200&month=${thisMonth}`,
+    fetcher
+  );
+  const { data: lastData } = useSWR<{ transactions: TxDto[] }>(
+    `/api/transactions?limit=200&month=${lastMonth}`,
+    fetcher
+  );
+
+  const trend = useMemo(() => {
+    if (!thisData?.transactions || !lastData?.transactions) return null;
+    const thisExpenses = thisData.transactions
+      .filter(tx => tx.type === "EXPENSE")
+      .reduce((acc, tx) => acc + tx.amount, 0);
+    const lastExpenses = lastData.transactions
+      .filter(tx => tx.type === "EXPENSE")
+      .reduce((acc, tx) => acc + tx.amount, 0);
+    if (lastExpenses === 0) return null;
+    const diff = thisExpenses - lastExpenses;
+    const pct = (diff / lastExpenses) * 100;
+    return { diff, pct, thisExpenses, lastExpenses };
+  }, [thisData, lastData]);
+
+  if (!trend) return null;
+
+  const isUp = trend.diff > 0;
+
+  return (
+    <section className="rounded-card border border-border bg-card p-4">
+      <div className="flex items-center gap-2">
+        {isUp ? (
+          <TrendingUp className="size-4 text-negative" />
+        ) : (
+          <TrendingDown className="size-4 text-positive" />
+        )}
+        <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+          {t("monthlyTrend")}
+        </h3>
+      </div>
+      <div className="mt-2 flex items-center justify-between">
+        <span className="text-sm font-bold">
+          {isUp ? "+" : ""}{Math.round(trend.pct)}%
+        </span>
+        <span className={`text-xs font-semibold ${isUp ? "text-negative" : "text-positive"}`}>
+          {isUp ? t("spendUp") : t("spendDown")} {formatCurrency(Math.abs(trend.diff))}
+        </span>
+      </div>
+    </section>
+  );
+}
+
+// ──────────────────── Onboarding Checklist ────────────────────
+
+interface OnboardingStep {
+  key: string;
+  label: string;
+  href: string;
+  done: boolean;
+}
+
+export function OnboardingChecklist({
+  accountCount,
+  categoryCount,
+  salary,
+  transactionCount,
+  locale,
+}: {
+  accountCount: number;
+  categoryCount: number;
+  salary: number;
+  transactionCount: number;
+  locale: string;
+}) {
+  const t = useTranslations("dashboard");
+  const [dismissed, setDismissed] = useState(false);
+
+  const steps: OnboardingStep[] = useMemo(
+    () => [
+      { key: "account", label: t("onboarding.createAccount"), href: `/${locale}/cuentas`, done: accountCount > 0 },
+      { key: "salary", label: t("onboarding.setSalary"), href: `/${locale}/ciclo`, done: salary > 0 },
+      { key: "category", label: t("onboarding.createCategory"), href: `/${locale}/categorias`, done: categoryCount > 0 },
+      { key: "transaction", label: t("onboarding.firstTransaction"), href: `/${locale}/transacciones?new=gasto`, done: transactionCount > 0 },
+    ],
+    [accountCount, categoryCount, salary, transactionCount, locale, t]
+  );
+
+  const completedCount = steps.filter((s) => s.done).length;
+  const allDone = completedCount === steps.length;
+
+  if (allDone || dismissed) return null;
+
+  return (
+    <Card className="mb-5 border-primary/20 bg-primary/5 p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="text-sm font-bold">{t("onboarding.title")}</h3>
+        <span className="text-xs text-muted-foreground">{completedCount}/{steps.length}</span>
+      </div>
+      <div className="mb-3 h-1.5 overflow-hidden rounded-full bg-muted">
+        <div
+          className="h-full rounded-full bg-primary transition-all"
+          style={{ width: `${(completedCount / steps.length) * 100}%` }}
+        />
+      </div>
+      <ul className="space-y-2">
+        {steps.map((step) => (
+          <li key={step.key}>
+            <Link
+              href={step.href}
+              className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-muted"
+            >
+              {step.done ? (
+                <Check className="size-4 shrink-0 text-positive" />
+              ) : (
+                <Circle className="size-4 shrink-0 text-muted-foreground/50" />
+              )}
+              <span className={step.done ? "text-muted-foreground line-through" : "font-medium"}>
+                {step.label}
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <button
+        onClick={() => setDismissed(true)}
+        className="mt-3 w-full text-center text-xs text-muted-foreground hover:text-foreground"
+      >
+        {t("onboarding.dismiss")}
+      </button>
+    </Card>
   );
 }

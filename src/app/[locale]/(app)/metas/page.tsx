@@ -237,7 +237,7 @@ export default function MetasPage() {
 
           <div className="flex gap-3 pt-2">
             {editing && (
-              <Button variant="danger" onClick={() => handleDelete(editing)}>
+              <Button variant="danger" onClick={() => handleDelete(editing)} aria-label={t("confirmDelete")}>
                 <Trash2 className="size-4" />
               </Button>
             )}

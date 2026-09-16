@@ -22,7 +22,10 @@
     "noCategory": "Sin categoría",
     "unnamed": "Sin nombre",
     "admin": "admin",
-    "user": "Usuario"
+    "user": "Usuario",
+    "income": "Ingreso",
+    "expense": "Gasto",
+    "confirmDelete": "Confirmar eliminación"
   },
   "nav": {
     "home": "Inicio",
@@ -43,7 +46,8 @@
     "closeSession": "Cerrar sesión",
     "changeTheme": "Cambiar tema",
     "goToLogin": "Ir al login",
-    "paymentPlan": "Plan de pagos"
+    "paymentPlan": "Plan de pagos",
+    "sidebarNav": "Navegación principal"
   },
   "session": {
     "notFound": "Sesión no encontrada",
@@ -92,7 +96,22 @@
     "recentTransactions": "Movimientos recientes",
     "viewAll": "Ver todo",
     "noTransactions": "Aún no hay movimientos",
-    "noTransactionsHint": "Registra tu primer gasto o ingreso del ciclo con los botones de arriba."
+    "noTransactionsHint": "Registra tu primer gasto o ingreso del ciclo con los botones de arriba.",
+    "topCategory": "Más gastado",
+    "activeDebts": "Deudas activas",
+    "debt": "deuda",
+    "debts": "deudas",
+    "monthlyTrend": "Tendencia mensual",
+    "spendUp": "Más que el mes pasado:",
+    "spendDown": "Menos que el mes pasado:",
+    "onboarding": {
+      "title": "Primeros pasos",
+      "createAccount": "Crea tu primera cuenta",
+      "setSalary": "Configura tu salario",
+      "createCategory": "Crea una categoría",
+      "firstTransaction": "Registra tu primer gasto",
+      "dismiss": "Ocultar checklist"
+    }
   },
   "movement": {
     "expense": "gasto",
@@ -159,7 +178,7 @@
     "updated": "Cuenta actualizada",
     "created": "Cuenta creada",
     "deleted": "Cuenta eliminada",
-    "confirmDelete": "Eliminar cuenta",
+    "confirmDelete": "Confirmar eliminación",
     "confirmDeleteMsg": "¿Eliminar \"{name}\"? Los movimientos asociados perderán su cuenta.",
     "saveError": "Error al guardar",
     "deleteError": "Error al eliminar"
@@ -181,7 +200,7 @@
     "updated": "Categoría actualizada",
     "created": "Categoría creada",
     "deleted": "Categoría eliminada",
-    "confirmDelete": "Eliminar categoría",
+    "confirmDelete": "Confirmar eliminación",
     "confirmDeleteMsg": "¿Eliminar \"{name}\"? Los movimientos asociados perderán su categoría."
   },
   "ciclo": {
@@ -228,7 +247,7 @@
     "created": "Deuda creada",
     "markedPaid": "¡Deuda pagada!",
     "deleted": "Deuda eliminada",
-    "confirmDelete": "Eliminar deuda",
+    "confirmDelete": "Confirmar eliminación",
     "confirmDeleteMsg": "¿Eliminar \"{name}\"? Esta acción no se puede deshacer."
   },
   "suscripciones": {
@@ -251,7 +270,7 @@
     "updated": "Suscripción actualizada",
     "created": "Suscripción creada",
     "deleted": "Suscripción eliminada",
-    "confirmDelete": "Eliminar suscripción",
+    "confirmDelete": "Confirmar eliminación",
     "confirmDeleteMsg": "¿Eliminar \"{name}\"? Esta acción no se puede deshacer."
   },
   "metas": {
@@ -275,7 +294,7 @@
     "updated": "Meta actualizada",
     "created": "Meta creada",
     "deleted": "Meta eliminada",
-    "confirmDelete": "Eliminar meta",
+    "confirmDelete": "Confirmar eliminación",
     "confirmDeleteMsg": "¿Eliminar \"{name}\"? Esta acción no se puede deshacer."
   },
   "analisis": {
@@ -291,7 +310,10 @@
     "total": "Total",
     "dailyExpense": "Gasto por día",
     "dayLabel": "Día {day}",
-    "movementsStats": "{count} movimientos · suscripciones activas {amount}/mes"
+    "movementsStats": "{count} movimientos · suscripciones activas {amount}/mes",
+    "vsLastMonth": "vs. mes anterior",
+    "moreSpending": "Más que el mes pasado:",
+    "lessSpending": "Menos que el mes pasado:"
   },
   "admin": {
     "title": "Administración",

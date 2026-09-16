@@ -1,14 +1,15 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import useSWR from "swr";
-import { ChevronLeft, ChevronRight, Loader2, Plus, Receipt } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Plus, Receipt, Trash2, X, CheckSquare } from "lucide-react";
 import { clsx } from "clsx";
-import { fetcher } from "@/lib/client-api";
+import { fetcher, api } from "@/lib/client-api";
 import { currentMonth, monthLabel, shiftMonth, formatDayMonth, formatCurrency } from "@/lib/format";
 import { Card, EmptyState, PageHeader } from "@/components/ui/primitives";
+import { useToast } from "@/components/ui/toast";
 import {
   TransactionRow,
   type TransactionItemData,
@@ -45,8 +46,10 @@ export default function Page() {
 
 function TransaccionesPage() {
   const t = useTranslations("transacciones");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const searchParams = useSearchParams();
+  const toast = useToast();
   const [month, setMonth] = useState(currentMonth());
   const [modalState, setModalState] = useState<MovementModalState>({ open: false });
 
@@ -54,6 +57,11 @@ function TransaccionesPage() {
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+
+  // Bulk selection
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkLoading, setBulkLoading] = useState(false);
 
   // Abrir modal por query param (?new=gasto|ingreso|transferencia)
   useEffect(() => {
@@ -148,19 +156,89 @@ function TransaccionesPage() {
     setHasMore(true);
   }
 
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAll = useCallback(() => {
+    if (selectedIds.size === allTx.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(allTx.map(tx => tx.id)));
+    }
+  }, [selectedIds.size, allTx]);
+
+  const exitSelectMode = useCallback(() => {
+    setSelectMode(false);
+    setSelectedIds(new Set());
+  }, []);
+
+  async function bulkDelete() {
+    if (selectedIds.size === 0) return;
+    if (!confirm(t("confirmBulkDelete", { count: selectedIds.size }))) return;
+    setBulkLoading(true);
+    try {
+      await api.delete("/api/transactions/bulk", { ids: Array.from(selectedIds) });
+      toast(t("bulkDeleted", { count: selectedIds.size }), "success");
+      setAllTx([]);
+      setCursor(null);
+      setHasMore(true);
+      exitSelectMode();
+    } catch (err) {
+      toast(err instanceof Error ? err.message : tCommon("error"), "error");
+    } finally {
+      setBulkLoading(false);
+    }
+  }
+
   return (
     <div className="animate-fade-in">
       <PageHeader
         title={t("title")}
         subtitle={`${monthLabel(month)} · ${t("subtitle", { amount: formatCurrency(monthTotal) })}`}
         action={
-          <button
-            onClick={() => setModalState({ open: true, mode: "gasto" })}
-            aria-label={t("newMovement")}
-            className="flex size-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm transition-transform active:scale-95"
-          >
-            <Plus className="size-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {selectMode ? (
+              <>
+                <button
+                  onClick={toggleSelectAll}
+                  className="flex size-11 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition-colors hover:bg-muted"
+                  aria-label={selectedIds.size === allTx.length ? t("deselectAll") : t("selectAll")}
+                >
+                  <CheckSquare className="size-5" />
+                </button>
+                <button
+                  onClick={exitSelectMode}
+                  className="flex size-11 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition-colors hover:bg-muted"
+                  aria-label={t("cancel")}
+                >
+                  <X className="size-5" />
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => setSelectMode(true)}
+                  className="flex size-11 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition-colors hover:bg-muted"
+                  aria-label={t("selectMode")}
+                >
+                  <CheckSquare className="size-5" />
+                </button>
+                <button
+                  onClick={() => setModalState({ open: true, mode: "gasto" })}
+                  aria-label={t("newMovement")}
+                  className="flex size-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm transition-transform active:scale-95"
+                >
+                  <Plus className="size-5" />
+                </button>
+              </>
+            )}
+          </div>
         }
       />
 
@@ -227,7 +305,13 @@ function TransaccionesPage() {
                 </div>
                 <Card className="divide-y divide-border p-1.5">
                   {txs.map((tx) => (
-                    <TransactionRow key={tx.id} tx={tx} onEdit={openEdit} />
+                    <TransactionRow
+                      key={tx.id}
+                      tx={tx}
+                      onEdit={selectMode ? undefined : openEdit}
+                      selected={selectedIds.has(tx.id)}
+                      onSelect={selectMode ? toggleSelect : undefined}
+                    />
                   ))}
                 </Card>
               </section>
@@ -253,6 +337,27 @@ function TransaccionesPage() {
       )}
 
       <MovementModal state={{ ...modalState }} onClose={closeModal} />
+
+      {/* Bulk action bar */}
+      {selectMode && selectedIds.size > 0 && (
+        <div className="fixed inset-x-3 bottom-3 z-40 flex items-center justify-between rounded-2xl border border-border bg-card/95 px-4 py-3 shadow-xl shadow-black/20 backdrop-blur safe-bottom md:static md:inset-x-0 md:bottom-0 md:mt-4 md:rounded-xl md:border md:bg-card">
+          <span className="text-sm font-semibold">
+            {t("selected", { count: selectedIds.size })}
+          </span>
+          <button
+            onClick={bulkDelete}
+            disabled={bulkLoading}
+            className="flex items-center gap-2 rounded-xl bg-destructive px-4 py-2 text-sm font-semibold text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:opacity-50"
+          >
+            {bulkLoading ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Trash2 className="size-4" />
+            )}
+            {t("deleteSelected")}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

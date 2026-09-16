@@ -21,6 +21,10 @@ import {
   BudgetAlertBanner,
   DashboardGreeting,
   PasswordResetBanner,
+  TopCategoryWidget,
+  DebtsSummaryWidget,
+  MonthlyTrendWidget,
+  OnboardingChecklist,
 } from "@/components/dashboard-widgets";
 
 export default function DashboardPage() {
@@ -32,7 +36,26 @@ export default function DashboardPage() {
       <DashboardGreeting />
       <PasswordResetBanner />
       <BudgetAlertBanner />
+
+      {/* Onboarding checklist */}
+      {data && (
+        <OnboardingChecklist
+          accountCount={data.summary.accountCount}
+          categoryCount={data.categories.length}
+          salary={data.wallet.salary}
+          transactionCount={0}
+          locale={locale}
+        />
+      )}
+
       <BalanceCard />
+
+      {/* Widgets de resumen */}
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <TopCategoryWidget />
+        <DebtsSummaryWidget />
+        <MonthlyTrendWidget />
+      </div>
 
       {/* Acciones rápidas */}
       <div className="mt-5 grid grid-cols-3 gap-3">

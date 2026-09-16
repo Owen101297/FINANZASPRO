@@ -7,6 +7,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  TrendingUp,
+  TrendingDown,
 } from "lucide-react";
 import { clsx } from "clsx";
 import { useTranslations } from "next-intl";
@@ -45,8 +47,10 @@ const insightStyles: Record<InsightDto["kind"], string> = {
 export default function AnalisisPage() {
   const t = useTranslations("analisis");
   const [month, setMonth] = useState(currentMonth());
-  const { data, isLoading } = useSWR<AnalysisData>(`/api/analytics?month=${month}`, fetcher
-  );
+  const { data, isLoading } = useSWR<AnalysisData>(`/api/analytics?month=${month}`, fetcher);
+
+  const lastMonth = shiftMonth(month, -1);
+  const { data: lastData } = useSWR<AnalysisData>(`/api/analytics?month=${lastMonth}`, fetcher);
 
   const chartData = useMemo(
     () =>
@@ -56,6 +60,16 @@ export default function AnalisisPage() {
       })),
     [data]
   );
+
+  const comparison = useMemo(() => {
+    if (!data?.analysis.totals || !lastData?.analysis.totals) return null;
+    const thisExp = data.analysis.totals.expense;
+    const lastExp = lastData.analysis.totals.expense;
+    if (lastExp === 0) return null;
+    const diff = thisExp - lastExp;
+    const pct = (diff / lastExp) * 100;
+    return { diff, pct, isUp: diff > 0 };
+  }, [data, lastData]);
 
   return (
     <div className="animate-fade-in">
@@ -112,6 +126,30 @@ export default function AnalisisPage() {
             <TotalCard label={t("net")} value={data.analysis.totals.net} />
           </section>
 
+          {/* Comparativa mensual */}
+          {comparison && (
+            <Card className="mb-6 p-4">
+              <div className="flex items-center gap-2">
+                {comparison.isUp ? (
+                  <TrendingUp className="size-4 text-negative" />
+                ) : (
+                  <TrendingDown className="size-4 text-positive" />
+                )}
+                <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                  {t("vsLastMonth")}
+                </h3>
+              </div>
+              <div className="mt-2 flex items-center justify-between">
+                <span className="text-sm font-bold">
+                  {comparison.isUp ? "+" : ""}{Math.round(comparison.pct)}%
+                </span>
+                <span className={clsx("text-xs font-semibold", comparison.isUp ? "text-negative" : "text-positive")}>
+                  {comparison.isUp ? t("moreSpending") : t("lessSpending")} {formatCurrency(Math.abs(comparison.diff))}
+                </span>
+              </div>
+            </Card>
+          )}
+
           {/* Distribución por categoría */}
           <Card className="mb-6">
             <h2 className="mb-1 text-xs font-bold uppercase tracking-widest text-muted-foreground">
@@ -124,15 +162,46 @@ export default function AnalisisPage() {
                 hint={t("noExpensesHint")}
               />
             ) : (
-              <Suspense
-                fallback={
-                  <div className="flex justify-center py-10">
-                    <Loader2 className="size-5 animate-spin text-muted-foreground" />
-                  </div>
-                }
-              >
-                <Charts chartData={chartData} dailySeries={data.analysis.dailySeries} totals={data.analysis.totals} transactionCount={data.analysis.transactionCount} subscriptionsMonthly={data.analysis.subscriptionsMonthly} />
-              </Suspense>
+              <>
+                {/* Category bars */}
+                <div className="mt-3 space-y-3">
+                  {chartData.map((cat) => (
+                    <div key={cat.name}>
+                      <div className="mb-1 flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="size-2.5 shrink-0 rounded-full"
+                            style={{ backgroundColor: cat.fill ?? "#8b5cf6" }}
+                          />
+                          <span className="truncate font-medium">{cat.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">{cat.pct}%</span>
+                          <span className="w-20 text-right font-mono text-xs font-bold tabular-nums">
+                            {formatCurrency(cat.total)}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{ width: `${cat.pct}%`, backgroundColor: cat.fill ?? "#8b5cf6" }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <Suspense
+                  fallback={
+                    <div className="flex justify-center py-10">
+                      <Loader2 className="size-5 animate-spin text-muted-foreground" />
+                    </div>
+                  }
+                >
+                  <Charts chartData={chartData} dailySeries={data.analysis.dailySeries} totals={data.analysis.totals} transactionCount={data.analysis.transactionCount} subscriptionsMonthly={data.analysis.subscriptionsMonthly} />
+                </Suspense>
+              </>
             )}
           </Card>
         </>

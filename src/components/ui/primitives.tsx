@@ -1,6 +1,7 @@
 "use client";
 
 import { clsx } from "clsx";
+import { useCallback, useEffect, useRef } from "react";
 import type { ButtonHTMLAttributes, InputHTMLAttributes, SelectHTMLAttributes } from "react";
 
 // ─────────────────────────── Button ───────────────────────────
@@ -179,19 +180,83 @@ export function Modal({
   title: string;
   children: React.ReactNode;
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previousFocus = useRef<HTMLElement | null>(null);
+
+  const getFocusable = useCallback(() => {
+    if (!dialogRef.current) return [];
+    return Array.from(
+      dialogRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+    );
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    previousFocus.current = document.activeElement as HTMLElement;
+    const timer = setTimeout(() => {
+      const focusable = getFocusable();
+      const first = focusable[0];
+      if (first) first.focus();
+      else dialogRef.current?.focus();
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [open, getFocusable]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+      if (e.key === "Tab") {
+        const focusable = getFocusable();
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (!first || !last) return;
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open, onClose, getFocusable]);
+
+  useEffect(() => {
+    if (!open && previousFocus.current) {
+      previousFocus.current.focus();
+      previousFocus.current = null;
+    }
+  }, [open]);
+
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
-      <button
-        aria-label="Cerrar"
+      <div
+        role="presentation"
         className="absolute inset-0 animate-fade-in bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       />
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="relative z-10 max-h-[92vh] w-full animate-scale-in overflow-y-auto scrollbar-thin rounded-t-3xl border border-border bg-card p-6 sm:max-w-md sm:rounded-3xl safe-bottom"
+        tabIndex={-1}
+        className="relative z-10 max-h-[92vh] w-full animate-scale-in overflow-y-auto scrollbar-thin rounded-t-3xl border border-border bg-card p-6 sm:max-w-md sm:rounded-3xl safe-bottom outline-none"
       >
         <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-border sm:hidden" />
         <h3 className="mb-5 text-lg font-bold">{title}</h3>
@@ -219,6 +284,19 @@ export function PageHeader({
         {subtitle && <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>}
       </div>
       {action}
+    </div>
+  );
+}
+
+// ─────────────────────── Spinner ────────────────────────────
+
+export function Spinner({ className }: { className?: string }) {
+  return (
+    <div role="status" aria-label="Cargando">
+      <svg className={clsx("animate-spin", className)} viewBox="0 0 24 24" fill="none">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+      </svg>
     </div>
   );
 }

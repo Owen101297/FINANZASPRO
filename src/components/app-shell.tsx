@@ -145,7 +145,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* Sidebar desktop */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-border bg-card px-4 py-6 md:flex">
         <Brand locale={locale} />
-        <nav className="mt-8 flex flex-1 flex-col gap-1 overflow-y-auto scrollbar-thin">
+        <nav aria-label={tNav("sidebarNav")} className="mt-8 flex flex-1 flex-col gap-1 overflow-y-auto scrollbar-thin">
           {navItems.map((item) => (
             <NavLink key={item.href} item={item} active={isActivePath(pathname, item.href)} />
           ))}
