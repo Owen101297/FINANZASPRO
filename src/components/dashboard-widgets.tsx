@@ -12,7 +12,6 @@ import { fetcher } from "@/lib/client-api";
 import { formatCurrency, currentMonth, shiftMonth } from "@/lib/format";
 import { useTranslations, useLocale } from "next-intl";
 
-/** Encabezado de página con saludo y resumen del ciclo. */
 export function DashboardGreeting() {
   const { user } = useSession();
   const t = useTranslations("dashboard");
@@ -27,14 +26,13 @@ export function DashboardGreeting() {
     <div className="mb-6 flex items-center gap-3">
       <Avatar name={user?.name ?? user?.email ?? "?"} />
       <div>
-        <p className="text-xs text-muted-foreground">{greeting}</p>
-        <h1 className="text-lg font-extrabold capitalize tracking-tight">{displayName}</h1>
+        <p className="text-[13px] text-muted-foreground">{greeting}</p>
+        <h1 className="text-[22px] font-bold capitalize">{displayName}</h1>
       </div>
     </div>
   );
 }
 
-/** Aviso para usuarios migrados que aún usan contraseña temporal. */
 export function PasswordResetBanner() {
   const { user } = useSession();
   const locale = useLocale();
@@ -42,10 +40,10 @@ export function PasswordResetBanner() {
   if (!user?.passwordReset) return null;
 
   return (
-    <div className="mb-5 flex items-start gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4">
+    <div className="mb-5 flex items-start gap-3 rounded-2xl bg-warning/10 p-4">
       <KeyRound className="mt-0.5 size-5 shrink-0 text-warning" />
-      <div className="flex-1 text-sm">
-        <p className="font-bold text-warning">{t("tempPasswordBanner")}</p>
+      <div className="flex-1 text-[15px]">
+        <p className="font-semibold text-warning">{t("tempPasswordBanner")}</p>
         <p className="mt-0.5 text-muted-foreground">
           {t("tempPasswordText")}{" "}
           <Link href={`/${locale}/cuenta`} className="font-semibold underline underline-offset-2">
@@ -58,14 +56,12 @@ export function PasswordResetBanner() {
   );
 }
 
-/** Banner de alerta cuando se supera el 90% del presupuesto. */
 export function BudgetAlertBanner() {
   const { data } = useWallet();
   const locale = useLocale();
   const t = useTranslations("dashboard");
   const [dismissed, setDismissed] = useState(false);
 
-  // Reset del dismiss al cambiar de ciclo
   useEffect(() => setDismissed(false), [data?.wallet.cycle.start]);
 
   if (!data || dismissed) return null;
@@ -73,10 +69,10 @@ export function BudgetAlertBanner() {
   if (!budgetAlert) return null;
 
   return (
-    <div className="mb-5 flex items-start gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4">
+    <div className="mb-5 flex items-start gap-3 rounded-2xl bg-warning/10 p-4">
       <AlertTriangle className="mt-0.5 size-5 shrink-0 text-warning" />
-      <div className="flex-1 text-sm">
-        <p className="font-bold text-warning">{t("budgetAlert")}</p>
+      <div className="flex-1 text-[15px]">
+        <p className="font-semibold text-warning">{t("budgetAlert")}</p>
         <p className="mt-0.5 text-muted-foreground">
           {t("budgetAlertText", { pct: String(Math.round(usedPct)), amount: formatCurrency(Math.max(0, cycleRemaining)) })}{" "}
           <Link href={`/${locale}/analisis`} className="font-semibold underline underline-offset-2">
@@ -87,7 +83,7 @@ export function BudgetAlertBanner() {
       <button
         onClick={() => setDismissed(true)}
         aria-label={t("dismissAlert")}
-        className="text-xs font-semibold text-muted-foreground hover:text-foreground"
+        className="text-[13px] font-semibold text-muted-foreground hover:text-foreground"
       >
         ✕
       </button>
@@ -95,7 +91,6 @@ export function BudgetAlertBanner() {
   );
 }
 
-/** Tarjeta grande con balance total y progreso del ciclo. */
 export function BalanceCard() {
   const { data, isLoading, error } = useWallet();
   const locale = useLocale();
@@ -105,7 +100,7 @@ export function BalanceCard() {
     return (
       <section
         aria-label={t("financialSummary")}
-        className="rounded-card border border-border bg-card p-6 text-sm text-muted-foreground"
+        className="rounded-card bg-card p-6 text-[15px] text-muted-foreground shadow-sm"
       >
         {t("summaryError")}{" "}
         <Link href={`/${locale}/cuenta`} className="font-semibold text-primary underline underline-offset-2">
@@ -126,14 +121,14 @@ export function BalanceCard() {
   return (
     <section
       aria-label={t("financialSummary")}
-      className="relative overflow-hidden rounded-card border border-border bg-gradient-to-br from-emerald-600/15 via-transparent to-violet-500/10 p-6"
+      className="relative overflow-hidden rounded-card bg-card p-6 shadow-sm"
     >
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+          <p className="text-[13px] text-muted-foreground">
             {t("totalBalance")}
           </p>
-          <p className="mt-1 font-mono text-4xl font-extrabold tabular-nums tracking-tight">
+          <p className="mt-1 text-[34px] font-bold tabular-nums tracking-tight">
             {formatCurrency(summary.totalBalance)}
           </p>
         </div>
@@ -142,21 +137,21 @@ export function BalanceCard() {
         </Badge>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
+      <div className="mt-6 grid grid-cols-2 gap-4 text-[15px]">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          <p className="text-[13px] text-muted-foreground">
             {t("cycleSpent")}
           </p>
-          <p className="mt-0.5 font-mono font-bold tabular-nums text-negative">
+          <p className="mt-0.5 font-semibold tabular-nums text-negative">
             −{formatCurrency(summary.cycleExpenses)}
           </p>
         </div>
         <div className="text-right">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          <p className="text-[13px] text-muted-foreground">
             {t("available")}
           </p>
           <p
-            className={`mt-0.5 font-mono font-bold tabular-nums ${
+            className={`mt-0.5 font-semibold tabular-nums ${
               summary.cycleRemaining >= 0 ? "text-positive" : "text-negative"
             }`}
           >
@@ -168,7 +163,7 @@ export function BalanceCard() {
       {wallet.salary > 0 && (
         <div className="mt-4">
           <Progress value={summary.usedPct} tone={tone} />
-          <p className="mt-1.5 text-[11px] text-muted-foreground">
+          <p className="mt-1.5 text-[13px] text-muted-foreground">
             {t("salaryUsed", { pct: String(Math.round(summary.usedPct)), amount: formatCurrency(wallet.salary) })}
           </p>
         </div>
@@ -185,7 +180,6 @@ type TxDto = {
   category: { id: string; name: string; color: string | null } | null;
 };
 
-/** Widget: Categoría con más gastos este ciclo */
 export function TopCategoryWidget() {
   const t = useTranslations("dashboard");
   const month = currentMonth();
@@ -212,10 +206,10 @@ export function TopCategoryWidget() {
   if (!topCategory) return null;
 
   return (
-    <section className="rounded-card border border-border bg-card p-4">
+    <section className="rounded-card bg-card p-4 shadow-sm">
       <div className="flex items-center gap-2">
         <Tag className="size-4 text-muted-foreground" />
-        <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+        <h3 className="text-[13px] font-medium text-muted-foreground">
           {t("topCategory")}
         </h3>
       </div>
@@ -225,9 +219,9 @@ export function TopCategoryWidget() {
             className="size-3 rounded-full"
             style={{ backgroundColor: topCategory.color ?? "#6b7280" }}
           />
-          <span className="text-sm font-bold">{topCategory.name}</span>
+          <span className="text-[15px] font-semibold">{topCategory.name}</span>
         </div>
-        <span className="font-mono text-sm font-bold tabular-nums text-negative">
+        <span className="text-[15px] font-semibold tabular-nums text-negative">
           −{formatCurrency(topCategory.total)}
         </span>
       </div>
@@ -235,7 +229,6 @@ export function TopCategoryWidget() {
   );
 }
 
-/** Widget: Resumen de deudas activas */
 export function DebtsSummaryWidget() {
   const t = useTranslations("dashboard");
   const locale = useLocale();
@@ -256,26 +249,26 @@ export function DebtsSummaryWidget() {
   if (!summary) return null;
 
   return (
-    <section className="rounded-card border border-border bg-card p-4">
+    <section className="rounded-card bg-card p-4 shadow-sm">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Landmark className="size-4 text-muted-foreground" />
-          <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+          <h3 className="text-[13px] font-medium text-muted-foreground">
             {t("activeDebts")}
           </h3>
         </div>
         <Link
           href={`/${locale}/deudas`}
-          className="text-[11px] font-semibold text-primary hover:underline"
+          className="text-[13px] font-medium text-primary hover:underline"
         >
           {t("viewAll")}
         </Link>
       </div>
       <div className="mt-2 flex items-center justify-between">
-        <span className="text-sm font-bold">
+        <span className="text-[15px] font-semibold">
           {summary.count} {summary.count === 1 ? t("debt") : t("debts")}
         </span>
-        <span className="font-mono text-sm font-bold tabular-nums text-negative">
+        <span className="text-[15px] font-semibold tabular-nums text-negative">
           −{formatCurrency(summary.total)}
         </span>
       </div>
@@ -283,7 +276,6 @@ export function DebtsSummaryWidget() {
   );
 }
 
-/** Widget: Trend comparando mes actual vs anterior */
 export function MonthlyTrendWidget() {
   const t = useTranslations("dashboard");
   const thisMonth = currentMonth();
@@ -317,30 +309,28 @@ export function MonthlyTrendWidget() {
   const isUp = trend.diff > 0;
 
   return (
-    <section className="rounded-card border border-border bg-card p-4">
+    <section className="rounded-card bg-card p-4 shadow-sm">
       <div className="flex items-center gap-2">
         {isUp ? (
           <TrendingUp className="size-4 text-negative" />
         ) : (
           <TrendingDown className="size-4 text-positive" />
         )}
-        <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+        <h3 className="text-[13px] font-medium text-muted-foreground">
           {t("monthlyTrend")}
         </h3>
       </div>
       <div className="mt-2 flex items-center justify-between">
-        <span className="text-sm font-bold">
+        <span className="text-[15px] font-semibold">
           {isUp ? "+" : ""}{Math.round(trend.pct)}%
         </span>
-        <span className={`text-xs font-semibold ${isUp ? "text-negative" : "text-positive"}`}>
+        <span className={`text-[13px] font-medium ${isUp ? "text-negative" : "text-positive"}`}>
           {isUp ? t("spendUp") : t("spendDown")} {formatCurrency(Math.abs(trend.diff))}
         </span>
       </div>
     </section>
   );
 }
-
-// ──────────────────── Onboarding Checklist ────────────────────
 
 interface OnboardingStep {
   key: string;
@@ -381,10 +371,10 @@ export function OnboardingChecklist({
   if (allDone || dismissed) return null;
 
   return (
-    <Card className="mb-5 border-primary/20 bg-primary/5 p-4">
+    <Card className="mb-5 bg-primary/5 p-4 shadow-none">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-bold">{t("onboarding.title")}</h3>
-        <span className="text-xs text-muted-foreground">{completedCount}/{steps.length}</span>
+        <h3 className="text-[15px] font-semibold">{t("onboarding.title")}</h3>
+        <span className="text-[13px] text-muted-foreground">{completedCount}/{steps.length}</span>
       </div>
       <div className="mb-3 h-1.5 overflow-hidden rounded-full bg-muted">
         <div
@@ -392,12 +382,12 @@ export function OnboardingChecklist({
           style={{ width: `${(completedCount / steps.length) * 100}%` }}
         />
       </div>
-      <ul className="space-y-2">
+      <ul className="space-y-1">
         {steps.map((step) => (
           <li key={step.key}>
             <Link
               href={step.href}
-              className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-muted"
+              className="flex items-center gap-2.5 rounded-lg px-2 py-2 text-[15px] transition-colors hover:bg-muted"
             >
               {step.done ? (
                 <Check className="size-4 shrink-0 text-positive" />
@@ -413,7 +403,7 @@ export function OnboardingChecklist({
       </ul>
       <button
         onClick={() => setDismissed(true)}
-        className="mt-3 w-full text-center text-xs text-muted-foreground hover:text-foreground"
+        className="mt-3 w-full text-center text-[13px] text-muted-foreground hover:text-foreground"
       >
         {t("onboarding.dismiss")}
       </button>
