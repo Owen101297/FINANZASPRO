@@ -17,8 +17,6 @@ import {
   Users,
   ShieldCheck,
   LogOut,
-  Sun,
-  Moon,
   Hourglass,
   Ban,
   Loader2,
@@ -31,7 +29,6 @@ import {
   PanelLeftOpen,
 } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
-import { useTheme } from "@/components/theme-provider";
 import { Button, EmptyState, Input, Label } from "@/components/ui/primitives";
 import { api } from "@/lib/client-api";
 import { useToast } from "@/components/ui/toast";
@@ -181,7 +178,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {/* Header mobile */}
         <header className="sticky top-0 z-30 flex items-center justify-between bg-background/90 px-4 py-3 backdrop-blur md:hidden">
           <Brand compact locale={locale} />
-          <ThemeToggle />
         </header>
 
         {/* Contenido */}
@@ -323,7 +319,6 @@ function SessionFooter({
         </div>
       </Link>
       <div className="flex items-center gap-2 px-2">
-        <ThemeToggle />
         <Button variant="ghost" onClick={onLogout} className="flex-1 justify-start px-3 text-[13px]">
           <LogOut className="size-4" /> {tSession("logoutBtn")}
         </Button>
@@ -343,16 +338,6 @@ export function Avatar({ name }: { name: string }) {
     <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-accent/15 text-[11px] font-bold text-accent">
       {initials || "?"}
     </div>
-  );
-}
-
-function ThemeToggle() {
-  const { theme, toggle } = useTheme();
-  const tNav = useTranslations("nav");
-  return (
-    <Button variant="ghost" size="sm" onClick={toggle} aria-label={tNav("changeTheme")} className="px-2.5">
-      {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
-    </Button>
   );
 }
 
