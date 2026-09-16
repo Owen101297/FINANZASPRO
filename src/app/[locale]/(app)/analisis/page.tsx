@@ -76,7 +76,7 @@ export default function AnalisisPage() {
       <PageHeader title={t("title")} subtitle={monthLabel(month)} />
 
       {/* Selector de mes */}
-      <div className="mb-5 flex items-center justify-between rounded-card border border-border bg-card px-3 py-2.5">
+      <div className="mb-5 flex items-center justify-between rounded-card bg-muted px-3 py-2.5">
         <button
           onClick={() => setMonth((m) => shiftMonth(m, -1))}
           aria-label="Mes anterior"
@@ -107,9 +107,9 @@ export default function AnalisisPage() {
               {data.insights.map((insight, i) => (
                 <div
                   key={`${month}-${i}`}
-                  className={clsx("rounded-2xl border p-4 text-sm leading-relaxed", insightStyles[insight.kind])}
+                  className={clsx("rounded-2xl p-4 text-sm leading-relaxed", insightStyles[insight.kind])}
                 >
-                  <div className="mb-1 flex items-center gap-1.5 font-bold uppercase tracking-wider text-[10px]">
+                  <div className="mb-1 flex items-center gap-1.5 font-bold text-[11px]">
                     <Brain className="size-3.5" />
                     {i === 0 ? t("diagnosis") : t("recommendation")}
                   </div>
@@ -135,7 +135,7 @@ export default function AnalisisPage() {
                 ) : (
                   <TrendingDown className="size-4 text-positive" />
                 )}
-                <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                <h3 className="text-[13px] font-bold text-muted-foreground">
                   {t("vsLastMonth")}
                 </h3>
               </div>
@@ -152,7 +152,7 @@ export default function AnalisisPage() {
 
           {/* Distribución por categoría */}
           <Card className="mb-6">
-            <h2 className="mb-1 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            <h2 className="mb-1 text-[13px] font-bold text-muted-foreground">
               {t("expenseDistribution")}
             </h2>
 
@@ -177,7 +177,7 @@ export default function AnalisisPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-muted-foreground">{cat.pct}%</span>
-                          <span className="w-20 text-right font-mono text-xs font-bold tabular-nums">
+                          <span className="w-20 text-right text-[13px] font-bold tabular-nums">
                             {formatCurrency(cat.total)}
                           </span>
                         </div>
@@ -221,10 +221,10 @@ function TotalCard({
 }) {
   return (
     <Card className="p-3.5 text-center">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{label}</p>
+      <p className="text-[11px] font-bold text-muted-foreground">{label}</p>
       <p
         className={clsx(
-          "mt-1 truncate font-mono text-base font-extrabold tabular-nums",
+          "mt-1 truncate text-[15px] font-extrabold tabular-nums",
           tone === "positive" ? "text-positive" : tone === "negative" ? "text-negative" : ""
         )}
       >

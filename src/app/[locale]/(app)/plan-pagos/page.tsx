@@ -108,7 +108,7 @@ export default function PlanPagosPage() {
   return (
     <div className="animate-fade-in">
       <header className="mb-6">
-        <h1 className="text-2xl font-extrabold tracking-tight">{t("title")}</h1>
+        <h1 className="text-[28px] font-extrabold tracking-tight">{t("title")}</h1>
         <p className="mt-0.5 text-sm text-muted-foreground">{t("subtitle")}</p>
       </header>
 
@@ -133,7 +133,7 @@ export default function PlanPagosPage() {
                 <TrendingDown className="size-4" />
                 <span className="text-xs font-medium">{t("totalDebt")}</span>
               </div>
-              <p className="mt-1 font-mono text-lg font-bold text-negative">
+              <p className="mt-1 text-[17px] font-bold text-negative">
                 {formatCurrency(summary.totalDebt)}
               </p>
             </Card>
@@ -142,14 +142,14 @@ export default function PlanPagosPage() {
                 <CalendarClock className="size-4" />
                 <span className="text-xs font-medium">{t("dueThisMonth")}</span>
               </div>
-              <p className="mt-1 font-mono text-lg font-bold">
+              <p className="mt-1 text-[17px] font-bold">
                 {summary.dueThisMonthCount} · {formatCurrency(summary.dueThisMonthAmount)}
               </p>
             </Card>
           </div>
 
           {summary.overdueCount > 0 && (
-            <Card className="mb-4 border-destructive/30 bg-destructive/5 p-4">
+            <Card className="mb-4 bg-destructive/5 p-4">
               <p className="text-sm font-semibold text-destructive">
                 {t("overdueWarning", { count: summary.overdueCount })}
               </p>
@@ -157,7 +157,7 @@ export default function PlanPagosPage() {
           )}
 
           {/* Payment schedule */}
-          <h2 className="mb-3 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+          <h2 className="mb-3 text-[13px] font-bold text-muted-foreground">
             {t("schedule")}
           </h2>
           <div className="space-y-3">
@@ -165,7 +165,7 @@ export default function PlanPagosPage() {
               <Card key={month.label} className="p-4">
                 <div className="mb-3 flex items-center justify-between">
                   <h3 className="text-sm font-bold">{formatMonthLabel(month.label)}</h3>
-                  <span className="font-mono text-xs font-semibold text-negative">
+                  <span className="text-[13px] font-semibold text-negative">
                     {formatCurrency(month.total)}
                   </span>
                 </div>
@@ -184,7 +184,7 @@ export default function PlanPagosPage() {
                             />
                           </div>
                         </div>
-                        <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
+                        <span className="shrink-0 text-[11px] text-muted-foreground">
                           {formatCurrency(remaining)}
                         </span>
                         <button
@@ -210,12 +210,12 @@ export default function PlanPagosPage() {
       {paymentModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setPaymentModal(null)} />
-          <div className="relative w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-xl animate-scale-in">
+          <div className="relative w-full max-w-sm rounded-2xl bg-card p-6 shadow-xl animate-scale-in">
             <h3 className="mb-1 text-lg font-bold">{t("makePayment")}</h3>
             <p className="mb-4 text-sm text-muted-foreground">{paymentModal.name}</p>
             <div className="mb-4 rounded-xl bg-muted p-3 text-center">
               <p className="text-xs text-muted-foreground">{t("remaining")}</p>
-              <p className="font-mono text-xl font-bold">
+              <p className="text-[20px] font-bold">
                 {formatCurrency(paymentModal.totalAmount - paymentModal.paidAmount)}
               </p>
             </div>
@@ -233,7 +233,7 @@ export default function PlanPagosPage() {
                   inputMode="decimal"
                   value={paymentAmount}
                   onChange={(e) => setPaymentAmount(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-input py-2.5 pl-9 pr-3 text-sm font-mono focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="w-full rounded-xl bg-muted py-2.5 pl-9 pr-3 text-[15px] focus:outline-none focus:ring-1 focus:ring-ring"
                   autoFocus
                 />
               </div>

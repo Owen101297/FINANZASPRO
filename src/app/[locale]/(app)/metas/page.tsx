@@ -127,7 +127,7 @@ export default function MetasPage() {
     <div className="animate-fade-in">
       <header className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">{t("title")}</h1>
+          <h1 className="text-[28px] font-extrabold tracking-tight">{t("title")}</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">
             {t("completedCount", { count: completedGoals.length })} ·{" "}
             {activeGoals.length} {t("inProgress")}
@@ -153,11 +153,11 @@ export default function MetasPage() {
           ))}
           {completedGoals.length > 0 && (
             <>
-              <h2 className="px-1 pt-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+              <h2 className="px-1 pt-4 text-[13px] font-bold text-muted-foreground">
                 {t("completed")}
               </h2>
               {completedGoals.map((goal) => (
-                <Card key={goal.id} className="border-positive/30 bg-positive/5 opacity-80">
+                <Card key={goal.id} className="bg-positive/5 opacity-80">
                   <div className="flex items-center gap-3">
                     <span className="flex size-9 items-center justify-center rounded-xl bg-positive/15 text-positive">
                       <Target className="size-4" />
@@ -283,12 +283,12 @@ function GoalCard({
               {goal.deadline && ` · ${t("dueDateText", { date: formatDate(goal.deadline) })}`}
             </p>
           </div>
-          <span className="shrink-0 font-mono text-sm font-extrabold tabular-nums text-primary">
+          <span className="shrink-0 text-[15px] font-extrabold tabular-nums text-primary">
             {Math.round(pct)}%
           </span>
         </div>
         <Progress value={pct} tone={late ? "warning" : "primary"} className="mt-3" />
-        <p className="mt-1.5 font-mono text-xs tabular-nums text-muted-foreground">
+        <p className="mt-1.5 text-[13px] tabular-nums text-muted-foreground">
           {formatCurrency(goal.savedAmount)} / {formatCurrency(goal.targetAmount)}
         </p>
       </button>

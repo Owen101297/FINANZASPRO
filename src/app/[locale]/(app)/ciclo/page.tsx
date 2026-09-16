@@ -75,7 +75,7 @@ export default function CicloPage() {
   return (
     <div className="animate-fade-in">
       <header className="mb-6">
-        <h1 className="text-2xl font-extrabold tracking-tight">{t("title")}</h1>
+        <h1 className="text-[28px] font-extrabold tracking-tight">{t("title")}</h1>
         <p className="mt-0.5 text-sm text-muted-foreground">
           {t("subtitle")}
         </p>
@@ -171,9 +171,9 @@ export default function CicloPage() {
 function Stat({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
     <div>
-      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{label}</p>
+      <p className="text-[11px] font-bold text-muted-foreground">{label}</p>
       <p
-        className={`mt-1 font-mono text-sm font-extrabold tabular-nums ${
+        className={`mt-1 text-[15px] font-extrabold tabular-nums ${
           tone === "positive" ? "text-positive" : tone === "negative" ? "text-negative" : ""
         }`}
       >

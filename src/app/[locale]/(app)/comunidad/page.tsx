@@ -77,14 +77,14 @@ function ComunidadPage() {
 
               {admin.accounts.length > 0 && (
                 <div className="space-y-1.5">
-                  <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+                  <p className="text-[13px] font-bold text-muted-foreground">
                     {t("accounts")}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {admin.accounts.map((acc) => (
                       <div
                         key={acc.id}
-                        className="flex items-center gap-1.5 rounded-lg border border-border bg-muted/50 px-2.5 py-1.5 text-xs font-medium"
+                        className="flex items-center gap-1.5 rounded-lg bg-muted/50 px-2.5 py-1.5 text-[13px] font-medium"
                       >
                         {acc.color && (
                           <span

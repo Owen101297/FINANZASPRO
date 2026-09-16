@@ -137,7 +137,7 @@ export default function AdminPage() {
           <ShieldCheck className="size-5" />
         </span>
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">{t("title")}</h1>
+          <h1 className="text-[28px] font-extrabold tracking-tight">{t("title")}</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">
             {t("subtitle")}
           </p>
@@ -157,7 +157,7 @@ export default function AdminPage() {
             key={key}
             onClick={() => setTab(key)}
             className={clsx(
-              "relative rounded-lg py-2.5 text-xs font-bold uppercase tracking-wide transition-colors",
+              "relative rounded-lg py-2.5 text-[13px] font-bold transition-colors",
               tab === key ? "bg-card shadow-sm" : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -191,14 +191,14 @@ export default function AdminPage() {
           <button
             onClick={() => setConfirmDelete(null)}
             disabled={busy}
-            className="flex-1 rounded-xl bg-secondary px-4 py-2.5 text-sm font-semibold hover:bg-muted"
+            className="flex-1 rounded-xl bg-muted px-4 py-2.5 text-[15px] font-semibold hover:bg-muted/80"
           >
             {t("common.cancel")}
           </button>
           <button
             onClick={deleteUser}
             disabled={busy}
-            className="flex-[2] rounded-xl bg-destructive px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50"
+            className="flex-[2] rounded-xl bg-destructive px-4 py-2.5 text-[15px] font-semibold text-white hover:opacity-90 disabled:opacity-50"
           >
             {busy && <Loader2 className="mr-1.5 inline size-4 animate-spin" />}
             {t("deleteUserBtn")}
@@ -281,7 +281,7 @@ function DevicesTab({
             {device.status !== "ACTIVE" && (
               <button
                 onClick={() => void onStatus(device, "ACTIVE")}
-                className="mt-3 w-full rounded-xl bg-primary py-2 text-xs font-bold uppercase tracking-wide text-primary-foreground transition-opacity hover:opacity-90"
+                className="mt-3 w-full rounded-xl bg-primary py-2 text-[13px] font-bold text-primary-foreground transition-opacity hover:opacity-90"
               >
                 {t("approveAccess")}
               </button>
@@ -290,7 +290,7 @@ function DevicesTab({
               {device.status === "ACTIVE" && (
                 <button
                   onClick={() => void onStatus(device, "BLOCKED")}
-                  className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-border py-2 text-xs font-semibold text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive"
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-muted py-2 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-destructive"
                 >
                   <Ban className="size-3.5" /> {t("block")}
                 </button>
@@ -298,7 +298,7 @@ function DevicesTab({
               <button
                 onClick={() => void onDelete(device)}
                 aria-label={`Eliminar dispositivo ${device.deviceId}`}
-                className="flex items-center justify-center gap-1.5 rounded-xl border border-border px-3 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive"
+                className="flex items-center justify-center gap-1.5 rounded-xl bg-muted px-3 py-2 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-destructive"
               >
                 <Trash2 className="size-3.5" />
               </button>
@@ -359,14 +359,14 @@ function UsersTab({
               <div className="mt-3 flex gap-2">
                 <button
                   onClick={() => void onRole(user, user.role === "ADMIN" ? "USER" : "ADMIN")}
-                  className="flex-1 rounded-xl border border-border py-2 text-xs font-semibold text-muted-foreground transition-colors hover:border-accent/40 hover:text-accent"
+                  className="flex-1 rounded-xl bg-muted py-2 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-accent"
                 >
                   {user.role === "ADMIN" ? t("removeAdmin") : t("makeAdmin")}
                 </button>
                 <button
                   onClick={() => onAskDelete(user)}
                   aria-label={`Eliminar usuario ${user.email}`}
-                  className="flex items-center justify-center rounded-xl border border-border px-3 text-xs font-semibold text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive"
+                  className="flex items-center justify-center rounded-xl bg-muted px-3 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-destructive"
                 >
                   <Trash2 className="size-3.5" />
                 </button>
@@ -392,7 +392,7 @@ function AuditTab({ data, isLoading }: { data?: { logs: AuditRow[] }; isLoading:
     );
 
   return (
-    <Card className="divide-y divide-border p-2">
+    <Card className="divide-y divide-muted p-2">
       {logs.map((log) => (
         <div key={log.id} className="flex items-start gap-3 px-2 py-2.5">
           <ScrollText className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />

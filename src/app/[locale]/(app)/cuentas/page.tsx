@@ -121,7 +121,7 @@ export default function CuentasPage() {
     <div className="animate-fade-in">
       <header className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">{t("title")}</h1>
+          <h1 className="text-[28px] font-extrabold tracking-tight">{t("title")}</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
         <button
@@ -154,7 +154,7 @@ export default function CuentasPage() {
                     <h2 className="truncate text-sm font-bold">{account.name}</h2>
                     {account.archived && <Badge>{t("archived")}</Badge>}
                   </div>
-                  <p className="font-mono text-lg font-extrabold tabular-nums">
+                  <p className="text-[17px] font-extrabold tabular-nums">
                     {formatCurrency(account.balance)}
                   </p>
                 </div>

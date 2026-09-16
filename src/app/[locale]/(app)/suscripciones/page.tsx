@@ -133,7 +133,7 @@ export default function SuscripcionesPage() {
             {t("billingDay", { day: subscription.billingDay })}
           </p>
         </button>
-        <span className="shrink-0 font-mono text-sm font-bold tabular-nums">
+        <span className="shrink-0 text-[15px] font-bold tabular-nums">
           {formatCurrency(subscription.amount)}
         </span>
         <button
@@ -168,7 +168,7 @@ export default function SuscripcionesPage() {
     <div className="animate-fade-in">
       <header className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">{t("title")}</h1>
+          <h1 className="text-[28px] font-extrabold tracking-tight">{t("title")}</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">
             {t("monthlyActive")}{" "}
             <span className="font-bold text-accent">{formatCurrency(monthlyTotal)}</span>
@@ -189,18 +189,17 @@ export default function SuscripcionesPage() {
         </div>
       ) : data && data.subscriptions.length > 0 ? (
         <div className="space-y-4">
-          <Card className="divide-y divide-border p-1.5">
-            {activeList.map((s) => (
+          <Card className="divide-y divide-muted p-1.5">            {activeList.map((s) => (
               <SubscriptionRow key={s.id} subscription={s} />
             ))}
           </Card>
 
           {inactiveList.length > 0 && (
             <>
-              <h2 className="px-1 pt-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+              <h2 className="px-1 pt-2 text-[13px] font-bold text-muted-foreground">
                 {t("inactive")}
               </h2>
-              <Card className="divide-y divide-border p-1.5 opacity-60">
+              <Card className="divide-y divide-muted p-1.5 opacity-60">
                 {inactiveList.map((s) => (
                   <SubscriptionRow key={s.id} subscription={s} />
                 ))}

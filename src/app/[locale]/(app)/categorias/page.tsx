@@ -100,7 +100,7 @@ export default function CategoriasPage() {
     <div className="animate-fade-in">
       <header className="mb-5 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">{t("title")}</h1>
+          <h1 className="text-[28px] font-extrabold tracking-tight">{t("title")}</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
         <button
@@ -119,7 +119,7 @@ export default function CategoriasPage() {
             key={type}
             onClick={() => setTab(type)}
             className={clsx(
-              "rounded-lg py-2.5 text-xs font-bold uppercase tracking-wide transition-colors",
+              "rounded-lg py-2.5 text-[13px] font-bold transition-colors",
               tab === type ? "bg-card shadow-sm" : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -133,7 +133,7 @@ export default function CategoriasPage() {
           <Loader2 className="size-6 animate-spin text-muted-foreground" />
         </div>
       ) : filtered.length > 0 ? (
-        <Card className="divide-y divide-border p-2">
+        <Card className="divide-y divide-muted p-2">
           {filtered.map((category) => (
             <div key={category.id} className="group flex items-center gap-3 px-2 py-3">
               <span

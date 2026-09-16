@@ -82,7 +82,7 @@ export default function CuentaPage() {
       </Card>
 
       <Card>
-        <h2 className="mb-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">
+        <h2 className="mb-4 text-[13px] font-bold text-muted-foreground">
           {t("changePassword")}
         </h2>
         <form onSubmit={handleChangePassword} className="space-y-4">
@@ -133,7 +133,7 @@ export default function CuentaPage() {
       </Card>
 
       <Card className="mt-5">
-        <h2 className="mb-1 text-sm font-bold uppercase tracking-wider text-muted-foreground">
+        <h2 className="mb-1 text-[13px] font-bold text-muted-foreground">
           {t("session")}
         </h2>
         <p className="mb-4 text-xs text-muted-foreground">

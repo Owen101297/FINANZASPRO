@@ -133,7 +133,7 @@ export default function DeudasPage() {
     <div className="animate-fade-in">
       <header className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">{t("title")}</h1>
+          <h1 className="text-[28px] font-extrabold tracking-tight">{t("title")}</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">
             {t("pending")} <span className="font-bold text-negative">{formatCurrency(summary.totalDebt)}</span>
           </p>
@@ -158,7 +158,7 @@ export default function DeudasPage() {
           ))}
           {summary.paid.length > 0 && (
             <>
-              <h2 className="px-1 pt-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+              <h2 className="px-1 pt-4 text-[13px] font-bold text-muted-foreground">
                 {t("paid")}
               </h2>
               {summary.paid.map((debt) => (
@@ -297,7 +297,7 @@ function DebtCard({
           ) : pct >= 100 ? (
             <Badge tone="positive">{t("completed")}</Badge>
           ) : (
-            <span className="shrink-0 font-mono text-xs font-bold tabular-nums text-muted-foreground">
+            <span className="shrink-0 text-[13px] font-bold tabular-nums text-muted-foreground">
               {Math.round(pct)}%
             </span>
           )}
