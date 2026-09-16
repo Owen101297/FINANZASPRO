@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose/jwt/verify";
 import { hasLocale } from "next-intl";
 import { routing } from "@/routing";
-import { validateCsrf } from "@/lib/csrf";
+import { validateCsrf, CSRF_COOKIE, generateCsrfToken } from "@/lib/csrf";
+import { csrfCookieOptions } from "@/lib/auth";
 
 /**
  * Rutas de página protegidas (requieren sesión válida).
@@ -116,10 +117,15 @@ export async function middleware(req: NextRequest) {
     const directives = securityDirectives(nonce);
     const headers = new Headers(req.headers);
     headers.set("x-nonce", nonce);
-    return withSecurityHeaders(
+    const res = withSecurityHeaders(
       NextResponse.next({ request: { headers } }),
       directives
     );
+    // Regenerar CSRF token en cada respuesta API para evitar tokens stale
+    if (isApi) {
+      res.cookies.set(CSRF_COOKIE, generateCsrfToken(), csrfCookieOptions());
+    }
+    return res;
   }
 
   // --- Locale detection ---

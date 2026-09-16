@@ -19,6 +19,17 @@ function getCsrfToken(): string {
   return match?.[1] ? decodeURIComponent(match[1]) : "";
 }
 
+/** Refresca el CSRF token haciendo un GET (el middleware regenera la cookie). */
+async function refreshCsrfToken(): Promise<string> {
+  try {
+    const res = await fetch("/api/csrf", { credentials: "include" });
+    const data = (await res.json()) as { csrfToken?: string };
+    return data?.csrfToken ?? "";
+  } catch {
+    return "";
+  }
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const method = init?.method?.toUpperCase() ?? "GET";
   const needsCsrf = method === "POST" || method === "PATCH" || method === "DELETE";
@@ -47,6 +58,32 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (!res.ok) {
     const err = (body as { error?: { message?: string; code?: string } } | null)?.error;
+
+    // Reintentar una vez si es error CSRF (token stale o cookie no enviada)
+    if (res.status === 403 && err?.code === "CSRF_INVALID") {
+      const newToken = await refreshCsrfToken();
+      if (newToken) {
+        // Reintentar con el token nuevo directamente (sin depender de la cookie)
+        const retryHeaders: Record<string, string> = {
+          "Content-Type": "application/json",
+          ...(init?.headers as Record<string, string> ?? {}),
+          "X-CSRF-Token": newToken,
+        };
+        const retryRes = await fetch(path, {
+          ...init,
+          credentials: "include",
+          headers: retryHeaders,
+        });
+        let retryBody: unknown = null;
+        try { retryBody = await retryRes.json(); } catch { /* empty */ }
+        if (!retryRes.ok) {
+          const retryErr = (retryBody as { error?: { message?: string; code?: string } } | null)?.error;
+          throw new ApiClientError(retryRes.status, retryErr?.message ?? `Error ${retryRes.status}`, retryErr?.code);
+        }
+        return retryBody as T;
+      }
+    }
+
     throw new ApiClientError(res.status, err?.message ?? `Error ${res.status}`, err?.code);
   }
 
