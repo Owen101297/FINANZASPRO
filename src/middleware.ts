@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose/jwt/verify";
 import { hasLocale } from "next-intl";
 import { routing } from "@/routing";
-import { validateCsrf, CSRF_COOKIE, generateCsrfToken } from "@/lib/csrf";
-import { csrfCookieOptions } from "@/lib/auth";
+import { validateCsrf, CSRF_COOKIE } from "@/lib/csrf";
 
 /**
  * Rutas de página protegidas (requieren sesión válida).
@@ -122,8 +121,15 @@ export async function middleware(req: NextRequest) {
       directives
     );
     // Regenerar CSRF token en cada respuesta API para evitar tokens stale
+    // Usa crypto.randomUUID() (Edge-compatible) en vez de randomBytes (Node.js)
     if (isApi) {
-      res.cookies.set(CSRF_COOKIE, generateCsrfToken(), csrfCookieOptions());
+      res.cookies.set(CSRF_COOKIE, crypto.randomUUID().replace(/-/g, ""), {
+        httpOnly: false,
+        sameSite: "strict",
+        secure: process.env.NODE_ENV === "production",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
+      });
     }
     return res;
   }
